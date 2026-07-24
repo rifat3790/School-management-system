@@ -25,6 +25,7 @@ import {
   Lock,
   UserPlus,
   Edit,
+  FileEdit,
   Eye,
   EyeOff,
   Filter,
@@ -125,6 +126,12 @@ export default function AdminDashboard() {
   const [newTeacher, setNewTeacher] = useState({ name: '', designation: 'সহকারী শিক্ষক', subject: '', qualification: 'এম.এ, বি.এড', experience: '৫ বছর', email: '', phone: '', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&q=80' });
   const [newNews, setNewNews] = useState({ title: '', category: 'সংবাদ', date: new Date().toLocaleDateString('bn-BD'), summary: '', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80' });
   const [newGallery, setNewGallery] = useState({ title: '', category: 'ক্যাম্পাস', url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&q=80' });
+
+  // Editing Item States
+  const [editingNotice, setEditingNotice] = useState<any | null>(null);
+  const [editingTeacher, setEditingTeacher] = useState<any | null>(null);
+  const [editingNews, setEditingNews] = useState<any | null>(null);
+  const [editingGallery, setEditingGallery] = useState<any | null>(null);
 
   // Fetching Data
   const fetchAllData = async () => {
@@ -468,6 +475,79 @@ export default function AdminDashboard() {
         fetchAllData();
       }
     } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
+  };
+
+  // UPDATE HANDLERS (PUT)
+  const handleUpdateNotice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingNotice?._id) return;
+    try {
+      const res = await fetch('/api/notices', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingNotice._id, ...editingNotice }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('নোটিশ সফলভাবে আপডেট করা হয়েছে!');
+        setEditingNotice(null);
+        fetchAllData();
+      }
+    } catch (err) { toast.error('আপডেট করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleUpdateTeacher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTeacher?._id) return;
+    try {
+      const res = await fetch('/api/teachers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingTeacher._id, ...editingTeacher }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('শিক্ষকের তথ্য সফলভাবে আপডেট করা হয়েছে!');
+        setEditingTeacher(null);
+        fetchAllData();
+      }
+    } catch (err) { toast.error('আপডেট করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleUpdateNews = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingNews?._id) return;
+    try {
+      const res = await fetch('/api/news', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingNews._id, ...editingNews }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('সংবাদ সফলভাবে আপডেট করা হয়েছে!');
+        setEditingNews(null);
+        fetchAllData();
+      }
+    } catch (err) { toast.error('আপডেট করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleUpdateGallery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGallery?._id) return;
+    try {
+      const res = await fetch('/api/gallery', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingGallery._id, ...editingGallery }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('গ্যালারির ছবি সফলভাবে আপডেট করা হয়েছে!');
+        setEditingGallery(null);
+        fetchAllData();
+      }
+    } catch (err) { toast.error('আপডেট করতে সমস্যা হয়েছে'); }
   };
 
   const handleAssignStudentToTeacher = async (e: React.FormEvent) => {
@@ -1245,12 +1325,20 @@ export default function AdminDashboard() {
                         <p className="text-xs text-slate-600 line-clamp-2">{n.content}</p>
                       </div>
 
-                      <button
-                        onClick={() => handleDeleteNotice(n._id || n.id)}
-                        className="p-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl transition flex items-center gap-1 text-xs font-bold shrink-0"
-                      >
-                        <Trash2 className="w-4 h-4" /> মুছুন
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => setEditingNotice(n)}
+                          className="px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition flex items-center gap-1 text-xs font-bold"
+                        >
+                          <FileEdit className="w-3.5 h-3.5" /> এডিট
+                        </button>
+                        <button
+                          onClick={() => handleDeleteNotice(n._id || n.id)}
+                          className="px-3 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl transition flex items-center gap-1 text-xs font-bold"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> মুছুন
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1396,13 +1484,22 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => handleDeleteTeacher(t._id || t.id)}
-                      className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition shrink-0"
-                      title="মুছুন"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <button
+                        onClick={() => setEditingTeacher(t)}
+                        className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition"
+                        title="সম্পাদনা / এডিট"
+                      >
+                        <FileEdit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTeacher(t._id || t.id)}
+                        className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition"
+                        title="মুছুন"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1511,12 +1608,22 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => handleDeleteNews(item._id || item.id)}
-                      className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition shrink-0"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <button
+                        onClick={() => setEditingNews(item)}
+                        className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition"
+                        title="সম্পাদনা / এডিট"
+                      >
+                        <FileEdit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteNews(item._id || item.id)}
+                        className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition"
+                        title="মুছুন"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1599,13 +1706,22 @@ export default function AdminDashboard() {
                       <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{g.category}</span>
                       <h5 className="font-bold text-slate-900 text-xs truncate">{g.title}</h5>
                     </div>
-                    <button
-                      onClick={() => handleDeleteGallery(g._id || g.id)}
-                      className="absolute top-2 right-2 p-1.5 bg-rose-600 text-white rounded-lg shadow-md hover:bg-rose-700 transition"
-                      title="মুছুন"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="absolute top-2 right-2 flex items-center gap-1">
+                      <button
+                        onClick={() => setEditingGallery(g)}
+                        className="p-1.5 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition"
+                        title="সম্পাদনা / এডিট"
+                      >
+                        <FileEdit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteGallery(g._id || g.id)}
+                        className="p-1.5 bg-rose-600 text-white rounded-lg shadow-md hover:bg-rose-700 transition"
+                        title="মুছুন"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1810,6 +1926,258 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* EDIT NOTICE MODAL */}
+      {editingNotice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 relative">
+            <button onClick={() => setEditingNotice(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <FileEdit className="w-5 h-5 text-blue-600" /> নোটিশ আপডেট করুন
+            </h3>
+            <form onSubmit={handleUpdateNotice} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">নোটিশের শিরোনাম</label>
+                <input
+                  type="text"
+                  required
+                  value={editingNotice.title}
+                  onChange={(e) => setEditingNotice({ ...editingNotice, title: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">ক্যাটাগরি</label>
+                  <input
+                    type="text"
+                    value={editingNotice.category}
+                    onChange={(e) => setEditingNotice({ ...editingNotice, category: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">তারিখ</label>
+                  <input
+                    type="text"
+                    value={editingNotice.date}
+                    onChange={(e) => setEditingNotice({ ...editingNotice, date: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">পিডিএফ/সংযুক্তি URL</label>
+                <input
+                  type="text"
+                  value={editingNotice.pdfUrl || ''}
+                  onChange={(e) => setEditingNotice({ ...editingNotice, pdfUrl: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">বিবরণ</label>
+                <textarea
+                  rows={3}
+                  value={editingNotice.content}
+                  onChange={(e) => setEditingNotice({ ...editingNotice, content: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="editIsImportant"
+                  checked={editingNotice.isImportant || false}
+                  onChange={(e) => setEditingNotice({ ...editingNotice, isImportant: e.target.checked })}
+                />
+                <label htmlFor="editIsImportant" className="font-bold text-slate-700">জরুরি নোটিশ ব্যাজ</label>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setEditingNotice(null)} className="px-4 py-2 bg-slate-100 font-bold rounded-xl">বাতিল</button>
+                <button type="submit" className="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-md">আপডেট করুন</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT TEACHER MODAL */}
+      {editingTeacher && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 relative">
+            <button onClick={() => setEditingTeacher(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <FileEdit className="w-5 h-5 text-blue-600" /> শিক্ষকের তথ্য আপডেট করুন
+            </h3>
+            <form onSubmit={handleUpdateTeacher} className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">শিক্ষকের নাম</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingTeacher.name}
+                    onChange={(e) => setEditingTeacher({ ...editingTeacher, name: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">পদবী</label>
+                  <input
+                    type="text"
+                    value={editingTeacher.designation}
+                    onChange={(e) => setEditingTeacher({ ...editingTeacher, designation: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">বিষয়</label>
+                  <input
+                    type="text"
+                    value={editingTeacher.subject}
+                    onChange={(e) => setEditingTeacher({ ...editingTeacher, subject: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">শিক্ষাগত যোগ্যতা</label>
+                  <input
+                    type="text"
+                    value={editingTeacher.qualification}
+                    onChange={(e) => setEditingTeacher({ ...editingTeacher, qualification: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">ছবি URL</label>
+                <input
+                  type="text"
+                  value={editingTeacher.image}
+                  onChange={(e) => setEditingTeacher({ ...editingTeacher, image: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setEditingTeacher(null)} className="px-4 py-2 bg-slate-100 font-bold rounded-xl">বাতিল</button>
+                <button type="submit" className="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-md">আপডেট করুন</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT NEWS MODAL */}
+      {editingNews && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 relative">
+            <button onClick={() => setEditingNews(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <FileEdit className="w-5 h-5 text-emerald-600" /> ক্যাম্পাস নিউজ আপডেট করুন
+            </h3>
+            <form onSubmit={handleUpdateNews} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">সংবাদের শিরোনাম</label>
+                <input
+                  type="text"
+                  required
+                  value={editingNews.title}
+                  onChange={(e) => setEditingNews({ ...editingNews, title: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">ক্যাটাগরি</label>
+                  <input
+                    type="text"
+                    value={editingNews.category}
+                    onChange={(e) => setEditingNews({ ...editingNews, category: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">তারিখ</label>
+                  <input
+                    type="text"
+                    value={editingNews.date}
+                    onChange={(e) => setEditingNews({ ...editingNews, date: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">সংবাদের ছবি URL</label>
+                <input
+                  type="text"
+                  value={editingNews.image}
+                  onChange={(e) => setEditingNews({ ...editingNews, image: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">সারসংক্ষেপ</label>
+                <textarea
+                  rows={3}
+                  value={editingNews.summary}
+                  onChange={(e) => setEditingNews({ ...editingNews, summary: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setEditingNews(null)} className="px-4 py-2 bg-slate-100 font-bold rounded-xl">বাতিল</button>
+                <button type="submit" className="px-5 py-2 bg-emerald-600 text-white font-bold rounded-xl shadow-md">আপডেট করুন</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT GALLERY MODAL */}
+      {editingGallery && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 relative">
+            <button onClick={() => setEditingGallery(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <FileEdit className="w-5 h-5 text-blue-600" /> গ্যালারির ছবি আপডেট করুন
+            </h3>
+            <form onSubmit={handleUpdateGallery} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">ছবি বা ইভেন্টের ক্যাপশন</label>
+                <input
+                  type="text"
+                  required
+                  value={editingGallery.title}
+                  onChange={(e) => setEditingGallery({ ...editingGallery, title: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">ক্যাটাগরি</label>
+                <input
+                  type="text"
+                  value={editingGallery.category}
+                  onChange={(e) => setEditingGallery({ ...editingGallery, category: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">ছবি URL</label>
+                <input
+                  type="text"
+                  value={editingGallery.url}
+                  onChange={(e) => setEditingGallery({ ...editingGallery, url: e.target.value })}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setEditingGallery(null)} className="px-4 py-2 bg-slate-100 font-bold rounded-xl">বাতিল</button>
+                <button type="submit" className="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-md">আপডেট করুন</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -24,7 +24,7 @@ import { useToast } from '@/components/Toast';
 
 export default function StudentDashboard() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'routine' | 'assignments' | 'result'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'routine' | 'assignments' | 'result' | 'library'>('overview');
   const [showIdCardModal, setShowIdCardModal] = useState(false);
 
   const [studentUser, setStudentUser] = useState<any>(null);
@@ -180,6 +180,7 @@ export default function StudentDashboard() {
             { id: 'routine', label: '⏰ আজকের ক্লাস রুটিন', icon: Clock },
             { id: 'assignments', label: `📝 হোমওয়ার্ক ও এসাইনমেন্ট (${assignments.length})`, icon: BookOpen },
             { id: 'result', label: '🏆 পরীক্ষার মার্কশীট ও ফলাফল', icon: Award },
+            { id: 'library', label: '📚 ডিজিটাল লার্নিং ও ই-বুক রিসোর্স', icon: FileText },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -364,6 +365,74 @@ export default function StudentDashboard() {
                 <div className="bg-white p-3 rounded-xl border text-emerald-600">GPA: 5.00</div>
                 <div className="bg-white p-3 rounded-xl border text-blue-600">গ্রেড: A+ (উত্তীর্ণ)</div>
                 <div className="bg-white p-3 rounded-xl border text-purple-600">অবস্থান: সেরা ১%</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: DIGITAL LEARNING & E-BOOKS */}
+        {activeTab === 'library' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">📚 ডিজিটাল লার্নিং অ্যান্ড স্টাডি হাব (E-Books & Notes)</h3>
+                <p className="text-xs text-slate-500">শ্রেণীভিত্তিক ই-বুক, বিষায়ক লেকচার নোটস ও সাপ্তাহিক মডেল টেস্টের পিডিএফ ডাউনলোড করুন</p>
+              </div>
+              <a href="/library" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-md">
+                <BookOpen className="w-4 h-4" /> মেইন ই-লাইব্রেরিতে যান
+              </a>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">পদার্থবিজ্ঞান</span>
+                  <h4 className="font-bold text-slate-900 text-sm mt-1">গতির সমীকরণ ও নিউটনের বলবিদ্যা হ্যান্ডনোট</h4>
+                  <p className="text-xs text-slate-500 mt-1">প্রফেসর এম. এ. মজিদ স্যার কর্তৃক প্রণীত শর্টকাট সূত্রাবলী।</p>
+                </div>
+                <button
+                  onClick={() => toast.info('পিডিএফ ফাইল ডাউনলোড হচ্ছে: গতির সমীকরণ ও নিউটনের বলবিদ্যা.pdf')}
+                  className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1 transition"
+                >
+                  <Download className="w-3.5 h-3.5" /> পিডিএফ ডাউনলোড করুন (২.৪ MB)
+                </button>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">উচ্চতর গণিত</span>
+                  <h4 className="font-bold text-slate-900 text-sm mt-1">ত্রিকোণমিতি ও স্থানাংক জ্যামিতি সাজেশন ২০২৬</h4>
+                  <p className="text-xs text-slate-500 mt-1">সাপ্তাহিক মডেল টেস্টের চূড়ান্ত সমাধান ও সলভ শিট।</p>
+                </div>
+                <button
+                  onClick={() => toast.info('পিডিএফ ফাইল ডাউনলোড হচ্ছে: ত্রিকোণমিতি ও স্থানাংক জ্যামিতি.pdf')}
+                  className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1 transition"
+                >
+                  <Download className="w-3.5 h-3.5" /> পিডিএফ ডাউনলোড করুন (৩.১ MB)
+                </button>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded">আইসিটি ও রোবোটিক্স</span>
+                  <h4 className="font-bold text-slate-900 text-sm mt-1">HTML5, CSS3 ও মাইক্রোকন্ট্রোলার প্রাইমার</h4>
+                  <p className="text-xs text-slate-500 mt-1">ডিজিটাল ক্লাসরুম প্রজেক্ট গাইড ও কোডিং রেফারেন্স।</p>
+                </div>
+                <button
+                  onClick={() => toast.info('পিডিএফ ফাইল ডাউনলোড হচ্ছে: ICT_Coding_Guide.pdf')}
+                  className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1 transition"
+                >
+                  <Download className="w-3.5 h-3.5" /> পিডিএফ ডাউনলোড করুন (১.৮ MB)
+                </button>
               </div>
             </div>
           </div>

@@ -54,6 +54,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    await dbConnect();
+    const { id, ...updateData } = await req.json();
+    const item = await Gallery.findByIdAndUpdate(id, updateData, { new: true });
+    return NextResponse.json({ success: true, gallery: item });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     await dbConnect();

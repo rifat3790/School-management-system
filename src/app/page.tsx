@@ -256,7 +256,81 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 8. Bottom Admission CTA Banner */}
+      {/* 8. Smart Digital Campus & STEM Labs Showcase */}
+      <section className="py-16 bg-white relative overflow-hidden">
+        <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold border border-blue-200">
+              <Cpu className="w-4 h-4 text-blue-600" />
+              ডিজিটাল ইনোভেশন ও প্রযুক্তি
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              স্মার্ট রোবোটিক্স ল্যাব ও ডিজিটাল শিক্ষাঙ্গন
+            </h2>
+            <p className="text-slate-600 text-sm md:text-base">
+              প্রতিটি শিক্ষার্থীর উদ্ভাবনী ক্ষমতা বিকাশে আন্তর্জাতিক মানের ৩ডি সায়েন্স ল্যাব, রোবোটিক্স কিট এবং ইন্টারেক্টিভ স্মার্ট ক্লাসরুম ব্যবস্থা।
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-gradient-to-b from-slate-50 to-slate-100 p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4 hover:-translate-y-1 transition duration-300">
+              <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Cpu className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">রোবোটিক্স ও আইওটি ল্যাব</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                অর্ডুইনো, মাইক্রোকন্ট্রোলার ও ৩ডি প্রজেক্ট তৈরির সুযোগ নিয়ে আন্তর্জাতিক রোবোটিক্স অলিম্পিয়াডের প্রস্তুতি।
+              </p>
+              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-bold text-[10px]">
+                ১৫০+ সায়েন্স প্রজেক্ট
+              </span>
+            </div>
+
+            <div className="bg-gradient-to-b from-slate-50 to-slate-100 p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4 hover:-translate-y-1 transition duration-300">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500 text-white flex items-center justify-center shadow-lg shadow-sky-500/20">
+                <Monitor className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">৭৫" ৪কে স্মার্ট ডিসপ্লে</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                প্রতিটি শ্রেণিকক্ষে ৭৫ ইঞ্চি ৪কে ইন্টারেক্টিভ স্মার্ট বোর্ড বোর্ডের সাহায্যে থ্রিডি অ্যানিমেটেড ডিজিটাল ক্লাস।
+              </p>
+              <span className="inline-block px-3 py-1 bg-sky-100 text-sky-800 rounded-full font-bold text-[10px]">
+                ৩২টি স্মার্ট রুম
+              </span>
+            </div>
+
+            <div className="bg-gradient-to-b from-slate-50 to-slate-100 p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4 hover:-translate-y-1 transition duration-300">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <Globe className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">ডিজিটাল ল্যাঙ্গুয়েজ ল্যাব</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                স্পোকেন ইংলিশ, ব্রিটিশ অ্যাকসেন্ট লিসেনিং সেশন ও ডিজিটাল আইসিটি কম্পিউটার ল্যাব ব্যবস্থা।
+              </p>
+              <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">
+                ৬০টি কম্পিউটার ডেক্স
+              </span>
+            </div>
+
+            <div className="bg-gradient-to-b from-slate-50 to-slate-100 p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4 hover:-translate-y-1 transition duration-300">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">বায়োমেট্রিক ও সিসিটিভি</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                ২৪/৭ সিসিটিভি সার্ভেইল্যান্স, বায়োমেট্রিক হাজিরা ও অভিভাবকদের মোবাইলে তাৎক্ষণিক এসএমএস গেটওয়ে।
+              </p>
+              <span className="inline-block px-3 py-1 bg-amber-100 text-amber-800 rounded-full font-bold text-[10px]">
+                ১০০% ডিজিটাল সিকিউরিটি
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 9. Bottom Admission CTA Banner */}
       <section className="py-12 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white relative overflow-hidden">
         <div className="max-w-[1536px] mx-auto px-4 lg:px-8 text-center space-y-6 relative z-10">
           <div className="inline-flex items-center gap-2 bg-amber-400 text-slate-950 font-black px-4 py-1 rounded-full text-xs uppercase">
