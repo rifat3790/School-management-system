@@ -51,7 +51,11 @@ interface UserRecord {
 
 export default function AdminDashboard() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'news' | 'gallery'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'assignments' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'news' | 'gallery'>('users');
+  
+  // Assignment State
+  const [assignTeacherId, setAssignTeacherId] = useState('');
+  const [assignStudentId, setAssignStudentId] = useState('');
   
   // Data States
   const [allUsers, setAllUsers] = useState<UserRecord[]>([]);
@@ -326,6 +330,55 @@ export default function AdminDashboard() {
     } catch (err) { toast.error('আপডেট করতে সমস্যা হয়েছে!'); }
   };
 
+  const handleAssignStudentToTeacher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assignTeacherId || !assignStudentId) {
+      toast.error('শিক্ষক এবং শিক্ষার্থী নির্বাচন করুন');
+      return;
+    }
+    const teacherUser = allUsers.find(u => u._id === assignTeacherId);
+    const studentUser = allUsers.find(u => u._id === assignStudentId);
+    if (!teacherUser || !studentUser) return;
+
+    try {
+      // 1. Assign Teacher ID and Name to Student
+      await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: studentUser._id,
+          details: {
+            ...(studentUser.details || {}),
+            assignedTeacherId: teacherUser._id,
+            assignedTeacherName: teacherUser.name,
+          }
+        }),
+      });
+
+      // 2. Add Student ID to Teacher's assignedStudentIds
+      const currentAssigned = teacherUser.details?.assignedStudentIds || [];
+      const updatedAssigned = Array.from(new Set([...currentAssigned, studentUser._id]));
+
+      await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: teacherUser._id,
+          details: {
+            ...(teacherUser.details || {}),
+            assignedStudentIds: updatedAssigned,
+          }
+        }),
+      });
+
+      toast.success(`শিক্ষার্থী ${studentUser.name}-কে শিক্ষক ${teacherUser.name}-এর অধীনে সফলভাবে অ্যাসাইন করা হয়েছে!`);
+      setAssignStudentId('');
+      fetchAllData();
+    } catch (err) {
+      toast.error('অ্যাসাইন করতে সমস্যা হয়েছে');
+    }
+  };
+
   const togglePasswordVisibility = (id: string) => {
     setShowPasswords(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -381,6 +434,7 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto no-scrollbar">
           {[
             { id: 'users', label: `👥 সকল ইউজার ডাটাবেজ (${allUsers.length})`, icon: Users },
+            { id: 'assignments', label: '🔗 শিক্ষক-শিক্ষার্থী অ্যাসাইনমেন্ট', icon: UserCheck },
             { id: 'chat', label: '💬 লাইভ চ্যাট ইনবক্স (Live Support)', icon: MessageSquare },
             { id: 'resets', label: `🔑 রিসেট আবেদন (${resetUsers.length})`, icon: Key },
             { id: 'approvals', label: `⏰ পেন্ডিং এপ্রুভাল (${pendingUsers.length})`, icon: Clock },
@@ -600,6 +654,93 @@ export default function AdminDashboard() {
                 <MessageSquare className="w-4 h-4" /> মেসেজ উত্তর পাঠান
               </button>
             </form>
+          </div>
+        )}
+
+        {/* TAB: TEACHER-STUDENT ASSIGNMENT CONTROL */}
+        {activeTab === 'assignments' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">🔗 শিক্ষক-শিক্ষার্থী কানেকশন ও অ্যাসাইনমেন্ট কন্ট্রোল</h3>
+              <p className="text-xs text-slate-500">কোন শিক্ষকের অধীনে কোন শিক্ষার্থী থাকবে তা এডমিন সিলেক্ট ও অ্যাসাইন করুন। ডাটাবেজে লাইভ আপডেট হবে।</p>
+            </div>
+
+            <form onSubmit={handleAssignStudentToTeacher} className="p-6 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">শিক্ষক নির্বাচন করুন (Teacher)</label>
+                  <select
+                    value={assignTeacherId}
+                    onChange={(e) => setAssignTeacherId(e.target.value)}
+                    required
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-medium"
+                  >
+                    <option value="">-- শিক্ষক সিলেক্ট করুন --</option>
+                    {allUsers.filter(u => u.role === 'teacher').map(t => (
+                      <option key={t._id} value={t._id}>
+                        {t.name} ({t.details?.subject || 'বিষয় নির্ধারিত নয়'} — {t.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">শিক্ষার্থী নির্বাচন করুন (Student)</label>
+                  <select
+                    value={assignStudentId}
+                    onChange={(e) => setAssignStudentId(e.target.value)}
+                    required
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-medium"
+                  >
+                    <option value="">-- শিক্ষার্থী সিলেক্ট করুন --</option>
+                    {allUsers.filter(u => u.role === 'student').map(s => (
+                      <option key={s._id} value={s._id}>
+                        {s.name} (Class: {s.details?.class || '10'}, Sec: {s.details?.section || 'A'} — {s.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2"
+              >
+                <UserCheck className="w-4 h-4" /> অ্যাসাইনমেন্ট সেভ করুন
+              </button>
+            </form>
+
+            {/* Current Assignments Summary */}
+            <div className="space-y-3 pt-4">
+              <h4 className="font-bold text-sm text-slate-900">বর্তমানে অ্যাসাইন করা শিক্ষার্থীদের তালিকা</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {allUsers.filter(u => u.role === 'teacher').map(teacher => {
+                  const assignedStudents = allUsers.filter(s => s.role === 'student' && s.details?.assignedTeacherId === teacher._id);
+                  return (
+                    <div key={teacher._id} className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-2">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span className="font-bold text-xs text-slate-900">{teacher.name}</span>
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-700 font-bold text-[10px] rounded-full">
+                          {assignedStudents.length} জন শিক্ষার্থী
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500">বিষয়: {teacher.details?.subject || 'সাধারণ'}</p>
+                      <div className="space-y-1 pt-1">
+                        {assignedStudents.length === 0 ? (
+                          <p className="text-[10px] text-slate-400 italic">কোনো শিক্ষার্থী অ্যাসাইন করা নেই</p>
+                        ) : (
+                          assignedStudents.map(st => (
+                            <div key={st._id} className="text-[11px] text-slate-700 flex items-center justify-between bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                              <span>• {st.name} (Class {st.details?.class || '10'})</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 

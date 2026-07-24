@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   UserCheck, 
   BookOpen, 
-  Calendar, 
+  Calendar as CalendarIcon, 
   Award, 
   CreditCard, 
   CheckCircle2, 
@@ -14,26 +14,76 @@ import {
   Sparkles,
   Download,
   Upload,
-  Printer
+  Printer,
+  RefreshCw,
+  User,
+  ShieldCheck
 } from 'lucide-react';
 
 import { useToast } from '@/components/Toast';
 
 export default function StudentDashboard() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'routine' | 'assignments' | 'result' | 'fees'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'routine' | 'assignments' | 'result'>('overview');
 
-  const studentInfo = {
-    name: 'রাফসান আহমেদ (সাকিব)',
-    roll: '১০১',
-    regNo: '২০২৬৯০০১০১',
-    className: '১০ম শ্রেণী',
-    section: 'ক শাখা (বিজ্ঞান)',
-    attendanceRate: '৯৬.৫%',
-    paidFees: '৳ ৪,৫০০',
-    dueFees: '৳ ০.০০',
-    gpa: '৫.০০ (A+)'
+  const [studentUser, setStudentUser] = useState<any>(null);
+  const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real student data and attendance history from MongoDB
+  const fetchStudentData = async () => {
+    setLoading(true);
+    try {
+      const resUsers = await fetch('/api/admin/users');
+      const dataUsers = await resUsers.json();
+      
+      if (dataUsers.success && dataUsers.users) {
+        const allUsers: any[] = dataUsers.users;
+        const stUser = allUsers.find(u => u.role === 'student') || {
+          _id: 'st-1',
+          name: 'রাফসান আহমেদ (সাকিব)',
+          email: 'rafsan@school.edu.bd',
+          details: {
+            studentId: '১০১',
+            class: '১০',
+            section: 'ক',
+            assignedTeacherName: 'কাজী মাহমুদুল হাসান (জীববিজ্ঞান ও আইসিটি)'
+          }
+        };
+
+        setStudentUser(stUser);
+
+        // Fetch student's attendance records from database
+        const resAtt = await fetch(`/api/attendance?studentId=${stUser._id}`);
+        const dataAtt = await resAtt.json();
+        if (dataAtt.success && dataAtt.attendanceHistory) {
+          setAttendanceHistory(dataAtt.attendanceHistory);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching student dashboard:', err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchStudentData();
+  }, []);
+
+  // Calculate attendance rate dynamically
+  const totalClasses = attendanceHistory.length;
+  let presentClasses = 0;
+  attendanceHistory.forEach(attDoc => {
+    const rec = attDoc.records?.find((r: any) => r.studentId === studentUser?._id);
+    if (rec && (rec.status === 'present' || rec.status === 'late')) {
+      presentClasses++;
+    }
+  });
+
+  const attendanceRate = totalClasses > 0 
+    ? ((presentClasses / totalClasses) * 100).toFixed(1) + '%' 
+    : '১০০%';
 
   const dailyRoutine = [
     { time: '০৯:০০ AM - ০৯:৪৫ AM', subject: 'উচ্চতর গণিত', teacher: 'প্রফেসর এম. এ. মজিদ', room: 'ক্লাস ১০১' },
@@ -41,61 +91,72 @@ export default function StudentDashboard() {
     { time: '১০:৩০ AM - ১১:১৫ AM', subject: 'রসায়ন', teacher: 'ড. ফারহানা হক', room: 'রসায়ন ল্যাব' },
     { time: '১১:১৫ AM - ১২:০০ PM', subject: 'ইংরেজি ১ম পত্র', teacher: 'আহমেদ হাসান', room: 'ক্লাস ১০১' },
     { time: '১২:০০ PM - ১২:৪৫ PM', subject: 'টিফিন ও নামাজের বিরতি', teacher: '-', room: 'ক্যান্টিন/মসজিদ' },
-    { time: '১২:৪৫ PM - ০১:৩০ PM', subject: 'আইসিটি ও রোবোটিক্স', teacher: 'তানভীর আহমেদ', room: 'কম্পিউটার ল্যাব' },
+    { time: '১২:৪৫ PM - ০১:৩০ PM', subject: 'আইসিটি ও রোবোটিক্স', teacher: 'কাজী মাহমুদুল হাসান', room: 'কম্পিউটার ল্যাব' },
   ];
 
   const assignments = [
-    { id: 1, subject: 'পদার্থবিজ্ঞান', title: 'গতির সমীকরণ ও নিউটনের সূত্রসমূহের ব্যবহারিক প্রয়োগ', dueDate: '২৮ জুলাই ২০২৬', status: 'জমা দেওয়া হয়েছে', marks: '১০/১০' },
-    { id: 2, subject: 'উচ্চতর গণিত', title: 'ত্রিকোণমিতি ও স্থানাংক জ্যামিতির সমীকরণ সমাধান', dueDate: '৩০ জুলাই ২০২৬', status: 'পেন্ডিং', marks: '-' },
-    { id: 3, subject: 'আইসিটি', title: 'HTML5 ও CSS3 দিয়ে তৈরি ওয়েবসাইট প্রজেক্ট জমা', dueDate: '০২ আগস্ট ২০২৬', status: 'পেন্ডিং', marks: '-' },
+    { id: 1, subject: 'পদার্থবিজ্ঞান', title: 'গতির সমীকরণ ও নিউটনের সূত্রসমূহের ব্যবহারিক প্রয়োগ', dueDate: '২৮ জুলাই ২০২৬', status: 'জমা দেওয়া হয়েছে' },
+    { id: 2, subject: 'উচ্চতর গণিত', title: 'ত্রিকোণমিতি ও স্থানাংক জ্যামিতির সমীকরণ সমাধান', dueDate: '৩০ জুলাই ২০২৬', status: 'পেন্ডিং' },
+    { id: 3, subject: 'আইসিটি', title: 'HTML5 ও CSS3 দিয়ে তৈরি ওয়েবসাইট প্রজেক্ট জমা', dueDate: '০২ আগস্ট ২০২৬', status: 'পেন্ডিং' },
   ];
 
   return (
     <div className="py-10 bg-slate-50 min-h-[85vh]">
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
-        {/* Top Student Header Card */}
+        {/* Top Student Header Card - Real Database Info */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white font-extrabold flex items-center justify-center text-xl shadow-md">
-              ১০১
+              {studentUser?.details?.studentId || '১০১'}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
-                  নিবন্ধিত স্টুডেন্ট পোর্টাল
+                  নিবন্ধিত স্টুডেন্ট পোর্টাল (Live MongoDB Data)
                 </span>
                 <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                  GPA {studentInfo.gpa}
+                  GPA 5.00 (A+)
                 </span>
               </div>
-              <h1 className="text-2xl font-bold text-slate-900 mt-1">{studentInfo.name}</h1>
+              <h1 className="text-2xl font-bold text-slate-900 mt-1">
+                {studentUser?.name || 'শিক্ষার্থীর নাম লোড হচ্ছে...'}
+              </h1>
               <p className="text-xs text-slate-500">
-                {studentInfo.className} ({studentInfo.section}) | রোল: {studentInfo.roll} | রেজি: {studentInfo.regNo}
+                {studentUser?.details?.class || '১০'}ম শ্রেণী ({studentUser?.details?.section || 'ক'} শাখা) | 
+                স্টুডেন্ট আইডি/রোল: {studentUser?.details?.studentId || '১০১'} | ইমেইল: {studentUser?.email}
               </p>
+              {studentUser?.details?.assignedTeacherName && (
+                <p className="text-xs text-blue-600 font-bold mt-1">
+                  👨‍🏫 নির্ধারিত শ্রেণী শিক্ষক: {studentUser.details.assignedTeacherName}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-bold">
             <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-200">
               <span className="text-slate-500 block">উপস্থিতির হার</span>
-              <span className="text-emerald-600 text-base font-extrabold">{studentInfo.attendanceRate}</span>
+              <span className="text-emerald-600 text-base font-extrabold">{attendanceRate}</span>
             </div>
-            <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-200">
-              <span className="text-slate-500 block">বকেয়া ফি</span>
-              <span className="text-blue-600 text-base font-extrabold">{studentInfo.dueFees}</span>
-            </div>
+            <button
+              onClick={fetchStudentData}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold p-3 rounded-2xl transition"
+              title="রিফ্রেশ করুন"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
 
         {/* Navigation Tabs Bar */}
         <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto no-scrollbar">
           {[
-            { id: 'overview', label: 'ওভারভিউ ও ড্যাশবোর্ড', icon: Sparkles },
-            { id: 'routine', label: 'আজকের ক্লাস রুটিন', icon: Clock },
-            { id: 'assignments', label: `হোমওয়ার্ক ও এসাইনমেন্ট (${assignments.length})`, icon: BookOpen },
-            { id: 'result', label: 'পরীক্ষার মার্কশীট ও ফলাফল', icon: Award },
-            { id: 'fees', label: 'ফি ও পেমেন্ট রসিদ', icon: CreditCard },
+            { id: 'overview', label: '✨ ওভারভিউ ও সামারি', icon: Sparkles },
+            { id: 'attendance', label: `📅 ক্যালেন্ডার হাজিরা হিস্টোরি (${attendanceHistory.length} দিন)`, icon: CalendarIcon },
+            { id: 'routine', label: '⏰ আজকের ক্লাস রুটিন', icon: Clock },
+            { id: 'assignments', label: `📝 হোমওয়ার্ক ও এসাইনমেন্ট (${assignments.length})`, icon: BookOpen },
+            { id: 'result', label: '🏆 পরীক্ষার মার্কশীট ও ফলাফল', icon: Award },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -122,7 +183,7 @@ export default function StudentDashboard() {
             <div className="lg:col-span-8 space-y-6">
               <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-600" /> আজকের সমসাময়িক ক্লাস সিডিউল
+                  <Clock className="w-5 h-5 text-blue-600" /> আজকের ক্লাসের সময়সূচি
                 </h3>
                 <div className="divide-y divide-slate-100 text-xs">
                   {dailyRoutine.slice(0, 4).map((r, idx) => (
@@ -144,11 +205,11 @@ export default function StudentDashboard() {
                 <div className="space-y-3 text-xs">
                   <div className="p-3 bg-blue-50/60 rounded-2xl border border-blue-100">
                     <p className="font-bold text-blue-900">অর্ধ-বার্ষিকী পরীক্ষা ২০২৬</p>
-                    <p className="text-blue-700 mt-1">আগামী ১৫ আগস্ট থেকে শুরু হবে। রুটিন প্রকাশিত হয়েছে।</p>
+                    <p className="text-blue-700 mt-1">আগামী ১৫ জুন ২০২৬ থেকে শুরু হবে। বিস্তারিত সময়সূচি প্রকাশিত হয়েছে।</p>
                   </div>
                   <div className="p-3 bg-emerald-50/60 rounded-2xl border border-emerald-100">
-                    <p className="font-bold text-emerald-900">উপস্থিতি স্ট্যাটাস</p>
-                    <p className="text-emerald-700 mt-1">চলতি মাসে ১৮ কর্মদিবসের মধ্যে ১৮ দিনই উপস্থিত।</p>
+                    <p className="font-bold text-emerald-900">ডিজিটাল হাজিরা রেকর্ডিং</p>
+                    <p className="text-emerald-700 mt-1">মোট {totalClasses} দিন হাজিরার মধ্যে আপনি {presentClasses} দিন উপস্থিত ছিলেন।</p>
                   </div>
                 </div>
               </div>
@@ -156,7 +217,58 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* TAB 2: ROUTINE */}
+        {/* TAB 2: CALENDAR ATTENDANCE HISTORY */}
+        {activeTab === 'attendance' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">📅 আপনার ক্যালেন্ডার ভিত্তিক ডিজিটাল হাজিরা ইতিহাস</h3>
+              <p className="text-xs text-slate-500">ডাটাবেজে শিক্ষক কর্তৃক এন্ট্রি করা আপনার প্রতিদিনের ডিজিটাল হাজিরা রেকর্ড</p>
+            </div>
+
+            {attendanceHistory.length === 0 ? (
+              <div className="py-12 text-center text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                ডাটাবেজে আপনার জন্য এখনো কোনো ক্যালেন্ডার হাজিরা রেকর্ড এন্ট্রি করা হয়নি। শিক্ষক হাজিরা এন্ট্রি করলে এখানে সরাসরি দেখতে পাবেন।
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase bg-slate-50">
+                      <th className="py-3 px-4">তারিখ (YYYY-MM-DD)</th>
+                      <th className="py-3 px-4">শ্রেণী ও শাখা</th>
+                      <th className="py-3 px-4">দায়িত্বপ্রাপ্ত শিক্ষক</th>
+                      <th className="py-3 px-4">হাজিরা স্ট্যাটাস</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm">
+                    {attendanceHistory.map((attDoc) => {
+                      const rec = attDoc.records?.find((r: any) => r.studentId === studentUser?._id);
+                      const status = rec?.status || 'present';
+                      return (
+                        <tr key={attDoc._id} className="hover:bg-slate-50">
+                          <td className="py-3.5 px-4 font-bold text-blue-600 text-xs">{attDoc.date}</td>
+                          <td className="py-3.5 px-4 font-bold text-slate-900 text-xs">{attDoc.class}ম (শাখা {attDoc.section})</td>
+                          <td className="py-3.5 px-4 text-xs text-slate-600">{attDoc.teacherName || 'শ্রেণী শিক্ষক'}</td>
+                          <td className="py-3.5 px-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              status === 'present' ? 'bg-emerald-100 text-emerald-800' :
+                              status === 'late' ? 'bg-amber-100 text-amber-800' :
+                              'bg-rose-100 text-rose-800'
+                            }`}>
+                              {status === 'present' ? 'উপস্থিত' : status === 'late' ? 'দেরিতে' : 'অনুপস্থিত'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: ROUTINE */}
         {activeTab === 'routine' && (
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
             <h3 className="text-lg font-bold text-slate-900">১০ম শ্রেণী - ক শাখা দৈনিক ক্লাস রুটিন</h3>
@@ -185,7 +297,7 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* TAB 3: ASSIGNMENTS */}
+        {/* TAB 4: ASSIGNMENTS */}
         {activeTab === 'assignments' && (
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
             <h3 className="text-lg font-bold text-slate-900">চলতি হোমওয়ার্ক ও প্রজেক্ট এসাইনমেন্ট</h3>
@@ -203,14 +315,6 @@ export default function StudentDashboard() {
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${item.status === 'জমা দেওয়া হয়েছে' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                       {item.status}
                     </span>
-                    {item.status === 'পেন্ডিং' && (
-                      <button 
-                        onClick={() => toast.success('এসাইনমেন্ট ফাইল আপলোড সফল হয়েছে!')}
-                        className="px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center gap-1"
-                      >
-                        <Upload className="w-3.5 h-3.5" /> ফাইল জমা দিন
-                      </button>
-                    )}
                   </div>
                 </div>
               ))}
@@ -218,7 +322,7 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* TAB 4: RESULT */}
+        {/* TAB 5: RESULT */}
         {activeTab === 'result' && (
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
             <div className="flex items-center justify-between">
@@ -229,7 +333,7 @@ export default function StudentDashboard() {
             </div>
             <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-4">
               <div className="flex justify-between font-bold text-sm border-b pb-3">
-                <span>শিক্ষার্থীর নাম: {studentInfo.name}</span>
+                <span>শিক্ষার্থীর নাম: {studentUser?.name || 'রাফসান আহমেদ'}</span>
                 <span className="text-blue-600">মেধা স্থান: ১ম (Class Rank: 1st)</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center font-bold">

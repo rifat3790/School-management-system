@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { 
@@ -20,8 +20,9 @@ import {
   Sparkles
 } from 'lucide-react';
 
-export default function RegisterPage() {
+function RegisterFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,6 +37,18 @@ export default function RegisterPage() {
     designation: '',
     childStudentId: ''
   });
+
+  useEffect(() => {
+    const queryEmail = searchParams.get('email');
+    const queryName = searchParams.get('name');
+    if (queryEmail || queryName) {
+      setFormData(prev => ({
+        ...prev,
+        email: queryEmail || prev.email,
+        name: queryName || prev.name
+      }));
+    }
+  }, [searchParams]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -374,5 +387,17 @@ export default function RegisterPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-slate-500 font-bold text-sm">লোড হচ্ছে...</div>
+      </div>
+    }>
+      <RegisterFormContent />
+    </Suspense>
   );
 }

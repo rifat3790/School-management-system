@@ -21,6 +21,9 @@ export interface IUser extends Document {
     subject?: string;
     designation?: string;
     childStudentId?: string;
+    assignedTeacherId?: string;
+    assignedTeacherName?: string;
+    assignedStudentIds?: string[];
   };
   createdAt: Date;
   updatedAt: Date;
@@ -57,6 +60,9 @@ const UserSchema: Schema = new Schema(
       subject: String,
       designation: String,
       childStudentId: String,
+      assignedTeacherId: String,
+      assignedTeacherName: String,
+      assignedStudentIds: [String],
     },
   },
   { timestamps: true }

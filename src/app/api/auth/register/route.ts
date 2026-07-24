@@ -21,9 +21,25 @@ export async function POST(req: NextRequest) {
     // Check if user already exists
     const existingUser = await User.findOne({ email: cleanEmail });
     if (existingUser) {
+      // If user already exists (e.g. created via Google Auth or updating pending profile)
+      existingUser.name = name || existingUser.name;
+      existingUser.phone = phone || existingUser.phone;
+      existingUser.requestedRole = requestedRole;
+      if (details) {
+        existingUser.details = { ...existingUser.details, ...details };
+      }
+      if (uid) existingUser.uid = uid;
+      await existingUser.save();
+
       return NextResponse.json(
-        { success: false, message: 'এই ইমেইল দিয়ে ইতিপূর্বে একাউন্ট খোলা হয়েছে!' },
-        { status: 400 }
+        {
+          success: true,
+          message: existingUser.status === 'approved' 
+            ? 'আপনার অ্যাকাউন্টের তথ্য সফলভাবে আপডেট হয়েছে!' 
+            : 'নিবন্ধন আবেদন সফলভাবে আপডেট হয়েছে! সুপার এডমিনের অনুমোদনের পর আপনি লগইন করতে পারবেন।',
+          user: existingUser,
+        },
+        { status: 200 }
       );
     }
 
