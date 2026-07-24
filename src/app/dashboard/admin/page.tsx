@@ -402,6 +402,74 @@ export default function AdminDashboard() {
     } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
   };
 
+  // News Handlers
+  const handleCreateNews = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newNews.title || !newNews.summary) {
+      toast.error('সংবাদের শিরোনাম ও সারসংক্ষেপ প্রদান করুন');
+      return;
+    }
+    try {
+      const res = await fetch('/api/news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newNews),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('নতুন সংবাদ সফলভাবে প্রকাশ করা হয়েছে!');
+        setNewNews({ title: '', category: 'সংবাদ', date: new Date().toLocaleDateString('bn-BD'), summary: '', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80' });
+        fetchAllData();
+      }
+    } catch (err) { toast.error('সংবাদ প্রকাশ করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleDeleteNews = async (id: string) => {
+    if (!confirm('আপনি কি সত্যিই এই সংবাদটি মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/news?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('সংবাদ মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
+  };
+
+  // Gallery Handlers
+  const handleCreateGallery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGallery.title || !newGallery.url) {
+      toast.error('ছবি টাইটেল ও URL প্রদান করুন');
+      return;
+    }
+    try {
+      const res = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newGallery),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('গ্যালারিতে নতুন ছবি যুক্ত হয়েছে!');
+        setNewGallery({ title: '', category: 'ক্যাম্পাস', url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&q=80' });
+        fetchAllData();
+      }
+    } catch (err) { toast.error('ছবি যুক্ত করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleDeleteGallery = async (id: string) => {
+    if (!confirm('আপনি কি সত্যিই এই ছবিটি গ্যালারি থেকে মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/gallery?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('ছবি মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
+  };
+
   const handleAssignStudentToTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignTeacherId || !assignStudentId) {
@@ -514,6 +582,8 @@ export default function AdminDashboard() {
             { id: 'about', label: '📜 সম্পর্কে ও বাণী এডিটর', icon: HeartHandshake },
             { id: 'notices', label: `🔔 নোটিশ বোর্ড (${notices.length})`, icon: Bell },
             { id: 'teachers', label: `👨‍🏫 শিক্ষক প্যানেল (${teachers.length})`, icon: Users },
+            { id: 'news', label: `📰 ক্যাম্পাস নিউজ (${newsList.length})`, icon: Newspaper },
+            { id: 'gallery', label: `🖼️ ফটো গ্যালারি (${galleryList.length})`, icon: ImageIcon },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1332,6 +1402,209 @@ export default function AdminDashboard() {
                       title="মুছুন"
                     >
                       <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: NEWS MANAGER */}
+        {activeTab === 'news' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">📰 ক্যাম্পাস নিউজ ম্যানেজার (News CRUD)</h3>
+              <p className="text-xs text-slate-500">নতুন খবর বা ইভেন্ট রিলেটেড খবর প্রকাশ ও পরিচালনা করুন</p>
+            </div>
+
+            {/* Create News Form */}
+            <form onSubmit={handleCreateNews} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-blue-600" /> নতুন সংবাদ প্রকাশ করুন
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">সংবাদের শিরোনাম</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: বার্ষিক ক্রীড়া প্রতিযোগিতা ২০২৬ সফলভাবে সম্পন্ন"
+                    value={newNews.title}
+                    onChange={(e) => setNewNews({ ...newNews, title: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ক্যাটাগরি</label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: ইভেন্ট / অ্যাকাডেমিক"
+                    value={newNews.category}
+                    onChange={(e) => setNewNews({ ...newNews, category: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">সংবাদের ছবি URL</label>
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    value={newNews.image}
+                    onChange={(e) => setNewNews({ ...newNews, image: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">তারিখ</label>
+                  <input
+                    type="text"
+                    value={newNews.date}
+                    onChange={(e) => setNewNews({ ...newNews, date: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div className="md:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">সংবাদের বিস্তারিত সারসংক্ষেপ</label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="সংবাদের সম্পূর্ণ বিবরণ লিখুন..."
+                    value={newNews.summary}
+                    onChange={(e) => setNewNews({ ...newNews, summary: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
+                >
+                  <Newspaper className="w-4 h-4" /> খবর প্রকাশ করুন
+                </button>
+              </div>
+            </form>
+
+            {/* Existing News Grid */}
+            <div className="space-y-3 pt-2">
+              <h4 className="font-bold text-sm text-slate-900">প্রকাশিত ক্যাম্পাস নিউজ ({newsList.length})</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {newsList.map((item: any) => (
+                  <div key={item._id || item.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-start gap-4 justify-between">
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={item.image || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&q=80'}
+                        alt={item.title}
+                        className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
+                      />
+                      <div>
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold text-[10px]">{item.category}</span>
+                        <h5 className="font-bold text-slate-900 text-sm mt-1">{item.title}</h5>
+                        <p className="text-xs text-slate-500 line-clamp-2">{item.summary}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleDeleteNews(item._id || item.id)}
+                      className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: GALLERY MANAGER */}
+        {activeTab === 'gallery' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">🖼️ ক্যাম্পাস ফটো গ্যালারি এডিটর (Gallery CRUD)</h3>
+              <p className="text-xs text-slate-500">ক্যাম্পাস, ল্যাব ও ইভেন্টের হাই-রেজুল্যুশন ফটো আপলোড ও পরিচালনা করুন</p>
+            </div>
+
+            {/* Create Gallery Form */}
+            <form onSubmit={handleCreateGallery} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-blue-600" /> নতুন ছবি গ্যালারিতে যোগ করুন
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি বা ইভেন্টের ক্যাপশন</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: রোবোটিক্স ল্যাব সেশন"
+                    value={newGallery.title}
+                    onChange={(e) => setNewGallery({ ...newGallery, title: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ক্যাটাগরি</label>
+                  <select
+                    value={newGallery.category}
+                    onChange={(e) => setNewGallery({ ...newGallery, category: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold"
+                  >
+                    <option value="ক্যাম্পাস">ক্যাম্পাস</option>
+                    <option value="ল্যাব">ল্যাব</option>
+                    <option value="স্পোর্টস">স্পোর্টস</option>
+                    <option value="অনুষ্ঠান">অনুষ্ঠান</option>
+                  </select>
+                </div>
+
+                <div className="md:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি URL</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="https://..."
+                    value={newGallery.url}
+                    onChange={(e) => setNewGallery({ ...newGallery, url: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
+                >
+                  <ImageIcon className="w-4 h-4" /> ছবি সেভ করুন
+                </button>
+              </div>
+            </form>
+
+            {/* Existing Gallery Grid */}
+            <div className="space-y-3 pt-2">
+              <h4 className="font-bold text-sm text-slate-900">গ্যালারির ছবিসমূহ ({galleryList.length})</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {galleryList.map((g: any) => (
+                  <div key={g._id || g.id} className="relative rounded-2xl overflow-hidden border border-slate-200 group bg-slate-50">
+                    <img src={g.url} alt={g.title} className="w-full h-40 object-cover group-hover:scale-105 transition duration-500" />
+                    <div className="p-3 bg-white space-y-1">
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{g.category}</span>
+                      <h5 className="font-bold text-slate-900 text-xs truncate">{g.title}</h5>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteGallery(g._id || g.id)}
+                      className="absolute top-2 right-2 p-1.5 bg-rose-600 text-white rounded-lg shadow-md hover:bg-rose-700 transition"
+                      title="মুছুন"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}

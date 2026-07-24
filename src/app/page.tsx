@@ -32,6 +32,28 @@ export default function Home() {
   const toast = useToast();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [faqSearch, setFaqSearch] = useState('');
+  const [notices, setNotices] = useState<any[]>(NOTICES_LIST);
+  const [newsList, setNewsList] = useState<any[]>(NEWS_LIST);
+
+  React.useEffect(() => {
+    fetch('/api/notices')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.notices && data.notices.length > 0) {
+          setNotices(data.notices);
+        }
+      })
+      .catch(err => console.error(err));
+
+    fetch('/api/news')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.news && data.news.length > 0) {
+          setNewsList(data.news);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   const filteredFaqs = FAQ_LIST.filter(
     (faq) =>
@@ -55,13 +77,10 @@ export default function Home() {
   return (
     <div className="space-y-0 bg-slate-50 min-h-screen">
       
-      {/* 1. Hero Section */}
+      {/* 1. Hero Section (Includes Stats Bar) */}
       <HeroSection />
 
-      {/* 2. Stat Counter Animation */}
-      <StatsCounter />
-
-      {/* 3. Messages from Principal & Chairman */}
+      {/* 2. Messages from Principal & Chairman */}
       <PrincipalMessage />
 
       {/* 4. 6 Key Features */}
@@ -158,16 +177,16 @@ export default function Home() {
               </div>
 
               <div className="space-y-3">
-                {NOTICES_LIST.slice(0, 4).map((notice) => (
+                {notices.slice(0, 4).map((notice: any) => (
                   <div
-                    key={notice.id}
+                    key={notice._id || notice.id}
                     className="bg-white p-4 rounded-2xl border border-slate-200 hover:shadow-md transition flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        {notice.isPinned && (
+                        {(notice.isPinned || notice.isImportant) && (
                           <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-                            পিন্ড নোটিশ
+                            জরুরি নোটিশ
                           </span>
                         )}
                         <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
@@ -218,9 +237,9 @@ export default function Home() {
               </div>
 
               <div className="space-y-4">
-                {NEWS_LIST.slice(0, 2).map((item) => (
-                  <div key={item.id} className="bg-white rounded-2xl p-4 border border-slate-200 flex gap-4">
-                    <img src={item.image} alt={item.title} className="w-24 h-24 rounded-xl object-cover shrink-0" />
+                {newsList.slice(0, 2).map((item: any) => (
+                  <div key={item._id || item.id} className="bg-white rounded-2xl p-4 border border-slate-200 flex gap-4">
+                    <img src={item.image || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80'} alt={item.title} className="w-24 h-24 rounded-xl object-cover shrink-0" />
                     <div className="space-y-1">
                       <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                         {item.category}
