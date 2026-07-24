@@ -94,6 +94,8 @@ export default function AdminDashboard() {
     schoolName: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
     slogan: 'শিক্ষাই শক্তি, প্রযুক্তিই ভবিষ্যৎ',
     subSlogan: 'জ্ঞান • শৃঙ্খলা • সাফল্য',
+    eiin: '১৩০৯৫৪',
+    code: '৪৫২০',
     heroTagline: 'শিক্ষাই শক্তি',
     heroTitleLine1: 'প্রযুক্তিই ভবিষ্যৎ',
     heroTitleLine2: 'জ্ঞান • শৃঙ্খলা • সাফল্য',
@@ -119,7 +121,7 @@ export default function AdminDashboard() {
   });
 
   // Forms
-  const [newNotice, setNewNotice] = useState({ title: '', category: 'একাডেমিক', date: new Date().toLocaleDateString('bn-BD'), content: '', isImportant: false });
+  const [newNotice, setNewNotice] = useState({ title: '', category: 'একাডেমিক', date: new Date().toLocaleDateString('bn-BD'), pdfUrl: '', content: '', isImportant: false });
   const [newTeacher, setNewTeacher] = useState({ name: '', designation: 'সহকারী শিক্ষক', subject: '', qualification: 'এম.এ, বি.এড', experience: '৫ বছর', email: '', phone: '', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&q=80' });
   const [newNews, setNewNews] = useState({ title: '', category: 'সংবাদ', date: new Date().toLocaleDateString('bn-BD'), summary: '', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80' });
   const [newGallery, setNewGallery] = useState({ title: '', category: 'ক্যাম্পাস', url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&q=80' });
@@ -146,6 +148,8 @@ export default function AdminDashboard() {
           schoolName: s.schoolName || 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
           slogan: s.slogan || 'শিক্ষাই শক্তি, প্রযুক্তিই ভবিষ্যৎ',
           subSlogan: s.subSlogan || 'জ্ঞান • শৃঙ্খলা • সাফল্য',
+          eiin: s.eiin || '১৩০৯৫৪',
+          code: s.code || '৪৫২০',
           heroTagline: s.heroTagline || '',
           heroTitleLine1: s.heroTitleLine1 || '',
           heroTitleLine2: s.heroTitleLine2 || '',
@@ -328,6 +332,74 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) toast.success('ডাটাবেজে সকল সেটিংস ও কন্টেন্ট সেভ হয়েছে!');
     } catch (err) { toast.error('আপডেট করতে সমস্যা হয়েছে!'); }
+  };
+
+  // Notice Handlers
+  const handleCreateNotice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newNotice.title || !newNotice.content) {
+      toast.error('নোটিশ শিরোনাম ও বিবরণ দেওয়া আবশ্যক');
+      return;
+    }
+    try {
+      const res = await fetch('/api/notices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newNotice),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('নতুন নোটিশ সফলভাবে প্রকাশ করা হয়েছে!');
+        setNewNotice({ title: '', category: 'একাডেমিক', date: new Date().toLocaleDateString('bn-BD'), pdfUrl: '', content: '', isImportant: false });
+        fetchAllData();
+      }
+    } catch (err) { toast.error('নোটিশ প্রকাশ করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleDeleteNotice = async (id: string) => {
+    if (!confirm('আপনি কি সত্যিই এই নোটিশটি মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/notices?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('নোটিশ ডাটাবেজ থেকে মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
+  };
+
+  // Teacher Handlers
+  const handleCreateTeacher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTeacher.name || !newTeacher.subject) {
+      toast.error('শিক্ষকের নাম ও বিষয় প্রদান করুন');
+      return;
+    }
+    try {
+      const res = await fetch('/api/teachers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTeacher),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('নতুন শিক্ষক সফলভাবে যুক্ত করা হয়েছে!');
+        setNewTeacher({ name: '', designation: 'সহকারী শিক্ষক', subject: '', qualification: 'এম.এ, বি.এড', experience: '৫ বছর', email: '', phone: '', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&q=80' });
+        fetchAllData();
+      }
+    } catch (err) { toast.error('শিক্ষক যুক্ত করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleDeleteTeacher = async (id: string) => {
+    if (!confirm('আপনি কি সত্যিই এই শিক্ষকের তথ্য মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/teachers?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('শিক্ষকের তথ্য মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
   };
 
   const handleAssignStudentToTeacher = async (e: React.FormEvent) => {
@@ -896,6 +968,376 @@ export default function AdminDashboard() {
               <Save className="w-4 h-4" /> পরিবর্তন সেভ করুন
             </button>
           </form>
+        )}
+
+        {/* TAB: ABOUT & LEADERSHIP MESSAGES EDITOR */}
+        {activeTab === 'about' && (
+          <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">📜 প্রতিষ্ঠানের ইতিহাস ও পরিচালনা পর্ষদের বাণী এডিটর</h3>
+              <p className="text-xs text-slate-500">প্রধান শিক্ষক ও সভাপতির বাণী এবং ইতিহাস সরাসরি পরিবর্তন করুন (লাইভ ডাটাবেজ আপডেট)</p>
+            </div>
+
+            {/* Principal Info */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-blue-700">👨‍🏫 প্রধান শিক্ষকের বাণী ও তথ্য</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">প্রধান শিক্ষকের নাম</label>
+                  <input type="text" value={siteSettings.principalName} onChange={(e) => setSiteSettings({ ...siteSettings, principalName: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">পদবী (Title)</label>
+                  <input type="text" value={siteSettings.principalTitle} onChange={(e) => setSiteSettings({ ...siteSettings, principalTitle: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি URL</label>
+                  <input type="text" value={siteSettings.principalImage} onChange={(e) => setSiteSettings({ ...siteSettings, principalImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div className="md:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">প্রধান শিক্ষকের মূল বাণী</label>
+                  <textarea rows={3} value={siteSettings.principalMessage} onChange={(e) => setSiteSettings({ ...siteSettings, principalMessage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+              </div>
+            </div>
+
+            {/* Chairman Info */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-sky-700">🏛️ সভাপতি ও প্রতিষ্ঠানের তথ্য</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">প্রতিষ্ঠাতা ও সভাপতির নাম</label>
+                  <input type="text" value={siteSettings.chairmanName} onChange={(e) => setSiteSettings({ ...siteSettings, chairmanName: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">পদবী</label>
+                  <input type="text" value={siteSettings.chairmanTitle} onChange={(e) => setSiteSettings({ ...siteSettings, chairmanTitle: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি URL</label>
+                  <input type="text" value={siteSettings.chairmanImage} onChange={(e) => setSiteSettings({ ...siteSettings, chairmanImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div className="md:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 mb-1"> সভাপতির মূল বাণী</label>
+                  <textarea rows={3} value={siteSettings.chairmanMessage} onChange={(e) => setSiteSettings({ ...siteSettings, chairmanMessage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+              </div>
+            </div>
+
+            {/* History & Mission */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-emerald-700">📜 স্কুলের ইতিহাস, মিশন ও ভিশন</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ইআইআইএন (EIIN)</label>
+                  <input type="text" value={siteSettings.eiin} onChange={(e) => setSiteSettings({ ...siteSettings, eiin: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">স্কুল কোড</label>
+                  <input type="text" value={siteSettings.code} onChange={(e) => setSiteSettings({ ...siteSettings, code: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">প্রতিষ্ঠানের ইতিহাস</label>
+                  <textarea rows={3} value={siteSettings.aboutHistory} onChange={(e) => setSiteSettings({ ...siteSettings, aboutHistory: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">মিশন (Mission)</label>
+                  <textarea rows={2} value={siteSettings.missionText} onChange={(e) => setSiteSettings({ ...siteSettings, missionText: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ভিশন (Vision)</label>
+                  <textarea rows={2} value={siteSettings.visionText} onChange={(e) => setSiteSettings({ ...siteSettings, visionText: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" className="py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-2">
+              <Save className="w-4 h-4" /> সকল তথ্য সেভ করুন
+            </button>
+          </form>
+        )}
+
+        {/* TAB: NOTICE BOARD MANAGER */}
+        {activeTab === 'notices' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">🔔 লাইভ নোটিশ বোর্ড ম্যানেজার (Notices CRUD)</h3>
+              <p className="text-xs text-slate-500">নতুন একাডেমিক বা ইভেন্ট নোটিশ প্রকাশ করুন এবং পূর্বের নোটিশগুলো পরিচালনা করুন</p>
+            </div>
+
+            {/* Create Notice Form */}
+            <form onSubmit={handleCreateNotice} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-blue-600" /> নতুন নোটিশ যোগ করুন
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">নোটিশের শিরোনাম</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: অর্ধ-বার্ষিকী পরীক্ষা ২০২৬ এর চূড়ান্ত সময়সূচি প্রকাশ"
+                    value={newNotice.title}
+                    onChange={(e) => setNewNotice({ ...newNotice, title: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ক্যাটাগরি</label>
+                  <select
+                    value={newNotice.category}
+                    onChange={(e) => setNewNotice({ ...newNotice, category: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold"
+                  >
+                    <option value="একাডেমিক">একাডেমিক</option>
+                    <option value="ভর্তি">ভর্তি</option>
+                    <option value="পরীক্ষা">পরীক্ষা</option>
+                    <option value="ছুটি">ছুটি</option>
+                    <option value="জরুরি">জরুরি</option>
+                    <option value="ইভেন্ট">ইভেন্ট</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">তারিখ</label>
+                  <input
+                    type="text"
+                    value={newNotice.date}
+                    onChange={(e) => setNewNotice({ ...newNotice, date: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">পিডিএফ/সংযুক্তি URL (ঐচ্ছিক)</label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/notice.pdf"
+                    value={newNotice.pdfUrl || ''}
+                    onChange={(e) => setNewNotice({ ...newNotice, pdfUrl: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div className="md:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">নোটিশের বিবরণ</label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="নোটিশের বিস্তারিত বিবরণ লিখুন..."
+                    value={newNotice.content}
+                    onChange={(e) => setNewNotice({ ...newNotice, content: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newNotice.isImportant}
+                    onChange={(e) => setNewNotice({ ...newNotice, isImportant: e.target.checked })}
+                    className="w-4 h-4 rounded text-blue-600"
+                  />
+                  <span className="text-xs font-bold text-rose-600">জরুরি নোটিশ ব্যাজ (Highlight Badge)</span>
+                </label>
+
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
+                >
+                  <Bell className="w-4 h-4" /> নোটিশ প্রকাশ করুন
+                </button>
+              </div>
+            </form>
+
+            {/* Existing Notices List */}
+            <div className="space-y-3 pt-2">
+              <h4 className="font-bold text-sm text-slate-900">প্রকাশিত নোটিশসমূহ ({notices.length})</h4>
+              {notices.length === 0 ? (
+                <div className="py-8 text-center text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-xs">
+                  কোন নোটিশ পাওয়া যায়নি!
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {notices.map((n: any) => (
+                    <div key={n._id || n.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full font-bold text-[10px]">{n.category}</span>
+                          {n.isImportant && <span className="px-2.5 py-0.5 bg-rose-100 text-rose-800 rounded-full font-bold text-[10px] animate-pulse">জরুরি</span>}
+                          <span className="text-[11px] text-slate-400">• {n.date}</span>
+                        </div>
+                        <h5 className="font-bold text-slate-900 text-sm">{n.title}</h5>
+                        <p className="text-xs text-slate-600 line-clamp-2">{n.content}</p>
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteNotice(n._id || n.id)}
+                        className="p-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl transition flex items-center gap-1 text-xs font-bold shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" /> মুছুন
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: TEACHERS PANEL MANAGER */}
+        {activeTab === 'teachers' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">👨‍🏫 শিক্ষক প্যানেল কন্ট্রোল (Faculty Manager)</h3>
+              <p className="text-xs text-slate-500">প্রতিষ্ঠানের সকল শিক্ষকের প্রোফাইল ও বিষয় সম্পর্কিত তথ্য ডাটাবেজে যুক্ত বা এডিট করুন</p>
+            </div>
+
+            {/* Create Teacher Form */}
+            <form onSubmit={handleCreateTeacher} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-blue-600" /> নতুন শিক্ষক যুক্ত করুন
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">শিক্ষকের নাম</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: ড. তাহমিদা খানম"
+                    value={newTeacher.name}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">পদবী (Designation)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: সিনিয়র শিক্ষক"
+                    value={newTeacher.designation}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, designation: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">বিষয় (Subject)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: পদার্থবিজ্ঞান"
+                    value={newTeacher.subject}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, subject: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">শিক্ষাগত যোগ্যতা</label>
+                  <input
+                    type="text"
+                    placeholder="এম.এসসি (পদার্থ), বি.এড"
+                    value={newTeacher.qualification}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, qualification: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">অভিজ্ঞতা</label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: ৮+ বছর"
+                    value={newTeacher.experience}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, experience: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি URL</label>
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    value={newTeacher.image}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, image: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ইমেইল</label>
+                  <input
+                    type="email"
+                    placeholder="teacher@school.edu.bd"
+                    value={newTeacher.email}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ফোন নম্বর</label>
+                  <input
+                    type="text"
+                    placeholder="+৮৮০ ১৭০০-০০০০০"
+                    value={newTeacher.phone}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, phone: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
+                >
+                  <UserPlus className="w-4 h-4" /> শিক্ষক যোগ করুন
+                </button>
+              </div>
+            </form>
+
+            {/* Existing Teachers Grid */}
+            <div className="space-y-3 pt-2">
+              <h4 className="font-bold text-sm text-slate-900">শিক্ষক প্যানেলের তালিকা ({teachers.length})</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {teachers.map((t: any) => (
+                  <div key={t._id || t.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-start gap-4 justify-between">
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={t.image || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80'}
+                        alt={t.name}
+                        className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                      />
+                      <div>
+                        <h5 className="font-bold text-slate-900 text-sm">{t.name}</h5>
+                        <p className="text-xs font-bold text-blue-600">{t.designation}</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">বিষয়: {t.subject}</p>
+                        <p className="text-[10px] text-slate-400">{t.qualification}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleDeleteTeacher(t._id || t.id)}
+                      className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition shrink-0"
+                      title="মুছুন"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
 
       </div>

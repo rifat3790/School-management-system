@@ -8,9 +8,11 @@ export default function PrincipalMessage() {
     principalName: 'প্রফেসর মোহাম্মদ আব্দুর রশীদ',
     principalTitle: 'প্রধান শিক্ষক',
     principalMessage: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলে আমরা প্রতিটি শিক্ষার্থীর ভেতরের সুপ্ত মেধা ও সম্ভাবনা জাগ্রত করতে প্রতিশ্রুতিবদ্ধ। আমাদের লক্ষ্য শুধুমাত্র পুঁথিগত বিদ্যা নয়, বরং আধুনিক বিজ্ঞান ও প্রযুক্তি নির্ভর শিক্ষা প্রদানের মাধ্যমে শিক্ষার্থীদের বিশ্বমানের নাগরিক হিসেবে গড়ে তোলা।',
+    principalImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&q=80',
     chairmanName: 'ডাঃ মোজাম্মেল হক',
     chairmanTitle: 'প্রতিষ্ঠাতা ও সভাপতি',
-    chairmanMessage: 'একটি আলোকিত সমাজ গঠনে মানসম্মত আধুনিক শিক্ষার কোনো বিকল্প নেই। আমাদের স্কুলটি ১৯৯৮ সাল থেকে অত্যন্ত নিষ্ঠা ও সুনামের সাথে শেরপুর জেলার শিক্ষাঙ্গনে অন্যতম সেরা স্থান ধরে রেখেছে।'
+    chairmanMessage: 'একটি আলোকিত সমাজ গঠনে মানসম্মত আধুনিক শিক্ষার কোনো বিকল্প নেই। আমাদের স্কুলটি ১৯৯৮ সাল থেকে অত্যন্ত নিষ্ঠা ও সুনামের সাথে শেরপুর জেলার শিক্ষাঙ্গনে অন্যতম সেরা স্থান ধরে রেখেছে।',
+    chairmanImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80'
   });
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function PrincipalMessage() {
             <div className="space-y-4 relative z-10">
               <div className="flex items-center gap-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&q=80" 
+                  src={settings.principalImage || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&q=80'} 
                   alt={settings.principalName}
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-blue-600 shadow-md"
                 />
@@ -77,7 +79,7 @@ export default function PrincipalMessage() {
             <div className="space-y-4 relative z-10">
               <div className="flex items-center gap-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80" 
+                  src={settings.chairmanImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80'} 
                   alt={settings.chairmanName}
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-sky-500 shadow-md"
                 />
