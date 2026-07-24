@@ -392,8 +392,15 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...siteSettings,
-          stats: { students: siteSettings.studentsStat, teachers: siteSettings.teachersStat, passRate: siteSettings.passRateStat, establishedYear: '১৯৯৮' }
+          established: siteSettings.establishedYear || siteSettings.established || '১৯৯৮',
+          stats: { 
+            students: siteSettings.studentsStat || '২,৮৮০+', 
+            teachers: siteSettings.teachersStat || '৯৫+', 
+            passRate: siteSettings.passRateStat || '২১৫+', 
+            establishedYear: siteSettings.establishedYear || siteSettings.established || '১৯৯৮' 
+          }
         }),
+
       });
 
       const text = await res.text();
@@ -1204,12 +1211,60 @@ export default function AdminDashboard() {
                   <input type="text" placeholder="https://image1.jpg, https://image2.jpg" value={siteSettings.heroImage || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono" />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ইআইআইএন (EIIN)</label>
+                  <input type="text" value={siteSettings.eiin || ''} onChange={(e) => setSiteSettings({ ...siteSettings, eiin: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">স্কুল কোড (School Code)</label>
+                  <input type="text" value={siteSettings.code || ''} onChange={(e) => setSiteSettings({ ...siteSettings, code: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+
+                {/* Counter Stats Inputs */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">শিক্ষার্থী সংখ্যা (Stats Counter)</label>
+                  <input type="text" placeholder="২,৮৮০+" value={siteSettings.studentsStat || ''} onChange={(e) => setSiteSettings({ ...siteSettings, studentsStat: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">শিক্ষক সংখ্যা (Stats Counter)</label>
+                  <input type="text" placeholder="৯৫+" value={siteSettings.teachersStat || ''} onChange={(e) => setSiteSettings({ ...siteSettings, teachersStat: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">পাশের হার / জিপিএ-৫ (Stats Counter)</label>
+                  <input type="text" placeholder="২১৫+" value={siteSettings.passRateStat || ''} onChange={(e) => setSiteSettings({ ...siteSettings, passRateStat: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">প্রতিষ্ঠাবর্ষ (Established Year)</label>
+                  <input type="text" placeholder="১৯৯৮" value={siteSettings.establishedYear || siteSettings.established || ''} onChange={(e) => setSiteSettings({ ...siteSettings, establishedYear: e.target.value, established: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">হিরো স্লাইডার ছবি URL (একাধিক ছবি কমা (,) দিয়ে আলাদা করুন - যেমন: url1, url2)</label>
+                  <input type="text" placeholder="https://image1.jpg, https://image2.jpg" value={siteSettings.heroImage || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono" />
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">হিরো বিবরণ</label>
                   <textarea rows={2} value={siteSettings.heroDescription || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroDescription: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
                 </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">আমাদের ইতিহাস বিবরণ (History & Foundation)</label>
+                  <textarea rows={2} value={siteSettings.aboutHistory || ''} onChange={(e) => setSiteSettings({ ...siteSettings, aboutHistory: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">আমাদের লক্ষ্য (Mission Text)</label>
+                  <textarea rows={2} value={siteSettings.missionText || ''} onChange={(e) => setSiteSettings({ ...siteSettings, missionText: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">আমাদের ভিশন (Vision Text)</label>
+                  <textarea rows={2} value={siteSettings.visionText || ''} onChange={(e) => setSiteSettings({ ...siteSettings, visionText: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
               </div>
             </div>
+
 
             {/* 2. Academic Programs Manager */}
             <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">

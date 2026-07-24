@@ -101,8 +101,9 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Stats Counter */}
-      <StatsCounter />
+      {/* Stats Counter (Live Database Stats) */}
+      <StatsCounter stats={(settings as any).stats} />
+
 
       {/* Principal & Chairman Message */}
       <PrincipalMessage />
