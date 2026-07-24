@@ -25,6 +25,7 @@ import { useToast } from '@/components/Toast';
 export default function StudentDashboard() {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'routine' | 'assignments' | 'result'>('overview');
+  const [showIdCardModal, setShowIdCardModal] = useState(false);
 
   const [studentUser, setStudentUser] = useState<any>(null);
   const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
@@ -134,7 +135,14 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-bold">
+          <div className="flex items-center gap-3 text-xs font-bold">
+            <button
+              onClick={() => setShowIdCardModal(true)}
+              className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-md transition flex items-center gap-1.5"
+            >
+              <ShieldCheck className="w-4 h-4" /> ডিজিটাল আইডি কার্ড
+            </button>
+
             <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-200">
               <span className="text-slate-500 block">উপস্থিতির হার</span>
               <span className="text-emerald-600 text-base font-extrabold">{attendanceRate}</span>
@@ -347,6 +355,62 @@ export default function StudentDashboard() {
         )}
 
       </div>
+
+      {/* DIGITAL STUDENT ID CARD MODAL */}
+      {showIdCardModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl border border-slate-200 relative text-center">
+            <button onClick={() => setShowIdCardModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-lg">
+              ✕
+            </button>
+
+            {/* ID Card Header Badge */}
+            <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-md space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-white/10 mx-auto flex items-center justify-center font-bold border border-white/20">
+                <ShieldCheck className="w-6 h-6 text-sky-400" />
+              </div>
+              <h3 className="text-sm font-black tracking-wide uppercase">ডাঃ মুজিব-রুবি মডেল হাই স্কুল</h3>
+              <p className="text-[10px] text-sky-300 font-bold">ডিজিটাল স্টুডেন্ট পরিচয়পত্র (EIIN: ১৩০৯৫৪)</p>
+            </div>
+
+            {/* Photo & Details */}
+            <div className="space-y-3 pt-2">
+              <div className="w-24 h-24 rounded-2xl mx-auto border-4 border-blue-600 shadow-md overflow-hidden bg-slate-100 flex items-center justify-center">
+                <User className="w-12 h-12 text-slate-400" />
+              </div>
+
+              <div>
+                <h4 className="text-lg font-extrabold text-slate-900">{studentUser?.name || 'রাফসান আহমেদ'}</h4>
+                <p className="text-xs font-bold text-blue-600">শ্রেণী: {studentUser?.details?.class || '১০'}ম ({studentUser?.details?.section || 'ক'} শাখা)</p>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-mono font-bold space-y-1">
+                <p className="text-slate-700">রোল/আইডি: {studentUser?.details?.studentId || '১০১'}</p>
+                <p className="text-slate-500 text-[11px]">মেয়াদ: ২০২৬-২০২৭ শিক্ষাবর্ষ</p>
+                <p className="text-emerald-700 text-[10px]">স্ট্যাটাস: ভেরিফায়েড একটিভ স্টুডেন্ট</p>
+              </div>
+
+              {/* Barcode / QR Simulation */}
+              <div className="py-2 bg-slate-100 rounded-xl border border-dashed border-slate-300">
+                <div className="w-32 h-8 bg-slate-900 mx-auto rounded flex items-center justify-center text-[10px] font-mono text-white tracking-widest">
+                  |||||| || | |||| ||
+                </div>
+                <p className="text-[9px] text-slate-400 mt-1">ক্যাম্পাস বায়োমেট্রিক ও লাইব্রেরি গেট স্ক্যানার</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => window.print()}
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md flex items-center justify-center gap-1.5"
+              >
+                <Printer className="w-4 h-4" /> প্রিন্ট আইডি কার্ড
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
