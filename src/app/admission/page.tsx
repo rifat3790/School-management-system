@@ -55,22 +55,51 @@ export default function AdmissionPage() {
     setStep(step + 1);
   };
 
-  const handleSubmitForm = (e: React.FormEvent) => {
+  const [payLater, setPayLater] = useState(false);
+  const paymentNumber = '01952321390';
+
+  const copyPaymentNumber = () => {
+    navigator.clipboard.writeText(paymentNumber);
+    toast.success(`মার্চেন্ট নম্বর ${paymentNumber} ক্লিপবোর্ডে কপি করা হয়েছে!`);
+  };
+
+  const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault();
     const appNo = `ADM-${Math.floor(100000 + Math.random() * 900000)}`;
     setApplicationId(appNo);
+
+    try {
+      await fetch('/api/admissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentName: formData.studentName,
+          fatherName: formData.fatherName,
+          motherName: formData.motherName,
+          phone: formData.guardianPhone,
+          classApply: formData.desiredClass,
+          birthCertNo: formData.birthReg || '১৯৯৮৮৭৭৬৬৫৫',
+          address: formData.address || 'শেরপুর ডিস্ট্রিক্ট',
+          photoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&q=80',
+          birthCertUrl: 'https://example.com/birthcert.pdf',
+          paymentStatus: payLater ? 'pay_later' : 'paid',
+          paymentTxId: payLater ? 'PAY_LATER' : (formData.trxId || 'TXN-BKASH'),
+          status: 'pending'
+        })
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
     setSubmitted(true);
 
-    // Launch Confetti
     try {
       confetti({
         particleCount: 120,
         spread: 70,
         origin: { y: 0.6 }
       });
-    } catch (e) {
-      // fallback
-    }
+    } catch (e) {}
   };
 
   return (
@@ -303,41 +332,70 @@ export default function AdmissionPage() {
                     ভর্তি আবেদন ফি পরিশোধ (৫০০ টাকা)
                   </h3>
 
-                  <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 text-xs text-emerald-800 space-y-1">
-                    <p className="font-bold text-sm">আবেদন ফি: ৫০০.০০ টাকা</p>
-                    <p>নিচের যেকোনো মোবাইল ব্যাংকিং ব্যবহার করে আপনার আবেদন ফি প্রদান করুন।</p>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    {['bKash', 'Nagad', 'Rocket'].map((pm) => (
+                  <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 text-xs text-emerald-900 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="font-extrabold text-sm">অফিশিয়াল পেমেন্ট মার্চেন্ট নম্বর: <span className="font-mono text-base text-blue-700">01952321390</span></p>
                       <button
                         type="button"
-                        key={pm}
-                        onClick={() => handleChange('paymentMethod', pm)}
-                        className={`p-3 rounded-2xl border text-xs font-bold transition-all ${
-                          formData.paymentMethod === pm
-                            ? 'bg-primary text-white border-primary shadow-md'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                        }`}
+                        onClick={copyPaymentNumber}
+                        className="px-3 py-1 bg-emerald-600 text-white font-bold rounded-lg text-[11px] hover:bg-emerald-700 transition"
                       >
-                        {pm}
+                        কপি করুন
                       </button>
-                    ))}
+                    </div>
+                    <p className="text-[11px] text-emerald-800">আবেদন ফি: ৫০০.০০ টাকা (bKash / Nagad Personal/Merchant এর মাধ্যমে সেন্ড মানি করুন)।</p>
                   </div>
 
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1 text-xs sm:text-sm">
-                      {formData.paymentMethod} ট্রানজেকশন আইডি (TrxID) *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.trxId}
-                      onChange={(e) => handleChange('trxId', e.target.value)}
-                      placeholder="যেমন: BK90823471"
-                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-primary focus:outline-none text-xs sm:text-sm font-mono"
-                    />
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="payLaterCheck"
+                        checked={payLater}
+                        onChange={(e) => setPayLater(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded"
+                      />
+                      <label htmlFor="payLaterCheck" className="font-bold text-xs text-slate-800 cursor-pointer">
+                        পরে ফি পরিশোধ করব (Pay Later Option)
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-slate-500 pl-6">টিক দিলে আপনি এখন বিনামূল্যে আবেদন জমা দিতে পারবেন এবং পরে প্রতিষ্ঠানে জমা দিতে পারবেন।</p>
                   </div>
+
+                  {!payLater && (
+                    <>
+                      <div className="grid grid-cols-3 gap-3">
+                        {['bKash', 'Nagad', 'Rocket'].map((pm) => (
+                          <button
+                            type="button"
+                            key={pm}
+                            onClick={() => handleChange('paymentMethod', pm)}
+                            className={`p-3 rounded-2xl border text-xs font-bold transition-all ${
+                              formData.paymentMethod === pm
+                                ? 'bg-primary text-white border-primary shadow-md'
+                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            {pm}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1 text-xs sm:text-sm">
+                          {formData.paymentMethod} ট্রানজেকশন আইডি (TrxID) *
+                        </label>
+                        <input
+                          type="text"
+                          required={!payLater}
+                          value={formData.trxId}
+                          onChange={(e) => handleChange('trxId', e.target.value)}
+                          placeholder="যেমন: BK90823471"
+                          className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-primary focus:outline-none text-xs sm:text-sm font-mono"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

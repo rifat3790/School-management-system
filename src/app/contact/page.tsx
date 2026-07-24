@@ -8,8 +8,24 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', email: '', message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email || 'user@school.edu.bd',
+          phone: form.phone,
+          subject: 'ওয়েবসাইট যোগাযোগ অনুসন্ধান',
+          message: form.message,
+          status: 'unread'
+        })
+      });
+    } catch (err) {
+      console.error(err);
+    }
     setSubmitted(true);
   };
 

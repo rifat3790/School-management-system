@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Newspaper, Calendar, Tag, User, MessageCircle, ArrowRight, Sparkles, X, Send } from 'lucide-react';
+import { Newspaper, Calendar, Tag, User, MessageCircle, ArrowRight, Sparkles, X, Send, Printer } from 'lucide-react';
 
 interface NewsItem {
   _id: string;
@@ -130,12 +130,20 @@ export default function NewsPage() {
               <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full">
                 {selectedArticle.category}
               </span>
-              <button
-                onClick={() => setSelectedArticle(null)}
-                className="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5"
+                >
+                  <Printer className="w-4 h-4 text-blue-600" /> পিডিএফ প্রিন্ট / ডাউনলোড
+                </button>
+                <button
+                  onClick={() => setSelectedArticle(null)}
+                  className="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900">{selectedArticle.title}</h2>

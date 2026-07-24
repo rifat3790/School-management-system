@@ -10,7 +10,6 @@ export default function AlumniPage() {
   const [activeTab, setActiveTab] = useState<'stories' | 'register' | 'donation'>('stories');
   const [regSuccess, setRegSuccess] = useState(false);
 
-  // Alumni Form State
   const [form, setForm] = useState({
     name: '',
     batch: '2015',
@@ -23,6 +22,58 @@ export default function AlumniPage() {
   const handleRegSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setRegSuccess(true);
+  };
+
+  const [donationsList, setDonationsList] = useState<any[]>([]);
+  const [donationForm, setDonationForm] = useState({
+    donorName: '',
+    donorType: 'প্রাক্তন শিক্ষার্থী (অ্যালুমনি)',
+    amount: '',
+    phone: '',
+    transactionId: '',
+    message: ''
+  });
+  const [donationSubmitted, setDonationSubmitted] = useState(false);
+
+  React.useEffect(() => {
+    fetch('/api/donations')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.donations) {
+          setDonationsList(data.donations.filter((d: any) => d.isApproved));
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  const handleDonationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!donationForm.donorName || !donationForm.amount || !donationForm.phone) {
+      toast.error('অনুরোধ করে নাম, অনুদানের পরিমাণ ও ফোন নম্বর প্রদান করুন');
+      return;
+    }
+
+    try {
+      await fetch('/api/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          donorName: donationForm.donorName,
+          donorType: donationForm.donorType,
+          amount: Number(donationForm.amount),
+          paymentMethod: 'bKash / Nagad',
+          transactionId: donationForm.transactionId || 'TXN-ONLINE',
+          phone: donationForm.phone,
+          message: donationForm.message,
+          date: new Date().toLocaleDateString('bn-BD'),
+          isApproved: false
+        })
+      });
+      setDonationSubmitted(true);
+      toast.success('আপনার অনুদানের আবেদন সফলভাবে জমা হয়েছে! এডমিন প্যানেল থেকে এপ্রুভালের পর তালিকায় যুক্ত হবে।');
+    } catch (err) {
+      toast.error('জমা দিতে সমস্যা হয়েছে');
+    }
   };
 
   return (
@@ -189,20 +240,156 @@ export default function AlumniPage() {
 
       {/* Donation Tab */}
       {activeTab === 'donation' && (
-        <section className="max-w-2xl mx-auto px-4 lg:px-8">
-          <div className="glass-card rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl space-y-6 text-center">
-            <HeartHandshake className="w-12 h-12 text-amber-500 mx-auto" />
-            <h3 className="text-2xl font-bold text-heading">স্কুল উন্নয়ন ও স্কলারশিপ ফান্ডে অবদান রাখুন</h3>
-            <p className="text-xs sm:text-sm text-paragraph leading-relaxed">
-              মেধাবী ও অসচ্ছল শিক্ষার্থীদের জন্য শিক্ষাবৃত্তি এবং আধুনিক রোবোটিক্স সায়েন্স ল্যাব সম্প্রসারণে আপনার অনুদান গুরুত্বপূর্ণ ভুমিকা রাখবে।
-            </p>
-            <button
-              onClick={() => toast.info('অনলাইন পেমেন্ট গেটওয়ে চালুকৃত ডোনেশন পোর্টাল খুলছে...')}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold px-8 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform text-sm"
-            >
-              অনলাইনে অনুদান প্রদান করুন (bKash / Nagad / Card)
-            </button>
+        <section className="max-w-5xl mx-auto px-4 lg:px-8 space-y-10">
+          
+          {/* Donation Form Card */}
+          <div className="glass-card rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl space-y-6">
+            <div className="text-center max-w-xl mx-auto space-y-2">
+              <HeartHandshake className="w-12 h-12 text-amber-500 mx-auto" />
+              <h3 className="text-2xl font-bold text-slate-900">স্কুল উন্নয়ন ও স্কলারশিপ ফান্ডে অনুদান প্রদান</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                মেধাবী ও অসচ্ছল শিক্ষার্থীদের শিক্ষাবৃত্তি এবং রোবোটিক্স ল্যাব সম্প্রসারণে অনুদান প্রদান করুন। মার্চেন্ট bKash/Nagad: <strong className="text-blue-600 font-mono">01952321390</strong>
+              </p>
+            </div>
+
+            {!donationSubmitted ? (
+              <form onSubmit={handleDonationSubmit} className="space-y-4 max-w-2xl mx-auto text-xs sm:text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">অনুগৃহীত দাতার নাম *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="যেমন: ইঞ্জিনিয়ার রেজওয়ান হোসেন"
+                      value={donationForm.donorName}
+                      onChange={(e) => setDonationForm({ ...donationForm, donorName: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">পরিচয় / পরিচয়সূচক পদবী</label>
+                    <select
+                      value={donationForm.donorType}
+                      onChange={(e) => setDonationForm({ ...donationForm, donorType: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 font-semibold"
+                    >
+                      <option value="প্রাক্তন শিক্ষার্থী (অ্যালুমনি)">প্রাক্তন শিক্ষার্থী (অ্যালুমনি)</option>
+                      <option value="অভিভাবক ও শুভানুধ্যায়ী">অভিভাবক ও শুভানুধ্যায়ী</option>
+                      <option value="শিক্ষক ও পরিচালনা পর্ষদ">শিক্ষক ও পরিচালনা পর্ষদ</option>
+                      <option value="কর্পোরেট প্রতিষ্ঠান">কর্পোরেট প্রতিষ্ঠান</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">অনুদানের পরিমাণ (টাকা) *</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="যেমন: ৫০০০০"
+                      value={donationForm.amount}
+                      onChange={(e) => setDonationForm({ ...donationForm, amount: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-emerald-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">মোবাইল নম্বর (যোগাযোগের জন্য) *</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="01712345678"
+                      value={donationForm.phone}
+                      onChange={(e) => setDonationForm({ ...donationForm, phone: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-bold text-slate-700 mb-1">bKash / Nagad ট্রানজেকশন আইডি (TrxID)</label>
+                    <input
+                      type="text"
+                      placeholder="যেমন: TXN-99881122"
+                      value={donationForm.transactionId}
+                      onChange={(e) => setDonationForm({ ...donationForm, transactionId: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-bold text-slate-700 mb-1">উৎসাহমূলক বা শুভকামনা বার্তা (ঐচ্ছিক)</label>
+                    <textarea
+                      rows={2}
+                      placeholder="প্রতিষ্ঠানের অগ্রযাত্রা কামনায় আপনার মেসেজ লিখুন..."
+                      value={donationForm.message}
+                      onChange={(e) => setDonationForm({ ...donationForm, message: e.target.value })}
+                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold rounded-xl shadow-md hover:opacity-95 transition"
+                >
+                  অনুদানের তথ্য জমা দিন
+                </button>
+              </form>
+            ) : (
+              <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-200 text-center space-y-2 text-xs">
+                <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
+                <h4 className="font-bold text-slate-900 text-base">আপনার অনুদানের তথ্য সফলভাবে জমা হয়েছে!</h4>
+                <p className="text-slate-600">এডমিন বা শিক্ষক প্যানেল থেকে এপ্রুভ হওয়ার পর নিচে প্রকাশ্যে শুভানুধ্যায়ী সম্মাননা তালিকায় আপনার নাম দেখা যাবে।</p>
+                <button
+                  onClick={() => setDonationSubmitted(false)}
+                  className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs"
+                >
+                  পুনরায় অনুদান প্রদান করুন
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Approved Donors Table (দানকারীদের সম্মাননা তালিকা) */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-0.5 rounded-full border border-amber-200">
+                  সম্মাননা গ্যালারি (Donors Wall)
+                </span>
+                <h3 className="text-xl font-bold text-slate-900 mt-1">অনুমোদিত দাতা ও শুভানুধ্যায়ী তালিকা</h3>
+              </div>
+              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
+                মোট অনুমোদনপ্রাপ্ত: {donationsList.length} জন
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3">দাতার নাম</th>
+                    <th className="p-3">পরিচয় / ক্যাটাগরি</th>
+                    <th className="p-3">অনুদানের পরিমাণ</th>
+                    <th className="p-3">তারিখ</th>
+                    <th className="p-3">শুভকামনা বার্তা</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {donationsList.map((d: any) => (
+                    <tr key={d._id || d.id} className="hover:bg-slate-50 transition font-medium text-slate-800">
+                      <td className="p-3 font-bold text-slate-900">{d.donorName}</td>
+                      <td className="p-3"><span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full font-bold text-[10px]">{d.donorType}</span></td>
+                      <td className="p-3 font-mono font-bold text-emerald-600 text-sm">৳ {d.amount?.toLocaleString('bn-BD')}</td>
+                      <td className="p-3 text-slate-500">{d.date}</td>
+                      <td className="p-3 text-slate-600 italic">{d.message || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </section>
       )}
     </div>

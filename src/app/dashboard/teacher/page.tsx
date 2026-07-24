@@ -32,7 +32,7 @@ interface StudentRecord {
 
 export default function TeacherDashboard() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'attendance' | 'homework' | 'marks'>('attendance');
+  const [activeTab, setActiveTab] = useState<'attendance' | 'homework' | 'marks' | 'admissions' | 'donations' | 'inquiries'>('attendance');
   
   // Date State - Auto defaults to Today (YYYY-MM-DD)
   const getTodayStr = () => new Date().toISOString().split('T')[0];
@@ -41,6 +41,9 @@ export default function TeacherDashboard() {
   // Dynamic Teacher & Student Data States
   const [teacherUser, setTeacherUser] = useState<any>(null);
   const [students, setStudents] = useState<StudentRecord[]>([]);
+  const [admissionsList, setAdmissionsList] = useState<any[]>([]);
+  const [donationsList, setDonationsList] = useState<any[]>([]);
+  const [contactList, setContactList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingAttendance, setSavingAttendance] = useState(false);
 
@@ -89,12 +92,52 @@ export default function TeacherDashboard() {
 
         setStudents(formattedStudents);
         fetchAttendanceForDate(selectedDate, tUser, formattedStudents);
+
+        // Fetch Admissions, Donations, Contact Messages
+        const [rA, rD, rC] = await Promise.all([
+          fetch('/api/admissions').then(r => r.json()),
+          fetch('/api/donations').then(r => r.json()),
+          fetch('/api/contact').then(r => r.json()),
+        ]);
+        if (rA.success) setAdmissionsList(rA.admissions);
+        if (rD.success) setDonationsList(rD.donations);
+        if (rC.success) setContactList(rC.messages);
       }
     } catch (err) {
       console.error('Error loading teacher data:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApproveDonation = async (id: string, isApproved: boolean) => {
+    try {
+      const res = await fetch('/api/donations', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, isApproved })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(isApproved ? 'ডোনেশন সফলভাবে অনুমোদন করা হয়েছে! এটি এখন পাবলিক টেবিলে দৃশ্যমান।' : 'অনুমোদন বাতিল করা হয়েছে');
+        fetchTeacherAndStudents();
+      }
+    } catch (err) { toast.error('হালনাগাদ করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleUpdateAdmissionStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch('/api/admissions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('ভর্তি আবেদনের স্ট্যাটাস আপডেট হয়েছে!');
+        fetchTeacherAndStudents();
+      }
+    } catch (err) { toast.error('হালনাগাদ করতে সমস্যা হয়েছে'); }
   };
 
   // 2. Fetch Attendance for Selected Date from MongoDB
@@ -242,6 +285,9 @@ export default function TeacherDashboard() {
             { id: 'attendance', label: `📅 ক্যালেন্ডার হাজিরা (${presentCount}/${students.length} উপস্থিত)`, icon: UserCheck },
             { id: 'homework', label: `📝 হোমওয়ার্ক প্রকাশ (${publishedHw.length})`, icon: FileEdit },
             { id: 'marks', label: '🏆 মার্কস এন্ট্রি সিস্টেম', icon: Award },
+            { id: 'admissions', label: `📝 ভর্তি আবেদন (${admissionsList.length})`, icon: BookOpen },
+            { id: 'donations', label: `❤️ অনুদান এপ্রুভাল (${donationsList.length})`, icon: Sparkles },
+            { id: 'inquiries', label: `📬 কন্টাক্ট ইনকোয়ারি (${contactList.length})`, icon: Send },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -388,6 +434,151 @@ export default function TeacherDashboard() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: MARKS */}
+        {activeTab === 'marks' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <h3 className="text-lg font-bold text-slate-900">🏆 শিক্ষার্থীদের পরীক্ষার মার্কস এন্ট্রি পোর্টাল</h3>
+            <p className="text-xs text-slate-500">অনলাইনে বার্ষিক/টার্ম পরীক্ষার বিষয়ভিত্তিক নম্বর এন্ট্রি করুন</p>
+            <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200 text-slate-600 text-xs">
+              সকল শিক্ষার্থীর নম্বর এন্ট্রি শিট সফলভাবে প্রস্তুত। মার্কস ইনপুট দিয়ে সেভ বাটনে ক্লিক করুন।
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: ADMISSIONS */}
+        {activeTab === 'admissions' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <h3 className="text-lg font-bold text-slate-900">অনলাইন ভর্তি আবেদনসমূহ ({admissionsList.length})</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3">শিক্ষার্থীর নাম</th>
+                    <th className="p-3">শ্রেণী</th>
+                    <th className="p-3">অভিভাবক ও ফোন</th>
+                    <th className="p-3">পেমেন্ট স্ট্যাটাস</th>
+                    <th className="p-3">আবেদন স্ট্যাটাস</th>
+                    <th className="p-3 text-right">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {admissionsList.map((adm: any) => (
+                    <tr key={adm._id || adm.id} className="hover:bg-slate-50 transition font-medium text-slate-800">
+                      <td className="p-3 font-bold text-slate-900">{adm.studentName}</td>
+                      <td className="p-3 font-bold text-blue-600">{adm.classApply}</td>
+                      <td className="p-3">
+                        <div className="font-bold text-slate-900">{adm.fatherName}</div>
+                        <div className="text-[10px] text-slate-500">{adm.phone}</div>
+                      </td>
+                      <td className="p-3">
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                          adm.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {adm.paymentStatus === 'paid' ? `পরিশোধিত (Trx: ${adm.paymentTxId || 'BKASH'})` : 'পরে পরিশোধযোগ্য (Pay Later)'}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                          adm.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : adm.status === 'rejected' ? 'bg-rose-100 text-rose-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {adm.status === 'approved' ? 'অনুমোদিত' : adm.status === 'rejected' ? 'বাতিল' : 'পেন্ডিং'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right space-x-1">
+                        <button
+                          onClick={() => handleUpdateAdmissionStatus(adm._id || adm.id, 'approved')}
+                          className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-bold text-[10px]"
+                        >
+                          অনুমোদন
+                        </button>
+                        <button
+                          onClick={() => handleUpdateAdmissionStatus(adm._id || adm.id, 'rejected')}
+                          className="px-2.5 py-1 bg-rose-600 text-white rounded-lg font-bold text-[10px]"
+                        >
+                          বাতিল
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: DONATIONS APPROVAL */}
+        {activeTab === 'donations' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <h3 className="text-lg font-bold text-slate-900">অনলাইন অনুদান ও ডোনেশন এপ্রুভাল ({donationsList.length})</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3">দাতার নাম</th>
+                    <th className="p-3">পরিচয়</th>
+                    <th className="p-3">অনুদানের পরিমাণ</th>
+                    <th className="p-3">মেসেজ</th>
+                    <th className="p-3">পাবলিক ভিউ স্ট্যাটাস</th>
+                    <th className="p-3 text-right">এপ্রুভাল অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {donationsList.map((don: any) => (
+                    <tr key={don._id || don.id} className="hover:bg-slate-50 transition font-medium text-slate-800">
+                      <td className="p-3 font-bold text-slate-900">{don.donorName}</td>
+                      <td className="p-3"><span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full font-bold text-[10px]">{don.donorType}</span></td>
+                      <td className="p-3 font-mono font-bold text-emerald-600">৳ {don.amount?.toLocaleString('bn-BD')}</td>
+                      <td className="p-3 text-slate-600 italic line-clamp-1">{don.message || '-'}</td>
+                      <td className="p-3">
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                          don.isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {don.isApproved ? 'পাবলিক টেবিলে দৃশ্যমান' : 'পেন্ডিং (অদৃশ্য)'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right">
+                        {don.isApproved ? (
+                          <button
+                            onClick={() => handleApproveDonation(don._id || don.id, false)}
+                            className="px-3 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold rounded-lg text-[10px]"
+                          >
+                            অনুমোদন বাতিল
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleApproveDonation(don._id || don.id, true)}
+                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-[10px] shadow-sm"
+                          >
+                            ✓ এপ্রুভ করুন
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: INQUIRIES */}
+        {activeTab === 'inquiries' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <h3 className="text-lg font-bold text-slate-900">ওয়েবসাইট যোগাযোগ ইনকোয়ারি ও মেসেজ ({contactList.length})</h3>
+            <div className="space-y-3">
+              {contactList.map((c: any) => (
+                <div key={c._id || c.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="text-slate-900 text-sm">{c.name} ({c.phone || c.email})</span>
+                    <span className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-800 rounded">{c.subject}</span>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed bg-white p-3 rounded-xl border border-slate-200">{c.message}</p>
+                </div>
+              ))}
             </div>
           </div>
         )}

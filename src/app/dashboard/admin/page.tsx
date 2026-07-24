@@ -13,6 +13,7 @@ import {
   Clock,
   ShieldCheck,
   RefreshCw,
+  Mail,
   Save,
   Trash2,
   Settings,
@@ -52,7 +53,7 @@ interface UserRecord {
 
 export default function AdminDashboard() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'assignments' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'news' | 'gallery'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'assignments' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'news' | 'gallery' | 'admissions' | 'donations' | 'inquiries'>('users');
   
   // Assignment State
   const [assignTeacherId, setAssignTeacherId] = useState('');
@@ -66,6 +67,9 @@ export default function AdminDashboard() {
   const [teachers, setTeachers] = useState<any[]>([]);
   const [newsList, setNewsList] = useState<any[]>([]);
   const [galleryList, setGalleryList] = useState<any[]>([]);
+  const [admissionsList, setAdmissionsList] = useState<any[]>([]);
+  const [donationsList, setDonationsList] = useState<any[]>([]);
+  const [contactList, setContactList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // User Filter States
@@ -182,24 +186,60 @@ export default function AdminDashboard() {
         });
       }
 
-      // 3. Notices, Teachers, News, Gallery
-      const [rN, rT, rNw, rG] = await Promise.all([
+      // 3. Notices, Teachers, News, Gallery, Admissions, Donations, Contact
+      const [rN, rT, rNw, rG, rAdm, rDon, rCnt] = await Promise.all([
         fetch('/api/notices').then(r => r.json()),
         fetch('/api/teachers').then(r => r.json()),
         fetch('/api/news').then(r => r.json()),
         fetch('/api/gallery').then(r => r.json()),
+        fetch('/api/admissions').then(r => r.json()),
+        fetch('/api/donations').then(r => r.json()),
+        fetch('/api/contact').then(r => r.json()),
       ]);
 
       if (rN.success) setNotices(rN.notices);
       if (rT.success) setTeachers(rT.teachers);
       if (rNw.success) setNewsList(rNw.news);
       if (rG.success) setGalleryList(rG.gallery);
+      if (rAdm.success) setAdmissionsList(rAdm.admissions);
+      if (rDon.success) setDonationsList(rDon.donations);
+      if (rCnt.success) setContactList(rCnt.messages);
 
     } catch (err) {
       console.error('Error fetching admin data:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApproveDonation = async (id: string, isApproved: boolean) => {
+    try {
+      const res = await fetch('/api/donations', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, isApproved })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(isApproved ? 'ডোনেশন সফলভাবে অনুমোদন করা হয়েছে! এটি এখন পাবলিক ডোনার তালিকায় দৃশ্যমান।' : 'অনুমোদন বাতিল করা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('হালনাগাদ করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleUpdateAdmissionStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch('/api/admissions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('ভর্তি আবেদনের স্ট্যাটাস আপডেট হয়েছে!');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('হালনাগাদ করতে সমস্যা হয়েছে'); }
   };
 
   useEffect(() => {
@@ -664,6 +704,9 @@ export default function AdminDashboard() {
             { id: 'teachers', label: `👨‍🏫 শিক্ষক প্যানেল (${teachers.length})`, icon: Users },
             { id: 'news', label: `📰 ক্যাম্পাস নিউজ (${newsList.length})`, icon: Newspaper },
             { id: 'gallery', label: `🖼️ ফটো গ্যালারি (${galleryList.length})`, icon: ImageIcon },
+            { id: 'admissions', label: `📝 ভর্তি আবেদন (${admissionsList.length})`, icon: FileText },
+            { id: 'donations', label: `❤️ অনুদান এপ্রুভাল (${donationsList.length})`, icon: HeartHandshake },
+            { id: 'inquiries', label: `📬 কন্টাক্ট ইনকোয়ারি (${contactList.length})`, icon: Mail },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1725,6 +1768,161 @@ export default function AdminDashboard() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: ADMISSIONS MANAGER */}
+        {activeTab === 'admissions' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">অনলাইন ভর্তি আবেদনসমূহ ({admissionsList.length})</h3>
+                <p className="text-xs text-slate-500">অনলাইনে জমাকৃত সকল শিক্ষার্থীর ভর্তি আবেদন, পেমেন্ট ও স্ট্যাটাস ম্যানেজ করুন</p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3">শিক্ষার্থীর নাম</th>
+                    <th className="p-3">শ্রেণী</th>
+                    <th className="p-3">অভিভাবক ও ফোন</th>
+                    <th className="p-3">জন্ম সনদ নং</th>
+                    <th className="p-3">পেমেন্ট স্ট্যাটাস</th>
+                    <th className="p-3">আবেদন স্ট্যাটাস</th>
+                    <th className="p-3 text-right">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {admissionsList.map((adm: any) => (
+                    <tr key={adm._id || adm.id} className="hover:bg-slate-50 transition font-medium text-slate-800">
+                      <td className="p-3 font-bold text-slate-900">{adm.studentName}</td>
+                      <td className="p-3 font-bold text-blue-600">{adm.classApply}</td>
+                      <td className="p-3">
+                        <div className="font-bold text-slate-900">{adm.fatherName}</div>
+                        <div className="text-[10px] text-slate-500">{adm.phone}</div>
+                      </td>
+                      <td className="p-3 font-mono">{adm.birthCertNo}</td>
+                      <td className="p-3">
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                          adm.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {adm.paymentStatus === 'paid' ? `পরিশোধিত (Trx: ${adm.paymentTxId || 'BKASH'})` : 'পরে পরিশোধযোগ্য (Pay Later)'}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                          adm.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : adm.status === 'rejected' ? 'bg-rose-100 text-rose-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {adm.status === 'approved' ? 'অনুমোদিত' : adm.status === 'rejected' ? 'বাতিল' : 'পেন্ডিং'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right space-x-1">
+                        <button
+                          onClick={() => handleUpdateAdmissionStatus(adm._id || adm.id, 'approved')}
+                          className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-bold text-[10px]"
+                        >
+                          অনুমোদন
+                        </button>
+                        <button
+                          onClick={() => handleUpdateAdmissionStatus(adm._id || adm.id, 'rejected')}
+                          className="px-2.5 py-1 bg-rose-600 text-white rounded-lg font-bold text-[10px]"
+                        >
+                          বাতিল
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: DONATIONS MANAGER & APPROVAL */}
+        {activeTab === 'donations' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">অনলাইন অনুদান ও ডোনেশন এপ্রুভাল প্যানেল ({donationsList.length})</h3>
+              <p className="text-xs text-slate-500">অনুমোদন দিলে শুভানুধ্যায়ীর নাম স্বয়ংক্রিয়ভাবে পাবলিক ডোনার টেবিলে যুক্ত হবে</p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3">দাতার নাম</th>
+                    <th className="p-3">পরিচয়</th>
+                    <th className="p-3">অনুদানের পরিমাণ</th>
+                    <th className="p-3">TrxID / ফোন</th>
+                    <th className="p-3">মেসেজ</th>
+                    <th className="p-3">পাবলিক ভিউ স্ট্যাটাস</th>
+                    <th className="p-3 text-right">এপ্রুভাল অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {donationsList.map((don: any) => (
+                    <tr key={don._id || don.id} className="hover:bg-slate-50 transition font-medium text-slate-800">
+                      <td className="p-3 font-bold text-slate-900">{don.donorName}</td>
+                      <td className="p-3"><span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full font-bold text-[10px]">{don.donorType}</span></td>
+                      <td className="p-3 font-mono font-bold text-emerald-600">৳ {don.amount?.toLocaleString('bn-BD')}</td>
+                      <td className="p-3">
+                        <div className="font-mono text-[10px]">{don.transactionId || 'ONLINE'}</div>
+                        <div className="text-[10px] text-slate-400">{don.phone}</div>
+                      </td>
+                      <td className="p-3 text-slate-600 italic line-clamp-1">{don.message || '-'}</td>
+                      <td className="p-3">
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                          don.isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {don.isApproved ? 'পাবলিক টেবিলে দৃশ্যমান' : 'পেন্ডিং (অদৃশ্য)'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right">
+                        {don.isApproved ? (
+                          <button
+                            onClick={() => handleApproveDonation(don._id || don.id, false)}
+                            className="px-3 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold rounded-lg text-[10px]"
+                          >
+                            অনুমোদন বাতিল
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleApproveDonation(don._id || don.id, true)}
+                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-[10px] shadow-sm"
+                          >
+                            ✓ এপ্রুভ করুন
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CONTACT INQUIRIES */}
+        {activeTab === 'inquiries' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">ওয়েবসাইট যোগাযোগ ইনকোয়ারি ও মেসেজ ({contactList.length})</h3>
+              <p className="text-xs text-slate-500">ওয়েবসাইট থেকে আসা সকল বার্তা ও অনুসন্ধান তালিকা</p>
+            </div>
+
+            <div className="space-y-3">
+              {contactList.map((c: any) => (
+                <div key={c._id || c.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="text-slate-900 text-sm">{c.name} ({c.phone || c.email})</span>
+                    <span className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-800 rounded">{c.subject}</span>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed bg-white p-3 rounded-xl border border-slate-200">{c.message}</p>
+                </div>
+              ))}
             </div>
           </div>
         )}
