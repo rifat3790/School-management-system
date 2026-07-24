@@ -105,55 +105,70 @@ export default function StudentDashboard() {
     <div className="py-10 bg-slate-50 min-h-[85vh]">
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
-        {/* Top Student Header Card - Real Database Info */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white font-extrabold flex items-center justify-center text-xl shadow-md">
-              {studentUser?.details?.studentId || '১০১'}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
-                  নিবন্ধিত স্টুডেন্ট পোর্টাল (Live MongoDB Data)
-                </span>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                  GPA 5.00 (A+)
-                </span>
+        {/* Top Glassmorphic Student Header Card */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl shadow-blue-500/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+            {/* Left: Student Profile Badge */}
+            <div className="flex items-start sm:items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-xl shadow-lg shadow-blue-500/20 shrink-0">
+                {studentUser?.details?.studentId || '১০১'}
               </div>
-              <h1 className="text-2xl font-bold text-slate-900 mt-1">
-                {studentUser?.name || 'শিক্ষার্থীর নাম লোড হচ্ছে...'}
-              </h1>
-              <p className="text-xs text-slate-500">
-                {studentUser?.details?.class || '১০'}ম শ্রেণী ({studentUser?.details?.section || 'ক'} শাখা) | 
-                স্টুডেন্ট আইডি/রোল: {studentUser?.details?.studentId || '১০১'} | ইমেইল: {studentUser?.email}
-              </p>
-              {studentUser?.details?.assignedTeacherName && (
-                <p className="text-xs text-blue-600 font-bold mt-1">
-                  👨‍🏫 নির্ধারিত শ্রেণী শিক্ষক: {studentUser.details.assignedTeacherName}
+
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-0.5 rounded-full">
+                    স্টুডেন্ট পোর্টাল (Live MongoDB Data)
+                  </span>
+                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> GPA 5.00 (Golden A+)
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> চলমান ক্লাস: আইসিটি ও রোবোটিক্স
+                  </span>
+                </div>
+
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  {studentUser?.name || 'রাফসান আহমেদ (সাকিব)'}
+                </h1>
+
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">
+                  {studentUser?.details?.class || '১০'}ম শ্রেণী ({studentUser?.details?.section || 'ক'} শাখা) | 
+                  রোল: <strong className="text-slate-900 font-bold">{studentUser?.details?.studentId || '১০১'}</strong> | 
+                  ইমেইল: <span className="text-slate-700">{studentUser?.email || 'rafsan@school.edu.bd'}</span>
                 </p>
-              )}
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3 text-xs font-bold">
-            <button
-              onClick={() => setShowIdCardModal(true)}
-              className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-md transition flex items-center gap-1.5"
-            >
-              <ShieldCheck className="w-4 h-4" /> ডিজিটাল আইডি কার্ড
-            </button>
-
-            <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-200">
-              <span className="text-slate-500 block">উপস্থিতির হার</span>
-              <span className="text-emerald-600 text-base font-extrabold">{attendanceRate}</span>
+                {studentUser?.details?.assignedTeacherName && (
+                  <p className="text-xs text-blue-600 font-bold flex items-center gap-1">
+                    👨‍🏫 নির্ধারিত শ্রেণী শিক্ষক: {studentUser.details.assignedTeacherName}
+                  </p>
+                )}
+              </div>
             </div>
-            <button
-              onClick={fetchStudentData}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold p-3 rounded-2xl transition"
-              title="রিফ্রেশ করুন"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
+
+            {/* Right: Actions & Attendance Counter */}
+            <div className="flex items-center gap-3 text-xs font-bold flex-wrap">
+              <button
+                onClick={() => setShowIdCardModal(true)}
+                className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-md transition flex items-center gap-1.5"
+              >
+                <ShieldCheck className="w-4 h-4" /> ডিজিটাল আইডি কার্ড
+              </button>
+
+              <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-200 min-w-[100px]">
+                <span className="text-slate-500 block text-[10px]">উপস্থিতির হার</span>
+                <span className="text-emerald-600 text-base font-extrabold font-mono">{attendanceRate}</span>
+              </div>
+
+              <button
+                onClick={fetchStudentData}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold p-3 rounded-2xl transition"
+                title="রিফ্রেশ করুন"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
         </div>
 
