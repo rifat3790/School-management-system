@@ -134,10 +134,11 @@ const SiteSettingsSchema: Schema = new Schema(
     clubsAndActivities: { type: Array, default: [] },
     events: { type: Array, default: [] },
     testimonials: { type: Array, default: [] },
-    faqs: { type: Array, default: [] }
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.models.SiteSettings || mongoose.model<ISiteSettings>('SiteSettings', SiteSettingsSchema);
+
+
 

@@ -84,29 +84,47 @@ export async function GET() {
   }
 }
 
-// PUT: Update Site Settings
-export async function PUT(req: NextRequest) {
+async function updateSettings(req: NextRequest) {
   try {
     await dbConnect();
-    const body = await req.json();
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch (e) {
+      return NextResponse.json({ success: false, message: 'রিকোয়েস্ট বডি সঠিক JSON ফরম্যাটে নেই' }, { status: 400 });
+    }
+
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ success: false, message: 'রিকোয়েস্ট ডাটা অবজেক্ট হতে হবে' }, { status: 400 });
+    }
+
     const { _id, __v, createdAt, updatedAt, ...updateData } = body;
 
-    let settings = await SiteSettings.findOne();
-    if (!settings) {
-      settings = await SiteSettings.create(updateData);
-    } else {
-      settings = await SiteSettings.findByIdAndUpdate(settings._id, updateData, { new: true, runValidators: false });
-    }
+    const settings = await SiteSettings.findOneAndUpdate(
+      {},
+      { $set: updateData },
+      { new: true, upsert: true, runValidators: false }
+    );
 
     return NextResponse.json({
       success: true,
-      message: 'ওয়েবসাইট সেটিংস সফলভাবে আপডেট হয়েছে!',
+      message: 'ওয়েবসাইট সেটিংস সফলভাবে ডাটাবেজে আপডেট হয়েছে!',
       settings,
     });
   } catch (error: any) {
     console.error('Settings update error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'আপডেট করতে সমস্যা হয়েছে' }, { status: 500 });
+    return NextResponse.json({ success: false, message: error.message || 'ডাটাবেজ আপডেট করতে সমস্যা হয়েছে' }, { status: 500 });
   }
 }
+
+// PUT & POST Handlers for maximum compatibility
+export async function PUT(req: NextRequest) {
+  return updateSettings(req);
+}
+
+export async function POST(req: NextRequest) {
+  return updateSettings(req);
+}
+
 
 

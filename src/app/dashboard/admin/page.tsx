@@ -395,18 +395,29 @@ export default function AdminDashboard() {
           stats: { students: siteSettings.studentsStat, teachers: siteSettings.teachersStat, passRate: siteSettings.passRateStat, establishedYear: '১৯৯৮' }
         }),
       });
-      const data = await res.json();
-      if (data.success) {
+
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch (jsonErr) {
+        console.error('Non-JSON server response:', text);
+        toast.error(`সার্ভার এরর (Status ${res.status}): সেভ করা সম্ভব হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।`);
+        return;
+      }
+
+      if (res.ok && data.success) {
         toast.success(data.message || 'ডাটাবেজে সকল সেটিংস ও কন্টেন্ট সেভ হয়েছে!');
         fetchAllData();
       } else {
-        toast.error(data.message || 'আপডেট করতে সমস্যা হয়েছে!');
+        toast.error(data.message || `আপডেট করতে সমস্যা হয়েছে (Status ${res.status})`);
       }
     } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || 'আপডেট করতে সমস্যা হয়েছে!');
+      console.error('handleSaveSettings error:', err);
+      toast.error(err.message || 'নেটওয়ার্ক কানেকশন ত্রুটি!');
     }
   };
+
 
 
   // Notice Handlers
