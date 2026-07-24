@@ -11,7 +11,9 @@ import {
   Award, 
   PhoneCall, 
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 interface SettingsData {
@@ -19,6 +21,7 @@ interface SettingsData {
   heroTitleLine1: string;
   heroTitleLine2: string;
   heroDescription: string;
+  heroImage?: string;
   stats: {
     students: string;
     teachers: string;
@@ -33,6 +36,7 @@ export default function HeroSection() {
     heroTitleLine1: 'প্রযুক্তিই ভবিষ্যৎ',
     heroTitleLine2: 'জ্ঞান • শৃঙ্খলা • সাফল্য',
     heroDescription: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলে আমরা আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তিনির্ভর ভবিষ্যৎ গড়ার প্রত্যয়ে প্রতিশ্রুতিবদ্ধ।',
+    heroImage: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80',
     stats: {
       students: '২,৮৮০+',
       teachers: '৯৫+',
@@ -40,6 +44,8 @@ export default function HeroSection() {
       establishedYear: '১৯৯৮'
     }
   });
+
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -51,6 +57,38 @@ export default function HeroSection() {
       })
       .catch((err) => console.error('Error fetching settings:', err));
   }, []);
+
+  // Extract Hero Images list (comma-separated or single)
+  const rawImageStr = settings.heroImage || '';
+  const parsedImages = rawImageStr
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  const imagesList = parsedImages.length > 0 ? parsedImages : [
+    'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80',
+    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80',
+    'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&q=80'
+  ];
+
+  // Auto Slider every 5 seconds (5000ms)
+  useEffect(() => {
+    if (imagesList.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % imagesList.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [imagesList.length]);
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + imagesList.length) % imagesList.length);
+  };
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % imagesList.length);
+  };
 
   return (
     <section className="relative bg-gradient-to-b from-slate-50 via-white to-blue-50/40 pt-8 pb-16 overflow-hidden">
@@ -118,23 +156,69 @@ export default function HeroSection() {
 
           </div>
 
-          {/* Right Column: High-Res School Building Photo */}
+          {/* Right Column: Dynamic Photo Slider (5s interval) */}
           <div className="lg:col-span-6 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100 group">
-              <img 
-                src={(settings as any).heroImage || "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80"} 
-                alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুল বিল্ডিং"
-                className="w-full h-[360px] sm:h-[420px] lg:h-[460px] object-cover group-hover:scale-105 transition duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-900 group h-[360px] sm:h-[420px] lg:h-[460px]">
               
-              {/* Badge on Photo */}
-              <div className="absolute bottom-6 left-6 right-6 text-white flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold">ডাঃ মুজিব-রুবি মডেল হাই স্কুল</h3>
-                  <p className="text-xs text-slate-200">স্মার্ট ক্লাসরুম, ল্যাব ও সবুজ ক্যাম্পাস</p>
+              {imagesList.map((imgUrl, idx) => (
+                <div
+                  key={idx}
+                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                    idx === (currentSlide % imagesList.length) ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
+                >
+                  <img 
+                    src={imgUrl} 
+                    alt={`ডাঃ মুজিব-রুবি মডেল হাই স্কুল স্লাইড ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/10 to-transparent"></div>
                 </div>
-                <span className="px-3 py-1 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl text-xs font-bold">
+              ))}
+              
+              {/* Prev / Next Slider Controls */}
+              {imagesList.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevSlide}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-slate-900/60 hover:bg-blue-600 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition opacity-0 group-hover:opacity-100 shadow-md"
+                    aria-label="Previous Slide"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  <button
+                    onClick={handleNextSlide}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-slate-900/60 hover:bg-blue-600 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition opacity-0 group-hover:opacity-100 shadow-md"
+                    aria-label="Next Slide"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+
+                  {/* Dot Indicators */}
+                  <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-slate-900/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                    {imagesList.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentSlide(idx)}
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          idx === (currentSlide % imagesList.length)
+                            ? 'w-6 bg-blue-500'
+                            : 'w-2 bg-white/60 hover:bg-white'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Bottom Badge on Photo */}
+              <div className="absolute bottom-6 left-6 right-6 text-white flex items-center justify-between z-20 pointer-events-none">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold shadow-xs">ডাঃ মুজিব-রুবি মডেল হাই স্কুল</h3>
+                  <p className="text-xs text-slate-200">স্মার্ট ক্লাসরুম, রোবোটিক্স ল্যাব ও সবুজ ক্যাম্পাস</p>
+                </div>
+                <span className="px-3 py-1 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl text-xs font-bold shrink-0">
                   EIIN: ১৩০৯৫৪
                 </span>
               </div>

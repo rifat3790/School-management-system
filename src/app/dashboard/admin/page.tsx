@@ -31,7 +31,9 @@ import {
   EyeOff,
   Filter,
   UserCheck,
-  MessageSquare
+  MessageSquare,
+  Sparkles,
+  Calendar
 } from 'lucide-react';
 import { SCHOOL_INFO } from '@/data/schoolData';
 import { useToast } from '@/components/Toast';
@@ -95,7 +97,7 @@ export default function AdminDashboard() {
   });
 
   // Settings State
-  const [siteSettings, setSiteSettings] = useState({
+  const [siteSettings, setSiteSettings] = useState<any>({
     schoolName: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
     slogan: 'শিক্ষাই শক্তি, প্রযুক্তিই ভবিষ্যৎ',
     subSlogan: 'জ্ঞান • শৃঙ্খলা • সাফল্য',
@@ -122,8 +124,16 @@ export default function AdminDashboard() {
     visionText: 'স্মার্ট বাংলাদেশের উপযোগী ভবিষ্যৎ রূপকার তৈরি।',
     studentsStat: '২,৮৮০+',
     teachersStat: '৯৫+',
-    passRateStat: '২১৫+'
+    passRateStat: '২১৫+',
+    academicPrograms: [] as any[],
+    clubsAndActivities: [] as any[],
+    events: [] as any[],
+    testimonials: [] as any[],
+    faqs: [] as any[],
+    topAchievers: [] as any[],
+    campusFacilities: [] as any[]
   });
+
 
   // Forms
   const [newNotice, setNewNotice] = useState({ title: '', category: 'একাডেমিক', date: new Date().toLocaleDateString('bn-BD'), pdfUrl: '', content: '', isImportant: false });
@@ -156,6 +166,7 @@ export default function AdminDashboard() {
       if (dataSet.success && dataSet.settings) {
         const s = dataSet.settings;
         setSiteSettings({
+          ...s,
           schoolName: s.schoolName || 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
           slogan: s.slogan || 'শিক্ষাই শক্তি, প্রযুক্তিই ভবিষ্যৎ',
           subSlogan: s.subSlogan || 'জ্ঞান • শৃঙ্খলা • সাফল্য',
@@ -182,9 +193,17 @@ export default function AdminDashboard() {
           visionText: s.visionText || '',
           studentsStat: s.stats?.students || '২,৮৮০+',
           teachersStat: s.stats?.teachers || '৯৫+',
-          passRateStat: s.stats?.passRate || '২১৫+'
+          passRateStat: s.stats?.passRate || '২১৫+',
+          academicPrograms: s.academicPrograms || [],
+          clubsAndActivities: s.clubsAndActivities || [],
+          events: s.events || [],
+          testimonials: s.testimonials || [],
+          faqs: s.faqs || [],
+          topAchievers: s.topAchievers || [],
+          campusFacilities: s.campusFacilities || []
         });
       }
+
 
       // 3. Notices, Teachers, News, Gallery, Admissions, Donations, Contact
       const [rN, rT, rNw, rG, rAdm, rDon, rCnt] = await Promise.all([
@@ -377,9 +396,18 @@ export default function AdminDashboard() {
         }),
       });
       const data = await res.json();
-      if (data.success) toast.success('ডাটাবেজে সকল সেটিংস ও কন্টেন্ট সেভ হয়েছে!');
-    } catch (err) { toast.error('আপডেট করতে সমস্যা হয়েছে!'); }
+      if (data.success) {
+        toast.success(data.message || 'ডাটাবেজে সকল সেটিংস ও কন্টেন্ট সেভ হয়েছে!');
+        fetchAllData();
+      } else {
+        toast.error(data.message || 'আপডেট করতে সমস্যা হয়েছে!');
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'আপডেট করতে সমস্যা হয়েছে!');
+    }
   };
+
 
   // Notice Handlers
   const handleCreateNotice = async (e: React.FormEvent) => {
@@ -1127,41 +1155,483 @@ export default function AdminDashboard() {
 
         {/* TAB 4: Site & Hero Editor */}
         {activeTab === 'settings' && (
-          <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
-            <h3 className="text-lg font-bold text-slate-900">গ্লোবাল ওয়েবসাইট ও হিরো ব্যানার সেটিংস এডিটর</h3>
+          <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-8">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-900">গ্লোবাল ওয়েবসাইট ও হোম পেজ ডায়নামিক এডিটর</h3>
+                <p className="text-xs text-slate-500 mt-1">হোম পেজের সকল প্রিমিয়াম সেকশন ও তথ্য এখান থেকে লাইভ আপডেট করুন</p>
+              </div>
+              <button type="submit" className="py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-2">
+                <Save className="w-4 h-4" /> সেভ করুন
+              </button>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">স্কুলের নাম</label>
-                <input type="text" value={siteSettings.schoolName} onChange={(e) => setSiteSettings({ ...siteSettings, schoolName: e.target.value })} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">স্লোগান</label>
-                <input type="text" value={siteSettings.slogan} onChange={(e) => setSiteSettings({ ...siteSettings, slogan: e.target.value })} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">হিরো ট্যাগলাইন (Small Badge)</label>
-                <input type="text" value={siteSettings.heroTagline} onChange={(e) => setSiteSettings({ ...siteSettings, heroTagline: e.target.value })} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">হিরো মেইন টাইটেল</label>
-                <input type="text" value={siteSettings.heroTitleLine1} onChange={(e) => setSiteSettings({ ...siteSettings, heroTitleLine1: e.target.value })} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1">হিরো ছবি URL</label>
-                <input type="text" value={siteSettings.heroImage} onChange={(e) => setSiteSettings({ ...siteSettings, heroImage: e.target.value })} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1">হিরো বিবরণ</label>
-                <textarea rows={2} value={siteSettings.heroDescription} onChange={(e) => setSiteSettings({ ...siteSettings, heroDescription: e.target.value })} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+            {/* 1. Basic & Hero Info */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-blue-700 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> ১. হিরো ব্যানার ও সাধারণ তথ্য
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">স্কুলের নাম</label>
+                  <input type="text" value={siteSettings.schoolName || ''} onChange={(e) => setSiteSettings({ ...siteSettings, schoolName: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">স্লোগান</label>
+                  <input type="text" value={siteSettings.slogan || ''} onChange={(e) => setSiteSettings({ ...siteSettings, slogan: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">হিরো ট্যাগলাইন (Small Badge)</label>
+                  <input type="text" value={siteSettings.heroTagline || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroTagline: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">হিরো মেইন টাইটেল</label>
+                  <input type="text" value={siteSettings.heroTitleLine1 || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroTitleLine1: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">হিরো স্লাইডার ছবি URL (একাধিক ছবি কমা (,) দিয়ে আলাদা করুন - যেমন: url1, url2)</label>
+                  <input type="text" placeholder="https://image1.jpg, https://image2.jpg" value={siteSettings.heroImage || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono" />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">হিরো বিবরণ</label>
+                  <textarea rows={2} value={siteSettings.heroDescription || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroDescription: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                </div>
               </div>
             </div>
 
-            <button type="submit" className="py-3 px-6 bg-blue-600 text-white font-bold rounded-xl text-sm shadow-md hover:bg-blue-700 transition flex items-center gap-2">
-              <Save className="w-4 h-4" /> পরিবর্তন সেভ করুন
-            </button>
+            {/* 2. Academic Programs Manager */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-indigo-700 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" /> ২. একাডেমিক বিভাগ ও কারিকুলাম কার্ড ({siteSettings.academicPrograms?.length || 0})
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newProg = { title: 'নতুন বিভাগ', subtitle: 'বিষয়সমূহ', desc: 'বিভাগের বিবরণ লিখুন', classRange: 'নবম - দশম শ্রেণি', iconName: 'Atom', bgGradient: '' };
+                    setSiteSettings({ ...siteSettings, academicPrograms: [...(siteSettings.academicPrograms || []), newProg] });
+                  }}
+                  className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-indigo-700 transition flex items-center gap-1"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" /> আইটেম যোগ করুন
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(siteSettings.academicPrograms || []).map((prog: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = siteSettings.academicPrograms.filter((_: any, i: number) => i !== idx);
+                        setSiteSettings({ ...siteSettings, academicPrograms: updated });
+                      }}
+                      className="absolute top-3 right-3 text-rose-600 hover:text-rose-800 text-xs font-bold"
+                    >
+                      মুছুন
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">বিভাগের নাম</label>
+                        <input
+                          type="text"
+                          value={prog.title || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.academicPrograms];
+                            copy[idx].title = e.target.value;
+                            setSiteSettings({ ...siteSettings, academicPrograms: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">সাবটাইটেল (বিষয়সূচি)</label>
+                        <input
+                          type="text"
+                          value={prog.subtitle || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.academicPrograms];
+                            copy[idx].subtitle = e.target.value;
+                            setSiteSettings({ ...siteSettings, academicPrograms: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">শ্রেণি সীমা (Class Range)</label>
+                        <input
+                          type="text"
+                          value={prog.classRange || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.academicPrograms];
+                            copy[idx].classRange = e.target.value;
+                            setSiteSettings({ ...siteSettings, academicPrograms: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div className="sm:col-span-2 lg:col-span-3">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">সংক্ষিপ্ত বিবরণ</label>
+                        <input
+                          type="text"
+                          value={prog.desc || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.academicPrograms];
+                            copy[idx].desc = e.target.value;
+                            setSiteSettings({ ...siteSettings, academicPrograms: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. Clubs & Co-curricular Manager */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-emerald-700 flex items-center gap-2">
+                  <Users className="w-4 h-4" /> ৩. সহ-শিক্ষা ও ক্লাবসমূহ ({siteSettings.clubsAndActivities?.length || 0})
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newClub = { name: 'নতুন ক্লাব', category: 'সহ-শিক্ষা', desc: 'ক্লাবের তথ্য লিখুন', membersCount: '১০০+ সদস্য', iconName: 'Cpu', image: '' };
+                    setSiteSettings({ ...siteSettings, clubsAndActivities: [...(siteSettings.clubsAndActivities || []), newClub] });
+                  }}
+                  className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-emerald-700 transition flex items-center gap-1"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" /> ক্লাব যোগ করুন
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(siteSettings.clubsAndActivities || []).map((club: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = siteSettings.clubsAndActivities.filter((_: any, i: number) => i !== idx);
+                        setSiteSettings({ ...siteSettings, clubsAndActivities: updated });
+                      }}
+                      className="absolute top-3 right-3 text-rose-600 hover:text-rose-800 text-xs font-bold"
+                    >
+                      মুছুন
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">ক্লাবের নাম</label>
+                        <input
+                          type="text"
+                          value={club.name || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.clubsAndActivities];
+                            copy[idx].name = e.target.value;
+                            setSiteSettings({ ...siteSettings, clubsAndActivities: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">ক্যাটাগরি</label>
+                        <input
+                          type="text"
+                          value={club.category || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.clubsAndActivities];
+                            copy[idx].category = e.target.value;
+                            setSiteSettings({ ...siteSettings, clubsAndActivities: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">সদস্য সংখ্যা ব্যাজ</label>
+                        <input
+                          type="text"
+                          value={club.membersCount || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.clubsAndActivities];
+                            copy[idx].membersCount = e.target.value;
+                            setSiteSettings({ ...siteSettings, clubsAndActivities: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">ছবি URL</label>
+                        <input
+                          type="text"
+                          value={club.image || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.clubsAndActivities];
+                            copy[idx].image = e.target.value;
+                            setSiteSettings({ ...siteSettings, clubsAndActivities: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Upcoming Events Manager */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-purple-700 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> ৪. ক্যালেন্ডার ইভেন্টসমূহ ({siteSettings.events?.length || 0})
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newEvt = { title: 'নতুন ইভেন্ট', date: '১৫ মে, ২০২৬', time: 'সকাল ১০:০০', location: 'স্কুল অডিটোরিয়াম', category: 'একাডেমিক', image: '' };
+                    setSiteSettings({ ...siteSettings, events: [...(siteSettings.events || []), newEvt] });
+                  }}
+                  className="px-3 py-1 bg-purple-600 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-purple-700 transition flex items-center gap-1"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" /> ইভেন্ট যোগ করুন
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(siteSettings.events || []).map((evt: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = siteSettings.events.filter((_: any, i: number) => i !== idx);
+                        setSiteSettings({ ...siteSettings, events: updated });
+                      }}
+                      className="absolute top-3 right-3 text-rose-600 hover:text-rose-800 text-xs font-bold"
+                    >
+                      মুছুন
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">ইভেন্ট শিরোনাম</label>
+                        <input
+                          type="text"
+                          value={evt.title || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.events];
+                            copy[idx].title = e.target.value;
+                            setSiteSettings({ ...siteSettings, events: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">তারিখ</label>
+                        <input
+                          type="text"
+                          value={evt.date || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.events];
+                            copy[idx].date = e.target.value;
+                            setSiteSettings({ ...siteSettings, events: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">সময় ও স্থান</label>
+                        <input
+                          type="text"
+                          value={evt.location || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.events];
+                            copy[idx].location = e.target.value;
+                            setSiteSettings({ ...siteSettings, events: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 5. Parent & Alumni Testimonials Manager */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-amber-700 flex items-center gap-2">
+                  <HeartHandshake className="w-4 h-4" /> ৫. অভিভাবক রিভিউ ও মতামত ({siteSettings.testimonials?.length || 0})
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newTest = { name: 'নতুন অভিভাবক', role: 'অভিভাবক', studentName: 'শিক্ষার্থীর নাম', rating: 5, text: 'মতামত লিখুন', image: '' };
+                    setSiteSettings({ ...siteSettings, testimonials: [...(siteSettings.testimonials || []), newTest] });
+                  }}
+                  className="px-3 py-1 bg-amber-600 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-amber-700 transition flex items-center gap-1"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" /> মতামত যোগ করুন
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(siteSettings.testimonials || []).map((t: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = siteSettings.testimonials.filter((_: any, i: number) => i !== idx);
+                        setSiteSettings({ ...siteSettings, testimonials: updated });
+                      }}
+                      className="absolute top-3 right-3 text-rose-600 hover:text-rose-800 text-xs font-bold"
+                    >
+                      মুছুন
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">অভিভাবকের নাম</label>
+                        <input
+                          type="text"
+                          value={t.name || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.testimonials];
+                            copy[idx].name = e.target.value;
+                            setSiteSettings({ ...siteSettings, testimonials: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">পরিচয় / পদবী</label>
+                        <input
+                          type="text"
+                          value={t.role || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.testimonials];
+                            copy[idx].role = e.target.value;
+                            setSiteSettings({ ...siteSettings, testimonials: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">ছবি URL</label>
+                        <input
+                          type="text"
+                          value={t.image || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.testimonials];
+                            copy[idx].image = e.target.value;
+                            setSiteSettings({ ...siteSettings, testimonials: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div className="sm:col-span-2 lg:col-span-3">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">মূল মন্তব্য</label>
+                        <textarea
+                          rows={2}
+                          value={t.text || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.testimonials];
+                            copy[idx].text = e.target.value;
+                            setSiteSettings({ ...siteSettings, testimonials: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 6. FAQ Accordion Manager */}
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-sky-700 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" /> ৬. সাধারণ প্রশ্ন ও উত্তর (FAQs) ({siteSettings.faqs?.length || 0})
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newFaq = { question: 'নতুন প্রশ্ন?', answer: 'উত্তর লিখুন', category: 'সাধারণ' };
+                    setSiteSettings({ ...siteSettings, faqs: [...(siteSettings.faqs || []), newFaq] });
+                  }}
+                  className="px-3 py-1 bg-sky-600 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-sky-700 transition flex items-center gap-1"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" /> প্রশ্ন যোগ করুন
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(siteSettings.faqs || []).map((faq: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = siteSettings.faqs.filter((_: any, i: number) => i !== idx);
+                        setSiteSettings({ ...siteSettings, faqs: updated });
+                      }}
+                      className="absolute top-3 right-3 text-rose-600 hover:text-rose-800 text-xs font-bold"
+                    >
+                      মুছুন
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">প্রশ্ন</label>
+                        <input
+                          type="text"
+                          value={faq.question || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.faqs];
+                            copy[idx].question = e.target.value;
+                            setSiteSettings({ ...siteSettings, faqs: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">ক্যাটাগরি</label>
+                        <input
+                          type="text"
+                          value={faq.category || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.faqs];
+                            copy[idx].category = e.target.value;
+                            setSiteSettings({ ...siteSettings, faqs: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">উত্তর</label>
+                        <textarea
+                          rows={2}
+                          value={faq.answer || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.faqs];
+                            copy[idx].answer = e.target.value;
+                            setSiteSettings({ ...siteSettings, faqs: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 flex justify-end">
+              <button type="submit" className="py-3 px-8 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-sm shadow-lg shadow-blue-500/20 transition flex items-center gap-2">
+                <Save className="w-5 h-5" /> সকল পরিবর্তন ডাটাবেজে সেভ করুন
+              </button>
+            </div>
           </form>
         )}
+
 
         {/* TAB: ABOUT & LEADERSHIP MESSAGES EDITOR */}
         {activeTab === 'about' && (

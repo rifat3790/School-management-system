@@ -115,31 +115,32 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all duration-300">
       
-      {/* Top Banner Bar */}
-      <div className="bg-slate-900 text-white text-[11px] sm:text-xs py-1.5 px-3 sm:px-6 border-b border-slate-800">
+      {/* Top Banner Bar (Light Theme) */}
+      <div className="bg-slate-100/90 text-slate-700 text-[11px] sm:text-xs py-1.5 px-3 sm:px-6 border-b border-slate-200">
         <div className="max-w-[1536px] mx-auto flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-            <span className="flex items-center gap-1 font-medium text-sky-400">
-              <Phone className="w-3 h-3" />
+            <span className="flex items-center gap-1 font-bold text-blue-600">
+              <Phone className="w-3.5 h-3.5 text-blue-600" />
               {siteSettings.phone}
             </span>
-            <span className="hidden md:flex items-center gap-1 text-slate-300">
-              <Mail className="w-3 h-3 text-slate-400" />
+            <span className="hidden md:flex items-center gap-1 text-slate-600 font-medium">
+              <Mail className="w-3.5 h-3.5 text-blue-500" />
               {siteSettings.email}
             </span>
-            <span className="hidden lg:inline-block bg-slate-800/90 px-2 py-0.5 rounded-md font-semibold border border-slate-700 text-slate-300 text-[10px]">
+            <span className="hidden lg:inline-block bg-white px-2 py-0.5 rounded-md font-bold border border-slate-200 text-slate-700 text-[10px] shadow-xs">
               EIIN: {siteSettings.eiin} | কোড: {siteSettings.code}
             </span>
           </div>
 
           <div className="flex items-center gap-3 font-medium">
-            <span className="text-sky-300 hidden sm:inline-flex items-center gap-1 text-[11px]">
-              <Sparkles className="w-3 h-3 text-amber-400" />
+            <span className="text-blue-700 font-bold hidden sm:inline-flex items-center gap-1 text-[11px] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+              <Sparkles className="w-3 h-3 text-amber-500" />
               {siteSettings.subSlogan}
             </span>
           </div>
         </div>
       </div>
+
 
       {/* Main Glass Navigation Bar */}
       <div className="max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8">

@@ -37,6 +37,56 @@ export interface ISiteSettings extends Document {
     youtube: string;
     whatsapp: string;
   };
+  campusFacilities?: Array<{
+    title: string;
+    desc: string;
+    iconName: string;
+    badge: string;
+  }>;
+  topAchievers?: Array<{
+    name: string;
+    exam: string;
+    gpa: string;
+    quote: string;
+    image: string;
+  }>;
+  academicPrograms?: Array<{
+    title: string;
+    subtitle: string;
+    desc: string;
+    classRange: string;
+    iconName: string;
+    bgGradient: string;
+  }>;
+  clubsAndActivities?: Array<{
+    name: string;
+    category: string;
+    desc: string;
+    membersCount: string;
+    iconName: string;
+    image: string;
+  }>;
+  events?: Array<{
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    category: string;
+    image: string;
+  }>;
+  testimonials?: Array<{
+    name: string;
+    role: string;
+    studentName: string;
+    rating: number;
+    text: string;
+    image: string;
+  }>;
+  faqs?: Array<{
+    question: string;
+    answer: string;
+    category: string;
+  }>;
   updatedAt: Date;
 }
 
@@ -77,9 +127,17 @@ const SiteSettingsSchema: Schema = new Schema(
       facebook: { type: String, default: 'https://facebook.com' },
       youtube: { type: String, default: 'https://youtube.com' },
       whatsapp: { type: String, default: 'https://wa.me/8801700000000' }
-    }
+    },
+    campusFacilities: { type: Array, default: [] },
+    topAchievers: { type: Array, default: [] },
+    academicPrograms: { type: Array, default: [] },
+    clubsAndActivities: { type: Array, default: [] },
+    events: { type: Array, default: [] },
+    testimonials: { type: Array, default: [] },
+    faqs: { type: Array, default: [] }
   },
   { timestamps: true }
 );
 
 export default mongoose.models.SiteSettings || mongoose.model<ISiteSettings>('SiteSettings', SiteSettingsSchema);
+
