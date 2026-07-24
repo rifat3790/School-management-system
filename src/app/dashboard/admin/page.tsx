@@ -760,21 +760,48 @@ export default function AdminDashboard() {
             ) : (
               <div className="space-y-4">
                 {resetUsers.map((user) => (
-                  <div key={user._id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
+                  <div key={user._id} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                      <h4 className="font-bold text-slate-900">{user.name} ({user.role})</h4>
-                      <p className="text-xs text-slate-500">{user.email} • {user.phone}</p>
-                      <p className="text-xs font-bold text-rose-600 mt-1">রিসেট কোড: <span className="font-mono bg-rose-100 px-2 py-0.5 rounded text-rose-900">{user.resetCode}</span></p>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-slate-900 text-sm">{user.name}</h4>
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold text-[10px] uppercase">{user.role}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">{user.email} • {user.phone || 'মোবাইল নম্বর নেই'}</p>
+                      
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs font-bold text-slate-700">সিক্রেট রিসেট কোড:</span>
+                        <span className="font-mono font-bold text-xs bg-rose-100 text-rose-900 px-2.5 py-1 rounded-lg border border-rose-200">
+                          {user.resetCode || 'RST-889021'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (user.resetCode) {
+                              navigator.clipboard.writeText(user.resetCode);
+                              toast.success('রিসেট কোড কপি হয়েছে!');
+                            }
+                          }}
+                          className="text-[11px] font-bold text-blue-600 hover:underline"
+                        >
+                          [কপি করুন]
+                        </button>
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => {
-                        handleClearReset(user._id, 'NewPass123');
-                      }}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center gap-1.5"
-                    >
-                      <Key className="w-4 h-4" /> নতুন পাসওয়ার্ড সেট করুন
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newPass = prompt(`ইউজার ${user.name}-এর জন্য নতুন পাসওয়ার্ড লিখুন:`, 'Password123');
+                          if (newPass) {
+                            handleClearReset(user._id, newPass);
+                          }
+                        }}
+                        className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-1.5"
+                      >
+                        <Key className="w-4 h-4" /> নতুন পাসওয়ার্ড সেট করুন
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

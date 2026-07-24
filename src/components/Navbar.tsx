@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { 
   GraduationCap, 
   Phone, 
@@ -10,12 +12,18 @@ import {
   Menu, 
   X, 
   LogIn, 
+  LogOut,
   Award,
-  Sparkles
+  Sparkles,
+  User,
+  LayoutDashboard
 } from 'lucide-react';
 
 export default function Navbar() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [userSession, setUserSession] = useState<{ email: string; role: string; dashboardUrl: string } | null>(null);
+  
   const [siteSettings, setSiteSettings] = useState({
     schoolName: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
     eiin: '১৩০৯৫৪',
@@ -38,6 +46,56 @@ export default function Navbar() {
       })
       .catch((err) => console.error(err));
   }, []);
+
+  // Listen to Firebase Auth state for active logged-in user
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const cleanEmail = user.email?.toLowerCase().trim() || '';
+        const isSuperAdmin = cleanEmail === 'mdrifayethossen@gmail.com' || cleanEmail === 'admin@drmujibrubi.edu.bd';
+        
+        if (isSuperAdmin) {
+          setUserSession({ email: cleanEmail, role: 'superadmin', dashboardUrl: '/dashboard/admin' });
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: user.uid, email: user.email }),
+          });
+          const data = await res.json();
+          if (data.success && data.user) {
+            const r = data.user.role;
+            const targetUrl = 
+              (r === 'superadmin' || r === 'admin') ? '/dashboard/admin' :
+              r === 'teacher' ? '/dashboard/teacher' :
+              r === 'parent' ? '/dashboard/parent' : '/dashboard/student';
+
+            setUserSession({ email: cleanEmail, role: r, dashboardUrl: targetUrl });
+          } else {
+            setUserSession({ email: cleanEmail, role: 'user', dashboardUrl: '/dashboard/student' });
+          }
+        } catch (e) {
+          setUserSession({ email: cleanEmail, role: 'user', dashboardUrl: '/dashboard/student' });
+        }
+      } else {
+        setUserSession(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUserSession(null);
+      router.push('/login');
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+  };
 
   const navLinks = [
     { name: 'হোম', href: '/' },
@@ -123,19 +181,38 @@ export default function Navbar() {
           <div className="hidden sm:flex items-center gap-2">
             <Link
               href="/result"
-              className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold shadow-sm hover:bg-blue-700 transition flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold shadow-sm hover:bg-blue-700 transition flex items-center gap-1.5"
             >
               <Award className="w-4 h-4" />
               ফলাফল
             </Link>
 
-            <Link
-              href="/login"
-              className="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition flex items-center gap-1.5"
-            >
-              <LogIn className="w-4 h-4" />
-              লগইন
-            </Link>
+            {userSession ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={userSession.dashboardUrl}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-extrabold shadow-sm hover:bg-emerald-700 transition flex items-center gap-1.5"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  ড্যাশবোর্ড
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-bold hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition flex items-center gap-1"
+                  title="লগআউট"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition flex items-center gap-1.5"
+              >
+                <LogIn className="w-4 h-4" />
+                লগইন
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -176,13 +253,34 @@ export default function Navbar() {
             >
               ফলাফল
             </Link>
-            <Link
-              href="/login"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 py-2.5 border border-slate-300 text-slate-700 text-center rounded-xl text-xs font-bold"
-            >
-              লগইন
-            </Link>
+            {userSession ? (
+              <>
+                <Link
+                  href={userSession.dashboardUrl}
+                  onClick={() => setIsOpen(false)}
+                  className="flex-1 py-2.5 bg-emerald-600 text-white text-center rounded-xl text-xs font-bold"
+                >
+                  ড্যাশবোর্ড
+                </Link>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    handleLogout();
+                  }}
+                  className="px-4 py-2.5 bg-rose-50 text-rose-700 rounded-xl text-xs font-bold border border-rose-200"
+                >
+                  লগআউট
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="flex-1 py-2.5 border border-slate-300 text-slate-700 text-center rounded-xl text-xs font-bold"
+              >
+                লগইন
+              </Link>
+            )}
           </div>
         </div>
       )}

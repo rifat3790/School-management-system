@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { 
   GraduationCap, 
@@ -37,6 +37,32 @@ function RegisterFormContent() {
     designation: '',
     childStudentId: ''
   });
+
+  // Auto redirect if user is already logged in
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const res = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: user.uid, email: user.email }),
+          });
+          const data = await res.json();
+          if (data.success && data.user && data.user.status === 'approved') {
+            const role = data.user.role;
+            if (role === 'superadmin' || role === 'admin') router.push('/dashboard/admin');
+            else if (role === 'teacher') router.push('/dashboard/teacher');
+            else if (role === 'parent') router.push('/dashboard/parent');
+            else router.push('/dashboard/student');
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     const queryEmail = searchParams.get('email');

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { 
   GraduationCap, 
@@ -11,7 +11,8 @@ import {
   Lock, 
   ArrowRight, 
   AlertCircle,
-  Clock
+  Clock,
+  Key
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -27,6 +28,36 @@ export default function LoginPage() {
     const clean = userEmail.toLowerCase().trim();
     return clean === 'mdrifayethossen@gmail.com' || clean === 'admin@drmujibrubi.edu.bd';
   };
+
+  // Auto-redirect if user is already logged in
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        if (isSuperAdminEmail(user.email)) {
+          router.push('/dashboard/admin');
+          return;
+        }
+        try {
+          const res = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: user.uid, email: user.email }),
+          });
+          const data = await res.json();
+          if (data.success && data.user && data.user.status === 'approved') {
+            const role = data.user.role;
+            if (role === 'superadmin' || role === 'admin') router.push('/dashboard/admin');
+            else if (role === 'teacher') router.push('/dashboard/teacher');
+            else if (role === 'parent') router.push('/dashboard/parent');
+            else router.push('/dashboard/student');
+          }
+        } catch (e) {
+          console.error('Auto redirect check error:', e);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,7 +273,12 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">পাসওয়ার্ড</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-slate-700">পাসওয়ার্ড</label>
+              <Link href="/forgot-password" className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1">
+                <Key className="w-3 h-3" /> পাসওয়ার্ড ভুলে গেছেন?
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="w-5 h-5 absolute left-3.5 top-3 text-slate-400" />
               <input
