@@ -44,7 +44,8 @@ export default function AcademicPrograms({ programs = [] }: AcademicProgramsProp
     { title: 'জুনিয়র ফাউন্ডেশন (Junior Core)', subtitle: 'ষষ্ঠ থেকে অষ্টম শ্রেণি ভিত্তিক মানসম্মত পাঠদান', desc: 'ডিজিটাল গণিত ল্যাব, স্পোকেন ইংলিশ ক্লাস ও কোডিং মৌলিক কোর্স।', classRange: 'ষষ্ঠ - অষ্টম শ্রেণি', iconName: 'Award', bgGradient: 'from-sky-50 to-blue-50/50' }
   ];
 
-  const list = programs.length > 0 ? programs : defaultPrograms;
+  const list = programs;
+
 
   return (
     <section className="py-16 bg-white border-y border-slate-200/80 relative overflow-hidden">

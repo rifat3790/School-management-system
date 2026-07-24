@@ -32,7 +32,8 @@ export default function EventsSection({ events = [] }: EventsSectionProps) {
     { title: 'প্রথম সাময়িক মডেল টেস্ট ও অভিভাবক মতবিনিময়', date: '১০ এপ্রিল, ২০২৬', time: 'সকাল ০৯:৩০ - দুপুর ০১:০০', location: 'প্রধান ক্যাম্পাস', category: 'একাডেমিক', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80' }
   ];
 
-  const list = events.length > 0 ? events : defaultEvents;
+  const list = events;
+
 
   return (
     <section className="py-16 bg-white border-y border-slate-200/80">

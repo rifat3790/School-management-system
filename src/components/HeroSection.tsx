@@ -36,7 +36,7 @@ export default function HeroSection() {
     heroTitleLine1: 'প্রযুক্তিই ভবিষ্যৎ',
     heroTitleLine2: 'জ্ঞান • শৃঙ্খলা • সাফল্য',
     heroDescription: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলে আমরা আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তিনির্ভর ভবিষ্যৎ গড়ার প্রত্যয়ে প্রতিশ্রুতিবদ্ধ।',
-    heroImage: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80',
+    heroImage: '',
     stats: {
       students: '২,৮৮০+',
       teachers: '৯৫+',
@@ -58,18 +58,12 @@ export default function HeroSection() {
       .catch((err) => console.error('Error fetching settings:', err));
   }, []);
 
-  // Extract Hero Images list (comma-separated or single)
+  // Extract Hero Images list exclusively from database (comma-separated or single)
   const rawImageStr = settings.heroImage || '';
-  const parsedImages = rawImageStr
+  const imagesList = rawImageStr
     .split(',')
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
-
-  const imagesList = parsedImages.length > 0 ? parsedImages : [
-    'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80',
-    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80',
-    'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&q=80'
-  ];
 
   // Auto Slider every 5 seconds (5000ms)
   useEffect(() => {
@@ -83,10 +77,12 @@ export default function HeroSection() {
   }, [imagesList.length]);
 
   const handlePrevSlide = () => {
+    if (imagesList.length === 0) return;
     setCurrentSlide((prev) => (prev - 1 + imagesList.length) % imagesList.length);
   };
 
   const handleNextSlide = () => {
+    if (imagesList.length === 0) return;
     setCurrentSlide((prev) => (prev + 1) % imagesList.length);
   };
 
@@ -156,25 +152,33 @@ export default function HeroSection() {
 
           </div>
 
-          {/* Right Column: Dynamic Photo Slider (5s interval) */}
+          {/* Right Column: Pure Dynamic Photo Slider (5s interval) */}
           <div className="lg:col-span-6 relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-900 group h-[360px] sm:h-[420px] lg:h-[460px]">
               
-              {imagesList.map((imgUrl, idx) => (
-                <div
-                  key={idx}
-                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                    idx === (currentSlide % imagesList.length) ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-                  }`}
-                >
-                  <img 
-                    src={imgUrl} 
-                    alt={`ডাঃ মুজিব-রুবি মডেল হাই স্কুল স্লাইড ${idx + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/10 to-transparent"></div>
+              {imagesList.length > 0 ? (
+                imagesList.map((imgUrl, idx) => (
+                  <div
+                    key={idx}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                      idx === (currentSlide % imagesList.length) ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}
+                  >
+                    <img 
+                      src={imgUrl} 
+                      alt={`ডাঃ মুজিব-রুবি মডেল হাই স্কুল স্লাইড ${idx + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/10 to-transparent"></div>
+                  </div>
+                ))
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-950 flex flex-col items-center justify-center text-white p-8 text-center">
+                  <GraduationCap className="w-16 h-16 text-blue-400 mb-3 animate-bounce" />
+                  <h3 className="text-2xl font-black">ডাঃ মুজিব-রুবি মডেল হাই স্কুল</h3>
+                  <p className="text-sm text-blue-200 mt-1">স্মার্ট ডিজিটাল শিক্ষাঙ্গন • শেরপুর ডিস্ট্রিক্ট</p>
                 </div>
-              ))}
+              )}
               
               {/* Prev / Next Slider Controls */}
               {imagesList.length > 1 && (

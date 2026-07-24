@@ -44,7 +44,8 @@ export default function ClubsSection({ clubs = [] }: ClubsSectionProps) {
     { name: 'বয় স্কাউটস ও রেড ক্রিসেন্ট', category: 'সমাজসেবা', desc: 'শৃঙ্খলা, নেতৃত্ব, দুর্যোগ ব্যবস্থাপনা ও সেবামূলক কর্মকাণ্ডে নিবেদিত স্কোয়াড।', membersCount: '৯০+ সদস্য', iconName: 'Shield', image: 'https://images.unsplash.com/photo-1526976668912-1a811878dd37?w=600&q=80' }
   ];
 
-  const list = clubs.length > 0 ? clubs : defaultClubs;
+  const list = clubs;
+
 
   return (
     <section className="py-16 bg-slate-50 border-y border-slate-200/80">

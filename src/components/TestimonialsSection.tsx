@@ -30,7 +30,8 @@ export default function TestimonialsSection({ testimonials = [] }: TestimonialsS
     { name: 'ড. কামরুল হাসান', role: 'প্রাক্তন শিক্ষার্থী (ব্যাচ ২০০৫)', studentName: 'বুয়েট সিএসই গ্রাজুয়েট', rating: 5, text: 'আজ আমি বিদেশের স্বনামধন্য প্রতিষ্ঠানে সফটওয়্যার ইঞ্জিনিয়ার। এই স্কুলের লাইব্রেরি ও সায়েন্স ল্যাবেই আমার স্বপ্নের ভিত তৈরি হয়েছিল।', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&q=80' }
   ];
 
-  const list = testimonials.length > 0 ? testimonials : defaultTestimonials;
+  const list = testimonials;
+
 
   return (
     <section className="py-16 bg-slate-50 border-y border-slate-200/80">

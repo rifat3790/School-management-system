@@ -90,24 +90,12 @@ export default function Home() {
     return matchesSearch && matchesCategory;
   });
 
-  // Top Achievers (Dynamic or fallback)
-  const topAchievers = siteSettings?.topAchievers && siteSettings.topAchievers.length > 0
-    ? siteSettings.topAchievers
-    : [
-        { name: 'তানভীর রশীদ', exam: 'এসএসসি ২০২৫ (বিজ্ঞান)', gpa: 'GPA 5.00 (Golden A+)', image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80', quote: 'ডাঃ মুজিব-রুবি স্কুলের রোবোটিক্স ল্যাব ও শিক্ষকদের গাইডলাইনেই আমার এই সাফল্য।' },
-        { name: 'ফারজানা মিমি', exam: 'এসএসসি ২০২৫ (বিজ্ঞান)', gpa: 'GPA 5.00 (Golden A+)', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=80', quote: 'ডিজিটাল ক্লাসরুম ও নিয়মিত সাপ্তাহিক মডেল টেস্ট আমাকে আত্মবিশ্বাসী করেছে।' },
-        { name: 'আরিফ হোসেন', exam: 'জেএসসি ২০২৪', gpa: 'GPA 5.00 (Board Rank)', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80', quote: 'লাইব্রেরির সমৃদ্ধ বইয়ের সংগ্রহ ও সহ-শিক্ষা ক্লাবগুলোর অবদান অনস্বীকার্য।' },
-      ];
+  // Top Achievers (100% Dynamic from Database)
+  const topAchievers = siteSettings?.topAchievers || [];
 
-  // Campus Facilities (Dynamic or fallback)
-  const campusFacilities = siteSettings?.campusFacilities && siteSettings.campusFacilities.length > 0
-    ? siteSettings.campusFacilities
-    : [
-        { title: 'অ্যাডভান্সড রোবোটিক্স ও স্টেম ল্যাব', desc: 'মাইক্রোকন্ট্রোলার, ৩ডি প্রিন্টিং ও আইওটি কিট সমৃদ্ধ আধুনিক ল্যাব।', badge: '১৫০+ প্রজেক্ট' },
-        { title: 'স্মার্ট মাল্টিমিডিয়া ক্লাসরুম', desc: '৭৫" ৪কে ইন্টারেক্টিভ স্মার্ট বোর্ডে এনিমেটেড ডিজিটাল পাঠদান।', badge: '৩২টি স্মার্ট রুম' },
-        { title: 'ডিজিটাল ল্যাঙ্গুয়েজ ও আইসিটি ল্যাব', desc: 'স্পোকেন ইংলিশ, ব্রিটিশ একসেন্ট লিসেনিং ও প্রোগ্রামিং ল্যাব।', badge: '৬০টি ডেক্স' },
-        { title: 'নিরাপদ সিসিটিভি ও বায়োমেট্রিক ক্যাম্পাস', desc: '২৪/৭ সিসিটিভি সার্ভেইল্যান্স ও রিয়েল-টাইম এসএমএস হাজিরা।', badge: '১০০% সিকিউরিটি' },
-      ];
+  // Campus Facilities (100% Dynamic from Database)
+  const campusFacilities = siteSettings?.campusFacilities || [];
+
 
   return (
     <div className="space-y-0 bg-slate-50 min-h-screen">
