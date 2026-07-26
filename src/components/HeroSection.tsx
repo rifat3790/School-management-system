@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Building2, 
@@ -22,13 +22,33 @@ interface HeroSectionProps {
 export default function HeroSection({ settings }: HeroSectionProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Parse custom images if provided in settings.heroImage
+  const customImages = useMemo(() => {
+    const raw = settings?.heroImage;
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    if (typeof raw === 'string') {
+      return raw
+        .split(/[\n,]+/)
+        .map((url: string) => url.trim())
+        .filter((url: string) => url.length > 0 && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')));
+    }
+    return [];
+  }, [settings?.heroImage]);
+
+  const defaultImages = [
+    'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&q=80',
+    'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&q=80',
+    'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80'
+  ];
+
   const slides = [
     {
       tagline: settings?.heroTagline || '২০২৬ শিক্ষাবর্ষে ভর্তি চলছে',
       title1: settings?.heroTitleLine1 || 'শিক্ষাই জাতির মেরুদণ্ড',
       title2: settings?.heroTitleLine2 || 'সুশিক্ষাই উজ্জ্বল ভবিষ্যতের ভিত্তি',
       description: settings?.heroDescription || 'আমাদের বিদ্যালয় প্রতিটি শিক্ষার্থীর মধ্যে নৈতিক স্তম্ভতার সাথে আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তির মাধ্যমে আগামী দিনে তুলে ধরছি আগামী প্রজন্মের সেরা, সৃজনশীল ও সামাজিক নেতৃত্ব।',
-      image: settings?.heroImage || 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&q=80',
+      image: customImages[0] || defaultImages[0],
       badge: 'সেরা ডিজিটাল শিক্ষাঙ্গন',
       badgeIcon: ShieldCheck
     },
@@ -37,7 +57,7 @@ export default function HeroSection({ settings }: HeroSectionProps) {
       title1: 'প্রযুক্তি ও উদ্ভাবনের নতুন দিগন্ত',
       title2: 'ভবিষ্যতের স্মার্ট স্কিলস ও কোডিং',
       description: 'আমাদের ক্লাসরুমে রয়েছে ৪র্থ প্রজন্মের ইন্টারেক্টিভ ডিসপ্লে, মাইক্রোকন্ট্রোলার ও ৩ডি প্রিন্টিং ল্যাব যা প্রতিটি শিক্ষার্থীকে বিশ্বমানের গবেষণায় সাহায্য করে।',
-      image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&q=80',
+      image: customImages[1] || customImages[0] || defaultImages[1],
       badge: 'রোবোটিক্স ও কোডিং ল্যাব',
       badgeIcon: Cpu
     },
@@ -46,7 +66,7 @@ export default function HeroSection({ settings }: HeroSectionProps) {
       title1: 'মেধা, ক্রীড়া ও সংস্কৃতিতে শীর্ষস্থান',
       title2: 'অলিম্পিয়াড ও চ্যাম্পিয়নশিপ বিজয়',
       description: 'জাতীয় বিজ্ঞান অলিম্পিয়াড, বিতর্ক ও বার্ষিক ক্রীড়ায় আমাদের ট্রফি অর্জন অত্র অঞ্চলের শিক্ষাঙ্গনে এক অনন্য রেকর্ড তৈরি করেছে।',
-      image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80',
+      image: customImages[2] || customImages[0] || defaultImages[2],
       badge: 'জাতীয় চ্যাম্পিয়ন ট্রফি জয়ী',
       badgeIcon: Award
     }
@@ -179,9 +199,14 @@ export default function HeroSection({ settings }: HeroSectionProps) {
               {/* Main Curved Leaf Mask Frame */}
               <div className="relative rounded-[50px_15px_50px_15px] overflow-hidden border-4 border-white shadow-2xl bg-white aspect-[4/3] sm:aspect-[14/10]">
                 <img 
+                  key={activeSlide.image}
                   src={activeSlide.image} 
                   alt={activeSlide.title1} 
                   className="w-full h-full object-cover transform hover:scale-105 transition duration-700"
+                  onError={(e) => {
+                    // Fallback to default high-definition image if URL fails to load
+                    e.currentTarget.src = defaultImages[currentSlide] || defaultImages[0];
+                  }}
                 />
                 
                 {/* Floating Glassmorphic Badge Tag */}

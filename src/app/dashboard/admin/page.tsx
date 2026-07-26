@@ -1241,6 +1241,34 @@ export default function AdminDashboard() {
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">হিরো স্লাইডার ছবি URL (একাধিক ছবি কমা (,) দিয়ে আলাদা করুন - যেমন: url1, url2)</label>
                   <input type="text" placeholder="https://image1.jpg, https://image2.jpg" value={siteSettings.heroImage || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono" />
+                  
+                  {/* Live Image Thumbnails Preview */}
+                  {siteSettings.heroImage && (
+                    <div className="mt-3 space-y-2">
+                      <p className="text-[11px] font-bold text-slate-600">লাইভ ছবি প্রিভিউ (Live Preview):</p>
+                      <div className="flex flex-wrap gap-3">
+                        {siteSettings.heroImage.split(/[\n,]+/).map((url: string, idx: number) => {
+                          const cleanUrl = url.trim();
+                          if (!cleanUrl) return null;
+                          return (
+                            <div key={idx} className="relative w-24 h-16 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 shadow-xs group">
+                              <img 
+                                src={cleanUrl} 
+                                alt={`Hero Slide ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&q=80';
+                                }}
+                              />
+                              <span className="absolute bottom-0.5 left-0.5 bg-slate-900/80 text-white font-bold text-[9px] px-1 rounded">
+                                Slide {idx + 1}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="md:col-span-2">

@@ -18,10 +18,7 @@ export default function Home() {
   const [gallery, setGallery] = useState<any[]>([]);
 
   useEffect(() => {
-    // 1. Seed database with authentic data on first run
-    fetch('/api/seed').catch((err) => console.error(err));
-
-    // 2. Fetch site settings
+    // 1. Fetch site settings from MongoDB
     fetch('/api/settings')
       .then((res) => res.json())
       .then((data) => {
@@ -31,7 +28,7 @@ export default function Home() {
       })
       .catch((err) => console.error(err));
 
-    // 3. Fetch notices
+    // 2. Fetch notices from MongoDB
     fetch('/api/notices')
       .then((res) => res.json())
       .then((data) => {
@@ -41,7 +38,7 @@ export default function Home() {
       })
       .catch((err) => console.error(err));
 
-    // 4. Fetch teachers
+    // 3. Fetch teachers from MongoDB
     fetch('/api/teachers')
       .then((res) => res.json())
       .then((data) => {
@@ -51,7 +48,7 @@ export default function Home() {
       })
       .catch((err) => console.error(err));
 
-    // 5. Fetch gallery
+    // 4. Fetch gallery items from MongoDB
     fetch('/api/gallery')
       .then((res) => res.json())
       .then((data) => {
@@ -77,7 +74,7 @@ export default function Home() {
       <FeaturesGrid />
 
       {/* 5. 3-Column Info Hub (Academic Depts | Latest Notices | Upcoming Events) */}
-      <InfoHubSection notices={notices} events={siteSettings?.events} />
+      <InfoHubSection notices={notices} events={siteSettings?.events} academicPrograms={siteSettings?.academicPrograms} />
 
       {/* 6. Our Achievements Banner (Dark Navy Full-Width Section) */}
       <AchievementsBanner settings={siteSettings} />

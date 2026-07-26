@@ -3,6 +3,8 @@ import dbConnect from '@/lib/dbConnect';
 import Teacher from '@/models/Teacher';
 import { TEACHERS_LIST } from '@/data/schoolData';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     await dbConnect();

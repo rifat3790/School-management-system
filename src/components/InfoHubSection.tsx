@@ -6,42 +6,29 @@ import Link from 'next/link';
 interface InfoHubSectionProps {
   notices?: any[];
   events?: any[];
+  academicPrograms?: any[];
 }
 
-export default function InfoHubSection({ notices, events }: InfoHubSectionProps) {
-  const departments = [
-    {
-      title: 'বিজ্ঞান বিভাগ',
-      subtitle: 'আধুনিক ল্যাব ও গবেষণামূলক শিক্ষা।',
-      image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80'
-    },
-    {
-      title: 'ব্যবসায় শিক্ষা বিভাগ',
-      subtitle: 'বাস্তবমুখী ও ব্যবহারিক শিক্ষা।',
-      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&q=80'
-    },
-    {
-      title: 'মানবিক বিভাগ',
-      subtitle: 'সৃজনশীলতা, সমাজবিজ্ঞান ও মানবিক মূল্যবোধের শিক্ষা।',
-      image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&q=80'
-    }
-  ];
-
-  const defaultNotices = [
-    { day: '২৬', month: 'মে', title: 'অর্ধবার্ষিক পরীক্ষার রুটিন প্রকাশ', href: '/notices' },
-    { day: '২০', month: 'মে', title: '২০২৬ शिक्षাবর্ষের ভর্তি বিজ্ঞপ্তি', href: '/notices' },
-    { day: '১৫', month: 'মে', title: 'স্বাধীনতা দিবস উপলক্ষে সাংস্কৃতিক অনুষ্ঠান', href: '/notices' },
-    { day: '১০', month: 'মে', title: 'বৃষ্টির আবহাওয়া উপলক্ষে ছুটি', href: '/notices' },
-    { day: '০৫', month: 'মে', title: 'ক্লাস রুটিন আপডেট', href: '/notices' }
-  ];
-
-  const defaultEvents = [
-    { day: '০৬', month: 'জুন', title: 'বিজ্ঞান মেলা' },
-    { day: '১২', month: 'জুন', title: 'বার্ষিক ক্রীড়া প্রতিযোগিতা' },
-    { day: '২০', month: 'জুন', title: 'সাংস্কৃতিক অনুষ্ঠান' },
-    { day: '২৫', month: 'জুন', title: 'বিতর্ক প্রতিযোগিতা' },
-    { day: '৩০', month: 'জুন', title: 'অভিভাবক সমাবেশ' }
-  ];
+export default function InfoHubSection({ notices, events, academicPrograms }: InfoHubSectionProps) {
+  const departmentsToRender = academicPrograms && academicPrograms.length > 0
+    ? academicPrograms
+    : [
+        {
+          title: 'বিজ্ঞান বিভাগ',
+          subtitle: 'আধুনিক ল্যাব ও গবেষণামূলক শিক্ষা।',
+          image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80'
+        },
+        {
+          title: 'ব্যবসায় শিক্ষা বিভাগ',
+          subtitle: 'বাস্তবমুখী ও ব্যবহারিক শিক্ষা।',
+          image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&q=80'
+        },
+        {
+          title: 'মানবিক বিভাগ',
+          subtitle: 'সৃজনশীলতা, সমাজবিজ্ঞান ও মানবিক মূল্যবোধের শিক্ষা।',
+          image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&q=80'
+        }
+      ];
 
   const noticeListToRender = notices && notices.length > 0 
     ? notices.slice(0, 5).map(n => ({
@@ -50,15 +37,15 @@ export default function InfoHubSection({ notices, events }: InfoHubSectionProps)
         title: n.title,
         href: '/notices'
       }))
-    : defaultNotices;
+    : [];
 
   const eventListToRender = events && events.length > 0
     ? events.slice(0, 5).map(e => ({
-        day: e.day || '০৬',
-        month: e.month || 'জুন',
+        day: e.day || e.date?.split(' ')[0] || '১৫',
+        month: e.month || e.date?.split(' ')[1] || 'মে',
         title: e.title
       }))
-    : defaultEvents;
+    : [];
 
   return (
     <section className="py-14 bg-white border-b border-slate-200/80">
@@ -73,10 +60,10 @@ export default function InfoHubSection({ notices, events }: InfoHubSectionProps)
             </h2>
 
             <div className="space-y-4">
-              {departments.map((dept, idx) => (
+              {departmentsToRender.map((dept, idx) => (
                 <div key={idx} className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md transition flex items-center gap-4 group">
                   <img 
-                    src={dept.image} 
+                    src={dept.image || 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80'} 
                     alt={dept.title} 
                     className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200 group-hover:scale-105 transition"
                   />
@@ -85,7 +72,7 @@ export default function InfoHubSection({ notices, events }: InfoHubSectionProps)
                       {dept.title}
                     </h3>
                     <p className="text-xs text-slate-500 font-medium line-clamp-2 mt-0.5">
-                      {dept.subtitle}
+                      {dept.subtitle || dept.desc}
                     </p>
                   </div>
                 </div>
@@ -105,24 +92,30 @@ export default function InfoHubSection({ notices, events }: InfoHubSectionProps)
             </div>
 
             <div className="space-y-3">
-              {noticeListToRender.map((notice, idx) => (
-                <div key={idx} className="bg-slate-50 p-3 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-3 hover:bg-white hover:shadow-md transition">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-blue-100/80 border border-blue-200 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-sm font-black text-blue-800 leading-none">{notice.day}</span>
-                      <span className="text-[10px] font-bold text-blue-600 leading-none mt-0.5">{notice.month}</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs sm:text-sm text-slate-900 line-clamp-1 hover:text-blue-700 transition">
-                        {notice.title}
-                      </h4>
-                      <Link href={notice.href} className="text-[11px] font-bold text-blue-600 hover:underline">
-                        বিস্তারিত দেখুন
-                      </Link>
+              {noticeListToRender.length === 0 ? (
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-500 italic">
+                  কোনো নোটিশ পাওয়া যায়নি
+                </div>
+              ) : (
+                noticeListToRender.map((notice, idx) => (
+                  <div key={idx} className="bg-slate-50 p-3 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-3 hover:bg-white hover:shadow-md transition">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-blue-100/80 border border-blue-200 flex flex-col items-center justify-center shrink-0">
+                        <span className="text-sm font-black text-blue-800 leading-none">{notice.day}</span>
+                        <span className="text-[10px] font-bold text-blue-600 leading-none mt-0.5">{notice.month}</span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900 line-clamp-1 hover:text-blue-700 transition">
+                          {notice.title}
+                        </h4>
+                        <Link href={notice.href} className="text-[11px] font-bold text-blue-600 hover:underline">
+                          বিস্তারিত দেখুন
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -138,19 +131,25 @@ export default function InfoHubSection({ notices, events }: InfoHubSectionProps)
             </div>
 
             <div className="space-y-3">
-              {eventListToRender.map((event, idx) => (
-                <div key={idx} className="bg-slate-50 p-3 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-3 hover:bg-white hover:shadow-md transition">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100/80 border border-emerald-200 flex flex-col items-center justify-center shrink-0">
-                    <span className="text-sm font-black text-emerald-800 leading-none">{event.day}</span>
-                    <span className="text-[10px] font-bold text-emerald-600 leading-none mt-0.5">{event.month}</span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs sm:text-sm text-slate-900 line-clamp-1">
-                      {event.title}
-                    </h4>
-                  </div>
+              {eventListToRender.length === 0 ? (
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-500 italic">
+                  কোনো আসন্ন অনুষ্ঠান তালিকাভুক্ত নেই
                 </div>
-              ))}
+              ) : (
+                eventListToRender.map((event, idx) => (
+                  <div key={idx} className="bg-slate-50 p-3 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-3 hover:bg-white hover:shadow-md transition">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-100/80 border border-emerald-200 flex flex-col items-center justify-center shrink-0">
+                      <span className="text-sm font-black text-emerald-800 leading-none">{event.day}</span>
+                      <span className="text-[10px] font-bold text-emerald-600 leading-none mt-0.5">{event.month}</span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs sm:text-sm text-slate-900 line-clamp-1">
+                        {event.title}
+                      </h4>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
