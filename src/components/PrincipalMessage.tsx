@@ -1,115 +1,104 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Quote, UserCheck, ShieldCheck } from 'lucide-react';
+import React from 'react';
+import Link from 'next/link';
+import { CheckCircle2, ArrowRight } from 'lucide-react';
 
-export default function PrincipalMessage() {
-  const [settings, setSettings] = useState({
-    principalName: 'প্রফেসর মোহাম্মদ আব্দুর রশীদ',
-    principalTitle: 'প্রধান শিক্ষক',
-    principalMessage: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলে আমরা প্রতিটি শিক্ষার্থীর ভেতরের সুপ্ত মেধা ও সম্ভাবনা জাগ্রত করতে প্রতিশ্রুতিবদ্ধ। আমাদের লক্ষ্য শুধুমাত্র পুঁথিগত বিদ্যা নয়, বরং আধুনিক বিজ্ঞান ও প্রযুক্তি নির্ভর শিক্ষা প্রদানের মাধ্যমে শিক্ষার্থীদের বিশ্বমানের নাগরিক হিসেবে গড়ে তোলা।',
-    principalImage: '',
-    chairmanName: 'ডাঃ মোজাম্মেল হক',
-    chairmanTitle: 'প্রতিষ্ঠাতা ও সভাপতি',
-    chairmanMessage: 'একটি আলোকিত সমাজ গঠনে মানসম্মত আধুনিক শিক্ষার কোনো বিকল্প নেই। আমাদের স্কুলটি ১৯৯৮ সাল থেকে অত্যন্ত নিষ্ঠা ও সুনামের সাথে শেরপুর জেলার শিক্ষাঙ্গনে অন্যতম সেরা স্থান ধরে রেখেছে।',
-    chairmanImage: ''
-  });
+interface PrincipalMessageProps {
+  settings?: any;
+}
 
-  useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.settings) {
-          setSettings(data.settings);
-        }
-      })
-      .catch((err) => console.error(err));
-  }, []);
+export default function PrincipalMessage({ settings }: PrincipalMessageProps) {
+  const principalName = settings?.principalName || 'প্রফেসর মোহাম্মদ আব্দুর রশীদ';
+  const principalTitle = settings?.principalTitle || 'প্রধান শিক্ষক';
+  const principalMessage = settings?.principalMessage || 'আমাদের ডাঃ মুজিব-রুবি মডেল হাই স্কুলের ওয়েবসাইটে স্বাগতম। আমাদের লক্ষ্য কেবল পাঠ্যপুস্তকভিত্তিক শিক্ষা প্রদান নয়, বরং নৈতিকতা, মানবিক মূল্যবোধ, প্রযুক্তির দক্ষতা এবং নেতৃত্বের গুণাবলী বিকাশের মাধ্যমে একজন আদর্শ নাগরিক গড়ে তোলা। আপনাদের আন্তরিক সহযোগিতা ও স্নেহ আমাদের এগিয়ে যাওয়ার অনুপ্রেরণা।';
+  const principalImage = settings?.principalImage || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80';
+  const aboutHistory = settings?.aboutHistory || 'প্রতিষ্ঠালগ্ন থেকেই আমাদের বিদ্যালয় মানবতা শিক্ষা, সুস্থতা, নৈতিকতা এবং প্রযুক্তিনির্ভর শিক্ষার মাধ্যমে শিক্ষার্থীদের একটি সুন্দর ভবিষ্যৎ গড়ে তুলতে কাজ করে যাচ্ছে।';
 
   return (
-    <section className="py-16 bg-slate-50">
-      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <section className="py-14 bg-white border-b border-slate-200/80">
+      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <span className="text-xs font-bold text-blue-600 uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-            নেতৃত্ব ও নির্দেশনা
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900">
-            পরিচালনা পর্ষদের বাণী
-          </h2>
-        </div>
-
-        {/* 2 Column Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
-          {/* Principal Card */}
-          <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-lg shadow-slate-100 flex flex-col justify-between relative overflow-hidden group">
-            <Quote className="w-20 h-20 text-blue-50 absolute -right-4 -bottom-4 pointer-events-none" />
-            
-            <div className="space-y-4 relative z-10">
-              <div className="flex items-center gap-4">
-                {settings.principalImage ? (
-                  <img 
-                    src={settings.principalImage} 
-                    alt={settings.principalName}
-                    className="w-16 h-16 rounded-2xl object-cover border-2 border-blue-600 shadow-md"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xl border-2 border-blue-600">
-                    {settings.principalName?.charAt(0) || 'P'}
-                  </div>
-                )}
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900">{settings.principalName}</h3>
-                  <p className="text-xs font-bold text-blue-600">{settings.principalTitle}</p>
+          {/* Left Card: অধ্যক্ষের শুভেচ্ছা */}
+          <div className="bg-slate-50/90 p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-2xl sm:text-3xl font-black text-[#0B2545] border-b border-slate-200 pb-3">
+                অধ্যক্ষের শুভেচ্ছা
+              </h2>
+
+              <div className="flex flex-col sm:flex-row gap-5 items-start">
+                <img 
+                  src={principalImage} 
+                  alt={principalName}
+                  className="w-32 h-40 rounded-2xl object-cover border-2 border-white shadow-md shrink-0"
+                />
+                
+                <div className="space-y-3">
+                  <h3 className="text-base font-bold text-slate-900">
+                    প্রিয় শিক্ষার্থী, অভিভাবক ও শুভানুধ্যায়ীগণ,
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
+                    "{principalMessage}"
+                  </p>
+                  <p className="text-xs font-black text-slate-800">
+                    — {principalName} ({principalTitle})
+                  </p>
                 </div>
               </div>
-
-              <p className="text-sm text-slate-600 leading-relaxed italic">
-                "{settings.principalMessage}"
-              </p>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 mt-6 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
-                <UserCheck className="w-4 h-4 text-emerald-500" /> ভেরিফায়েড প্রোফাইল
-              </span>
+            <div>
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition shadow-xs"
+              >
+                <span>আরও পড়ুন</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
 
-          {/* Chairman Card */}
-          <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-lg shadow-slate-100 flex flex-col justify-between relative overflow-hidden group">
-            <Quote className="w-20 h-20 text-sky-50 absolute -right-4 -bottom-4 pointer-events-none" />
-            
-            <div className="space-y-4 relative z-10">
-              <div className="flex items-center gap-4">
-                {settings.chairmanImage ? (
-                  <img 
-                    src={settings.chairmanImage} 
-                    alt={settings.chairmanName}
-                    className="w-16 h-16 rounded-2xl object-cover border-2 border-sky-500 shadow-md"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xl border-2 border-sky-500">
-                    {settings.chairmanName?.charAt(0) || 'C'}
-                  </div>
-                )}
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900">{settings.chairmanName}</h3>
-                  <p className="text-xs font-bold text-sky-600">{settings.chairmanTitle}</p>
+          {/* Right Card: আমাদের সম্পর্কে */}
+          <div className="bg-slate-50/90 p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-2xl sm:text-3xl font-black text-[#0B2545] border-b border-slate-200 pb-3">
+                আমাদের সম্পর্কে
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                {aboutHistory}
+              </p>
+
+              {/* 4 Checklist Items */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>মানসম্মত শিক্ষা</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>নৈতিক চরিত্র গঠন</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>প্রযুক্তি দক্ষতা</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>নেতৃত্ব বিকাশ</span>
                 </div>
               </div>
-
-              <p className="text-sm text-slate-600 leading-relaxed italic">
-                "{settings.chairmanMessage}"
-              </p>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 mt-6 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4 text-blue-500" /> বোর্ড অফ গভর্নরস
-              </span>
+            {/* Campus Preview Photo */}
+            <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm h-36">
+              <img 
+                src="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=800&q=80" 
+                alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুল ক্যাম্পাস"
+                className="w-full h-full object-cover hover:scale-105 transition duration-500"
+              />
             </div>
           </div>
 

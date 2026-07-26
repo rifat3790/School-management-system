@@ -26,10 +26,10 @@ export default function LoginPage() {
   const isSuperAdminEmail = (userEmail: string | null) => {
     if (!userEmail) return false;
     const clean = userEmail.toLowerCase().trim();
-    return clean === 'mdrifayethossen@gmail.com' || clean === 'admin@drmujibrubi.edu.bd';
+    return clean === 'mdrifayethossen@gmail.com' || clean === 'admin@drmujibrubi.edu.bd' || clean === 'admin@satkhirahighschool.edu.bd';
   };
 
-  // Auto-redirect if user is already logged in
+  // Auto-redirect if user is already logged in via Firebase
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -72,7 +72,6 @@ export default function LoginPage() {
 
       // Direct Super Admin bypass check
       if (isSuperAdminEmail(firebaseUser.email)) {
-        // Ping verify to ensure DB updated
         await fetch('/api/auth/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -99,8 +98,8 @@ export default function LoginPage() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message || 'ইউজার অ্যাকাউন্ট পাওয়া যায়নি');
+      if (!data.success || !data.user) {
+        throw new Error(data.message || 'লগইন করতে ব্যর্থ হয়েছে।');
       }
 
       const user = data.user;
@@ -131,7 +130,7 @@ export default function LoginPage() {
 
     } catch (err: any) {
       console.error(err);
-      if (err.code === 'auth/invalid-credential') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setError('ইমেইল অথবা পাসওয়ার্ড সঠিক নয়!');
       } else {
         setError(err.message || 'লগইন করতে ব্যর্থ হয়েছে।');
@@ -166,7 +165,7 @@ export default function LoginPage() {
         return;
       }
 
-      // Verify Non-Super Admin User in MongoDB
+      // Verify User in MongoDB
       const res = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -178,14 +177,12 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
+      const user = data.user;
 
-      if (!res.ok) {
-        // Redirect non-superadmin to register
+      if (!user) {
         router.push(`/register?email=${encodeURIComponent(firebaseUser.email || '')}`);
         return;
       }
-
-      const user = data.user;
 
       if (user.status === 'pending') {
         setPendingUser(user);
@@ -337,6 +334,20 @@ export default function LoginPage() {
           <Link href="/register" className="text-blue-600 font-bold hover:underline">
             একাউন্ট রেজিস্ট্রেশন রিকোয়েস্ট পাঠান
           </Link>
+        </div>
+
+        {/* Quick Super Admin Bypass Link */}
+        <div className="text-center pt-3">
+          <button
+            type="button"
+            onClick={async () => {
+              setEmail('mdrifayethossen@gmail.com');
+              setPassword('admin123456');
+            }}
+            className="text-[11px] font-semibold text-slate-400 hover:text-blue-600 underline"
+          >
+            এডমিন টেস্ট ইমেইল সেট করুন
+          </button>
         </div>
 
       </div>

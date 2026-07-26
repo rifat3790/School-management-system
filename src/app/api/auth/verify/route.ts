@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { uid, email, name } = await req.json();
@@ -14,57 +16,69 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanEmail = email ? email.toLowerCase().trim() : '';
-    const isSuperAdminEmail = cleanEmail === 'mdrifayethossen@gmail.com' || cleanEmail === 'admin@drmujibrubi.edu.bd';
+    const isSuperAdminEmail = 
+      cleanEmail === 'mdrifayethossen@gmail.com' || 
+      cleanEmail === 'admin@drmujibrubi.edu.bd' || 
+      cleanEmail === 'admin@satkhirahighschool.edu.bd';
 
-    // Super Admin Instant Bypass
+    await dbConnect();
+
+    // 1. Super Admin Instant Auto-Sync
     if (isSuperAdminEmail) {
-      try {
-        await dbConnect();
-        let user = await User.findOne({ email: cleanEmail });
-        if (!user) {
-          user = await User.create({
-            uid: uid || 'super-admin-uid',
-            name: name || 'Md Rifayet Hossen',
-            email: cleanEmail,
-            role: 'superadmin',
-            requestedRole: 'superadmin',
-            status: 'approved',
-            phone: '+৮৮০ ১৭০০-০০০-০০০',
-            details: { designation: 'প্রধান সুপার এডমিন' }
-          });
-        } else {
-          user.role = 'superadmin';
-          user.status = 'approved';
-          if (uid) user.uid = uid;
-          await user.save();
-        }
-      } catch (dbErr) {
-        console.error('Super admin DB sync error:', dbErr);
+      let superUser = await User.findOne({ email: cleanEmail });
+      if (!superUser) {
+        superUser = await User.create({
+          uid: uid || 'super-admin-uid',
+          name: name || 'Md Rifayet Hossen (Super Admin)',
+          email: cleanEmail,
+          role: 'superadmin',
+          requestedRole: 'superadmin',
+          status: 'approved',
+          phone: '+৮৮০ ১৭০০-০০০০০',
+          details: { designation: 'প্রধান সুপার এডমিন' }
+        });
+      } else {
+        superUser.role = 'superadmin';
+        superUser.status = 'approved';
+        if (uid) superUser.uid = uid;
+        await superUser.save();
       }
 
       return NextResponse.json({
         success: true,
         user: {
-          uid: uid || 'super-admin-uid',
-          name: name || 'Md Rifayet Hossen',
-          email: cleanEmail,
+          uid: superUser.uid,
+          name: superUser.name,
+          email: superUser.email,
           role: 'superadmin',
           requestedRole: 'superadmin',
           status: 'approved',
-          details: { designation: 'প্রধান সুপার এডমিন' },
+          details: superUser.details,
         },
       });
     }
 
-    // Normal User DB Verification
-    await dbConnect();
-
-    const user = await User.findOne({
+    // 2. Search Existing User in MongoDB
+    let user = await User.findOne({
       $or: [
         ...(cleanEmail ? [{ email: cleanEmail }] : []),
         ...(uid ? [{ uid }] : [])
       ]
     });
+
+    // 3. Auto-register user in MongoDB if logged in via Firebase but not in DB yet
+    if (!user && cleanEmail) {
+      user = await User.create({
+        uid: uid || `uid-${Date.now()}`,
+        name: name || cleanEmail.split('@')[0],
+        email: cleanEmail,
+        role: 'student',
+        requestedRole: 'student',
+        status: 'approved',
+        phone: '',
+        details: { designation: 'শিক্ষার্থী' }
+      });
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -79,10 +93,10 @@ export async function POST(req: NextRequest) {
         uid: user.uid,
         name: user.name,
         email: user.email,
-        role: user.role,
-        requestedRole: user.requestedRole,
-        status: user.status,
-        details: user.details,
+        role: user.role || 'student',
+        requestedRole: user.requestedRole || 'student',
+        status: user.status || 'approved',
+        details: user.details || {},
       },
     });
   } catch (error: any) {

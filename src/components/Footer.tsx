@@ -7,85 +7,114 @@ import {
   MapPin, 
   Phone, 
   Mail, 
+  Globe,
   Facebook, 
   Youtube, 
-  ArrowRight,
-  ExternalLink,
-  ShieldCheck,
-  Heart
+  Twitter,
+  Instagram,
+  ArrowRight
 } from 'lucide-react';
 
 export default function Footer() {
-  const [siteSettings, setSiteSettings] = useState({
+  const [emailInput, setEmailInput] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [settings, setSettings] = useState<any>({
     schoolName: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
     eiin: '১৩০৯৫৪',
     code: '৪৫২০',
     established: '১৯৯৮',
     phone: '+৮৮০ ১৭০০-০০০০০',
     email: 'info@drmujibrubi.edu.bd',
-    address: 'কোর্ট রোড, শেরপুর ডিস্ট্রিক্ট, বাংলাদেশ',
-    slogan: 'শিক্ষাই শক্তি, প্রযুক্তিই ভবিষ্যৎ'
+    address: 'কোর্ট রোড, শেরপুর ডিস্ট্রিক্ট, বাংলাদেশ'
   });
 
   useEffect(() => {
     fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
+      .then(res => res.json())
+      .then(data => {
         if (data.success && data.settings) {
-          setSiteSettings(data.settings);
+          setSettings(data.settings);
         }
       })
-      .catch((err) => console.error(err));
+      .catch(err => console.error(err));
   }, []);
 
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailInput.trim()) {
+      setSubscribed(true);
+      setEmailInput('');
+    }
+  };
+
   return (
-    <footer className="bg-slate-100/90 text-slate-700 pt-16 pb-12 border-t border-slate-200">
+    <footer className="bg-[#0B2545] text-slate-200 pt-16 pb-8 border-t border-blue-900">
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
-        {/* Main Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+        {/* Main 4-Column Footer Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           
-          {/* Column 1: School Branding */}
-          <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-blue-500/20">
-                <GraduationCap className="w-7 h-7" />
-              </div>
-              <div>
-                <h2 className="font-extrabold text-slate-900 text-xl">{siteSettings.schoolName}</h2>
-                <p className="text-xs font-semibold text-slate-500">EIIN: {siteSettings.eiin} | স্কুল কোড: {siteSettings.code}</p>
-              </div>
-            </Link>
+          {/* Column 1: যোগাযোগ করুন */}
+          <div className="space-y-4">
+            <h3 className="text-white font-black text-lg border-l-4 border-blue-500 pl-3">
+              যোগাযোগ করুন
+            </h3>
 
-            <p className="text-sm text-slate-600 leading-relaxed max-w-md">
-              "{siteSettings.slogan}" — শেরপুর অঞ্চলের সেরা ডিজিটাল শিক্ষা প্রতিষ্ঠান হিসেবে আমাদের পথচলা।
-            </p>
+            <div className="space-y-3 text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <span>{settings.address}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-blue-400 shrink-0" />
+                <span>{settings.phone}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-blue-400 shrink-0" />
+                <span>{settings.email}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Globe className="w-4 h-4 text-blue-400 shrink-0" />
+                <span>www.drmujibrubi.edu.bd</span>
+              </div>
+            </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              <a href="#" className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-300 shadow-xs flex items-center justify-center transition">
-                <Facebook className="w-5 h-5" />
+            {/* Social Icons */}
+            <div className="flex items-center gap-2.5 pt-2">
+              <a href="#" className="w-8 h-8 rounded-lg bg-white/10 hover:bg-blue-600 text-white flex items-center justify-center transition">
+                <Facebook className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-300 shadow-xs flex items-center justify-center transition">
-                <Youtube className="w-5 h-5" />
+              <a href="#" className="w-8 h-8 rounded-lg bg-white/10 hover:bg-sky-500 text-white flex items-center justify-center transition">
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-white/10 hover:bg-pink-600 text-white flex items-center justify-center transition">
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-white/10 hover:bg-red-600 text-white flex items-center justify-center transition">
+                <Youtube className="w-4 h-4" />
               </a>
             </div>
           </div>
 
-          {/* Column 2: Quick Links */}
+          {/* Column 2: দ্রুত লিংক */}
           <div className="space-y-4">
-            <h3 className="text-slate-900 font-bold text-base border-l-4 border-blue-600 pl-3">দ্রুত লিঙ্ক</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="text-white font-black text-lg border-l-4 border-blue-500 pl-3">
+              দ্রুত লিংক
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm font-medium text-slate-300">
               {[
+                { label: 'হোম', href: '/' },
                 { label: 'আমাদের সম্পর্কে', href: '/about' },
-                { label: 'শিক্ষকবৃন্দ', href: '/teachers' },
                 { label: 'একাডেমিক', href: '/academic' },
-                { label: 'নোটিশ বোর্ড', href: '/notices' },
-                { label: 'সংবাদ ও গ্যালারি', href: '/news' },
-                { label: 'অনলাইন ভর্তি', href: '/admission' }
+                { label: 'শিক্ষকবৃন্দ', href: '/teachers' },
+                { label: 'নোটিশ', href: '/notices' },
+                { label: 'ফলাফল', href: '/result' },
+                { label: 'গ্যালারি', href: '/gallery' },
+                { label: 'যোগাযোগ', href: '/contact' }
               ].map((link, idx) => (
                 <li key={idx}>
-                  <Link href={link.href} className="hover:text-blue-600 transition flex items-center gap-1.5 font-medium text-slate-600">
-                    <ArrowRight className="w-3.5 h-3.5 text-blue-500" />
+                  <Link href={link.href} className="hover:text-blue-400 transition flex items-center gap-1.5">
+                    <ArrowRight className="w-3 h-3 text-blue-400" />
                     <span>{link.label}</span>
                   </Link>
                 </li>
@@ -93,49 +122,68 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Portals */}
+          {/* Column 3: গুরুত্বপূর্ণ লিংক */}
           <div className="space-y-4">
-            <h3 className="text-slate-900 font-bold text-base border-l-4 border-blue-600 pl-3">ডিজিটাল পোর্টাল</h3>
-            <ul className="space-y-2 text-sm font-medium text-slate-600">
-              <li><Link href="/login" className="hover:text-blue-600 transition">শিক্ষার্থী লগইন</Link></li>
-              <li><Link href="/login" className="hover:text-blue-600 transition">শিক্ষক লগইন</Link></li>
-              <li><Link href="/login" className="hover:text-blue-600 transition">অভিভাবক প্যানেল</Link></li>
-              <li><Link href="/login" className="hover:text-blue-600 transition">এডমিন কন্ট্রোল</Link></li>
-              <li><Link href="/result" className="hover:text-blue-600 transition">পরীক্ষার ফলাফল</Link></li>
+            <h3 className="text-white font-black text-lg border-l-4 border-blue-500 pl-3">
+              গুরুত্বপূর্ণ লিংক
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm font-medium text-slate-300">
+              <li><a href="http://www.moedu.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">শিক্ষা মন্ত্রণালয়</a></li>
+              <li><a href="http://www.dhakaeducationboard.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">শিক্ষা বোর্ড</a></li>
+              <li><Link href="/login" className="hover:text-blue-400 transition">অভিভাবক পোর্টাল</Link></li>
+              <li><a href="https://a2i.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">এক্সেস টু ইনফরমেশন (a2i)</a></li>
+              <li><a href="http://www.pmo.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">প্রধানমন্ত্রীর কার্যালয়</a></li>
+              <li><a href="http://www.bangladesh.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">জাতীয় তথ্য বাতায়ন</a></li>
             </ul>
           </div>
 
-          {/* Column 4: Contact Info */}
-          <div className="space-y-4">
-            <h3 className="text-slate-900 font-bold text-base border-l-4 border-blue-600 pl-3">যোগাযোগ</h3>
-            <div className="space-y-3 text-sm text-slate-600 font-medium">
-              <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-1" />
-                <span>{siteSettings.address}</span>
+          {/* Column 4: নিউজলেটার সাবস্ক্রাইব করুন & Shield Crest Logo */}
+          <div className="space-y-5">
+            <h3 className="text-white font-black text-lg border-l-4 border-blue-500 pl-3">
+              নিউজলেটার সাবস্ক্রাইব করুন
+            </h3>
+
+            <p className="text-xs text-slate-300 leading-relaxed font-medium">
+              নিয়মিত আপডেট পেতে আপনার ইমেইল দিন
+            </p>
+
+            <form onSubmit={handleSubscribe} className="space-y-2">
+              <input
+                type="email"
+                required
+                placeholder="আপনার ইমেইল অ্যাড্রেস..."
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              />
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md"
+              >
+                {subscribed ? 'ধন্যবাদ! সাবস্ক্রাইব সম্পন্ন' : 'সাবস্ক্রাইব করুন'}
+              </button>
+            </form>
+
+            {/* Shield Crest Logo Box */}
+            <div className="pt-2 flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/10">
+              <div className="w-12 h-12 rounded-xl bg-blue-700 flex items-center justify-center text-white font-black text-xl shrink-0 shadow-md">
+                <GraduationCap className="w-7 h-7" />
               </div>
-              <div className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>{siteSettings.phone}</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>{siteSettings.email}</span>
+              <div>
+                <h4 className="font-black text-sm text-white leading-tight">{settings.schoolName}</h4>
+                <p className="text-[10px] font-bold text-slate-400">স্থাপিত: {settings.established} খ্রি.</p>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* Bottom copyright */}
-        <div className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-500">
-          <p>© {new Date().getFullYear()} {siteSettings.schoolName}। সর্বস্বত্ব সংরক্ষিত।</p>
-          <div className="flex items-center gap-1">
-            <span>স্মার্ট ডিজিটাল স্কুল ম্যানেজমেন্ট সিস্টেম</span>
-          </div>
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/10 text-center text-xs font-semibold text-slate-400">
+          <p>© {new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত | {settings.schoolName}</p>
         </div>
 
       </div>
     </footer>
   );
 }
-

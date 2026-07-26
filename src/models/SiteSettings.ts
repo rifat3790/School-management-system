@@ -56,7 +56,7 @@ export interface ISiteSettings extends Document {
     desc: string;
     classRange: string;
     iconName: string;
-    bgGradient: string;
+    image: string;
   }>;
   clubsAndActivities?: Array<{
     name: string;
@@ -69,10 +69,19 @@ export interface ISiteSettings extends Document {
   events?: Array<{
     title: string;
     date: string;
+    day: string;
+    month: string;
     time: string;
     location: string;
     category: string;
     image: string;
+  }>;
+  noticesList?: Array<{
+    day: string;
+    month: string;
+    title: string;
+    category: string;
+    pdfUrl: string;
   }>;
   testimonials?: Array<{
     name: string;
@@ -96,32 +105,32 @@ const SiteSettingsSchema: Schema = new Schema(
     eiin: { type: String, default: '১৩০৯৫৪' },
     code: { type: String, default: '৪৫২০' },
     established: { type: String, default: '১৯৯৮' },
-    slogan: { type: String, default: 'শিক্ষাই শক্তি, প্রযুক্তিই ভবিষ্যৎ' },
+    slogan: { type: String, default: 'শিক্ষাই জাতির মেরুদণ্ড, সুশিক্ষাই উজ্জ্বল ভবিষ্যতের ভিত্তি' },
     subSlogan: { type: String, default: 'জ্ঞান • শৃঙ্খলা • সাফল্য' },
     phone: { type: String, default: '+৮৮০ ১৭০০-০০০০০' },
     email: { type: String, default: 'info@drmujibrubi.edu.bd' },
     address: { type: String, default: 'কোর্ট রোড, শেরপুর ডিস্ট্রিক্ট, বাংলাদেশ' },
-    heroImage: { type: String, default: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80' },
+    heroImage: { type: String, default: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&q=80' },
     principalName: { type: String, default: 'প্রফেসর মোহাম্মদ আব্দুর রশীদ' },
     principalTitle: { type: String, default: 'প্রধান শিক্ষক' },
-    principalMessage: { type: String, default: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলে আমরা প্রতিটি শিক্ষার্থীর ভেতরের সুপ্ত মেধা ও সম্ভাবনা জাগ্রত করতে প্রতিশ্রুতিবদ্ধ।' },
-    principalImage: { type: String, default: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&q=80' },
+    principalMessage: { type: String, default: 'আমাদের ডাঃ মুজিব-রুবি মডেল হাই স্কুলের ওয়েবসাইটে স্বাগতম। আমাদের লক্ষ্য কেবল পাঠ্যপুস্তকভিত্তিক শিক্ষা প্রদান নয়, বরং নৈতিকতা, মানবিক মূল্যবোধ, প্রযুক্তির দক্ষতা এবং নেতৃত্বের গুণাবলী বিকাশের মাধ্যমে একজন আদর্শ নাগরিক গড়ে তোলা। আপনাদের আন্তরিক সহযোগিতা ও স্নেহ আমাদের এগিয়ে যাওয়ার অনুপ্রেরণা।' },
+    principalImage: { type: String, default: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80' },
     chairmanName: { type: String, default: 'ডাঃ মোজাম্মেল হক' },
     chairmanTitle: { type: String, default: 'প্রতিষ্ঠাতা ও সভাপতি' },
-    chairmanMessage: { type: String, default: 'একটি আলোকিত সমাজ গঠনে মানসম্মত আধুনিক শিক্ষার কোনো বিকল্প নেই।' },
-    chairmanImage: { type: String, default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80' },
-    heroTagline: { type: String, default: 'শিক্ষাই শক্তি' },
-    heroTitleLine1: { type: String, default: 'প্রযুক্তিই ভবিষ্যৎ' },
-    heroTitleLine2: { type: String, default: 'মেধা ও শৃঙ্খলা' },
-    heroDescription: { type: String, default: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলে আমরা আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তিনির্ভর ভবিষ্যৎ গড়ার প্রত্যয়ে প্রতিশ্রুতিবদ্ধ।' },
-    aboutHistory: { type: String, default: '১৯৯৮ সালে প্রতিষ্ঠিত ডাঃ মুজিব-রুবি মডেল হাই স্কুল শেরপুর জেলার প্রাচীনতম ও শ্রেষ্ঠতম ডিজিটাল শিক্ষাঙ্গন।' },
-    missionText: { type: String, default: 'আধুনিক প্রযুক্তিনির্ভর শিক্ষা ও নৈতিক মূল্যবোধের সমন্বয়ে আন্তর্জাতিক মানের মেধা বিকাশ।' },
-    visionText: { type: String, default: 'স্মার্ট বাংলাদেশ গড়ার লক্ষ্যে দক্ষ, বিজ্ঞ ও চরিত্রবান ভবিষ্যৎ প্রজন্ম তৈরি করা।' },
+    chairmanMessage: { type: String, default: 'একটি আলোকিত সমাজ গঠনে মানসম্মত শিক্ষার বিকল্প নেই। ডাঃ মুজিব-রুবি মডেল হাই স্কুল ১৯৯৮ সাল থেকে শ্রেষ্ঠত্বের স্বাক্ষর রেখে আসছে।' },
+    chairmanImage: { type: String, default: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80' },
+    heroTagline: { type: String, default: '২০২৬ শিক্ষাবর্ষে ভর্তি চলছে' },
+    heroTitleLine1: { type: String, default: 'শিক্ষাই জাতির মেরুদণ্ড' },
+    heroTitleLine2: { type: String, default: 'সুশিক্ষাই উজ্জ্বল ভবিষ্যতের ভিত্তি' },
+    heroDescription: { type: String, default: 'আমাদের বিদ্যালয় প্রতিটি শিক্ষার্থীর মধ্যে নৈতিক স্তম্ভতার সাথে আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তির মাধ্যমে আগামী দিনে তুলে ধরছি আগামী প্রজন্মের সেরা, সৃজনশীল ও সামাজিক নেতৃত্ব।' },
+    aboutHistory: { type: String, default: 'প্রতিষ্ঠালগ্ন থেকেই আমাদের বিদ্যালয় মানবতা শিক্ষা, সুস্থতা, নৈতিকতা এবং প্রযুক্তিনির্ভর শিক্ষার মাধ্যমে শিক্ষার্থীদের একটি সুন্দর ভবিষ্যৎ গড়ে তুলতে কাজ করে যাচ্ছে।' },
+    missionText: { type: String, default: 'গুণগত মানসম্মত শিক্ষা, সুশৃঙ্খল পরিবেশ ও আধুনিক ল্যাব সুবিধার মাধ্যমে আন্তর্জাতিক মানের নাগরিক তৈরি করা।' },
+    visionText: { type: String, default: 'প্রযুক্তিনির্ভর ও নৈতিক মূল্যবোধসম্পন্ন স্মার্ট বাংলাদেশ গড়ার নেতৃত্ব দানকারী প্রজন্ম গড়ে তোলা।' },
     stats: {
-      students: { type: String, default: '২,৮৮০+' },
-      teachers: { type: String, default: '৯৫+' },
-      passRate: { type: String, default: '২১৫+' },
-      establishedYear: { type: String, default: '১৯৯৮' }
+      students: { type: String, default: '৩,৫০০+' },
+      teachers: { type: String, default: '১৪০+' },
+      passRate: { type: String, default: '৯৮%' },
+      establishedYear: { type: String, default: '৩০+ বছর' }
     },
     socialLinks: {
       facebook: { type: String, default: 'https://facebook.com' },
@@ -133,12 +142,10 @@ const SiteSettingsSchema: Schema = new Schema(
     academicPrograms: { type: Array, default: [] },
     clubsAndActivities: { type: Array, default: [] },
     events: { type: Array, default: [] },
+    noticesList: { type: Array, default: [] },
     testimonials: { type: Array, default: [] },
   },
   { timestamps: true, strict: false }
 );
 
 export default mongoose.models.SiteSettings || mongoose.model<ISiteSettings>('SiteSettings', SiteSettingsSchema);
-
-
-

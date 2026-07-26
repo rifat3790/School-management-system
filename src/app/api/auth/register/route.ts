@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
@@ -21,7 +23,6 @@ export async function POST(req: NextRequest) {
     // Check if user already exists
     const existingUser = await User.findOne({ email: cleanEmail });
     if (existingUser) {
-      // If user already exists (e.g. created via Google Auth or updating pending profile)
       existingUser.name = name || existingUser.name;
       existingUser.phone = phone || existingUser.phone;
       existingUser.requestedRole = requestedRole;
@@ -43,8 +44,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Special Super Admin check for mdrifayethossen@gmail.com
-    const isSuperAdminEmail = cleanEmail === 'mdrifayethossen@gmail.com' || cleanEmail === 'admin@drmujibrubi.edu.bd';
+    // Special Super Admin check
+    const isSuperAdminEmail = cleanEmail === 'mdrifayethossen@gmail.com' || cleanEmail === 'admin@drmujibrubi.edu.bd' || cleanEmail === 'admin@satkhirahighschool.edu.bd';
     const role = isSuperAdminEmail ? 'superadmin' : requestedRole;
     const status = isSuperAdminEmail ? 'approved' : 'pending';
 

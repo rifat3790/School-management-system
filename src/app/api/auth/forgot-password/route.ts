@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
+export const dynamic = 'force-dynamic';
+
 // POST: Request a password reset code
 export async function POST(req: NextRequest) {
   try {
