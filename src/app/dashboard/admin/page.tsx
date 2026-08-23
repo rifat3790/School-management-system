@@ -41,7 +41,10 @@ import {
   ChevronRight,
   Paperclip,
   User,
-  Volume2
+  Volume2,
+  Printer,
+  Download,
+  QrCode
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import ImageUploadInput from '@/components/ImageUploadInput';
@@ -64,7 +67,7 @@ interface UserRecord {
 
 export default function AdminDashboard() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'assignments' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'results' | 'library' | 'alumni' | 'news' | 'gallery' | 'admissions' | 'donations' | 'inquiries'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'idcards' | 'assignments' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'results' | 'library' | 'alumni' | 'news' | 'gallery' | 'admissions' | 'donations' | 'inquiries'>('users');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Sync tab with URL query parameter (?tab=notices)
@@ -96,6 +99,9 @@ export default function AdminDashboard() {
   const [allUsers, setAllUsers] = useState<UserRecord[]>([]);
   const [pendingUsers, setPendingUsers] = useState<UserRecord[]>([]);
   const [resetUsers, setResetUsers] = useState<UserRecord[]>([]);
+  const [idCardsList, setIdCardsList] = useState<any[]>([]);
+  const [idCardFilter, setIdCardFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'student' | 'teacher'>('all');
+  const [selectedPreviewCard, setSelectedPreviewCard] = useState<any>(null);
   const [notices, setNotices] = useState<any[]>([]);
   const [teachers, setTeachers] = useState<any[]>([]);
   const [resultsList, setResultsList] = useState<any[]>([]);
@@ -278,8 +284,8 @@ export default function AdminDashboard() {
         });
       }
 
-      // 3. Notices, Teachers, News, Gallery, Admissions, Donations, Contact, Results, Library, Alumni, Chat
-      const [rN, rT, rNw, rG, rAdm, rDon, rCnt, rRes, rBk, rAlm, rChat] = await Promise.all([
+      // 3. Notices, Teachers, News, Gallery, Admissions, Donations, Contact, Results, Library, Alumni, Chat, ID Cards
+      const [rN, rT, rNw, rG, rAdm, rDon, rCnt, rRes, rBk, rAlm, rChat, rId] = await Promise.all([
         fetch('/api/notices').then(r => r.json()),
         fetch('/api/teachers').then(r => r.json()),
         fetch('/api/news').then(r => r.json()),
@@ -291,6 +297,7 @@ export default function AdminDashboard() {
         fetch('/api/library').then(r => r.json()),
         fetch('/api/alumni').then(r => r.json()),
         fetch('/api/chat').then(r => r.json()).catch(() => ({ success: false })),
+        fetch('/api/id-cards').then(r => r.json()).catch(() => ({ success: false })),
       ]);
 
       if (rN.success) setNotices(rN.notices);
@@ -304,6 +311,7 @@ export default function AdminDashboard() {
       if (rBk.success) setBooksList(rBk.books || []);
       if (rAlm.success) setAlumniList(rAlm.stories || []);
       if (rChat?.success && Array.isArray(rChat.messages)) setChatMessages(rChat.messages);
+      if (rId?.success && Array.isArray(rId.list)) setIdCardsList(rId.list);
 
     } catch (err) {
       console.error('Error fetching admin data:', err);
@@ -496,6 +504,35 @@ export default function AdminDashboard() {
         fetchAllData();
       }
     } catch (err) { toast.error('হালনাগাদ করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleApproveIdCard = async (id: string, status: 'approved' | 'rejected') => {
+    try {
+      const res = await fetch('/api/id-cards', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`আইডি কার্ড ${status === 'approved' ? 'অনুমোদন (Approved)' : 'বাতিল (Rejected)'} করা হয়েছে!`);
+        fetchAllData();
+      } else {
+        toast.error('আপডেট করতে সমস্যা হয়েছে');
+      }
+    } catch (err) { toast.error('ত্রুটি ঘটেছে'); }
+  };
+
+  const handleDeleteIdCard = async (id: string) => {
+    if (!confirm('আপনি কি সত্যিই এই আইডি কার্ড রেকর্ডটি মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/id-cards?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('আইডি কার্ড রেকর্ড মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('মুছতে সমস্যা হয়েছে'); }
   };
 
   useEffect(() => {
@@ -1090,6 +1127,7 @@ export default function AdminDashboard() {
       groupTitle: 'লাইভ যোগাযোগ ও সার্ভিস',
       items: [
         { id: 'chat' as const, label: 'লাইভ চ্যাট ইনবক্স', icon: MessageSquare, count: chatMessages.length, alert: false, isLive: true },
+        { id: 'idcards' as const, label: 'আইডি কার্ড অনুমোদন', icon: CreditCard, count: idCardsList.filter(c => c.status === 'pending').length, alert: idCardsList.filter(c => c.status === 'pending').length > 0, isLive: false },
         { id: 'admissions' as const, label: 'ভর্তি আবেদনসমূহ', icon: FileText, count: admissionsList.length, alert: false, isLive: false },
         { id: 'inquiries' as const, label: 'কন্টাক্ট ইনকোয়ারি', icon: Mail, count: contactList.length, alert: false, isLive: false },
       ]
@@ -1786,6 +1824,288 @@ export default function AdminDashboard() {
 
             </div>
 
+          </div>
+        )}
+
+        {/* TAB: DIGITAL ID CARDS APPROVAL & PRINT */}
+        {activeTab === 'idcards' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-blue-600" />
+                  ডিজিটাল আইডি কার্ড আবেদন ও অনুমোদন সেন্টার
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  শিক্ষার্থী ও শিক্ষকদের দাখিলকৃত আইডি কার্ড যাচাই, অনুমোদন এবং হাই-রেজোলিউশন প্রিন্ট ও ডাউনলোড করুন।
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={idCardFilter}
+                  onChange={(e) => setIdCardFilter(e.target.value as any)}
+                  className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+                >
+                  <option value="all">সকল আবেদন ({idCardsList.length})</option>
+                  <option value="pending">⏳ পেন্ডিং ({idCardsList.filter(c => c.status === 'pending').length})</option>
+                  <option value="approved">✓ অনুমোদিত ({idCardsList.filter(c => c.status === 'approved').length})</option>
+                  <option value="rejected">✕ বাতিল ({idCardsList.filter(c => c.status === 'rejected').length})</option>
+                  <option value="student">🎓 শিক্ষার্থী কার্ড</option>
+                  <option value="teacher">👨‍🏫 শিক্ষক কার্ড</option>
+                </select>
+
+                <button
+                  type="button"
+                  onClick={fetchAllData}
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> রিফ্রেশ
+                </button>
+              </div>
+            </div>
+
+            {/* Table */}
+            {idCardsList.length === 0 ? (
+              <div className="py-16 text-center text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <CreditCard className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                <p className="font-bold text-sm">কোনো আইডি কার্ডের আবেদন জমা পড়েনি!</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase bg-slate-50">
+                      <th className="py-3 px-4">ছবি</th>
+                      <th className="py-3 px-4">নাম ও ইমেইল</th>
+                      <th className="py-3 px-4">টাইপ ও শ্রেণী/পদবী</th>
+                      <th className="py-3 px-4">কার্ড আইডি / রোল</th>
+                      <th className="py-3 px-4">রক্তের গ্রুপ</th>
+                      <th className="py-3 px-4">স্ট্যাটাস</th>
+                      <th className="py-3 px-4 text-right">অ্যাকশন</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs">
+                    {idCardsList
+                      .filter(card => {
+                        if (idCardFilter === 'pending') return card.status === 'pending';
+                        if (idCardFilter === 'approved') return card.status === 'approved';
+                        if (idCardFilter === 'rejected') return card.status === 'rejected';
+                        if (idCardFilter === 'student') return card.cardType === 'student';
+                        if (idCardFilter === 'teacher') return card.cardType === 'teacher';
+                        return true;
+                      })
+                      .map((card) => (
+                        <tr key={card._id} className="hover:bg-slate-50/80 transition">
+                          <td className="py-3 px-4">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                              {card.photoUrl ? (
+                                <img src={card.photoUrl} alt={card.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">N/A</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-slate-900 text-sm">{card.name}</div>
+                            <div className="text-[11px] text-slate-500">{card.userEmail}</div>
+                            {card.phone && <div className="text-[10px] text-blue-600 font-medium">মোবাইল: {card.phone}</div>}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase mb-1 ${
+                              card.cardType === 'teacher' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {card.cardType === 'teacher' ? 'শিক্ষক' : 'শিক্ষার্থী'}
+                            </span>
+                            <div className="text-slate-700 font-medium">{card.className || card.designation || 'N/A'}</div>
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold text-slate-800">
+                            <div>{card.studentId || card.teacherId || 'N/A'}</div>
+                            {card.roll && <div className="text-[10px] font-sans text-slate-500">রোল: {card.roll}</div>}
+                          </td>
+                          <td className="py-3 px-4 font-bold text-rose-600">
+                            {card.bloodGroup || 'N/A'}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                              card.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                              card.status === 'rejected' ? 'bg-rose-100 text-rose-800' :
+                              'bg-amber-100 text-amber-800 animate-pulse'
+                            }`}>
+                              {card.status === 'approved' ? 'অনুমোদিত' : card.status === 'rejected' ? 'বাতিল' : 'পেন্ডিং'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              <button
+                                onClick={() => setSelectedPreviewCard(card)}
+                                className="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg font-bold transition flex items-center gap-1 shadow-2xs"
+                                title="কার্ড প্রিভিউ ও প্রিন্ট"
+                              >
+                                <Printer className="w-3.5 h-3.5" /> প্রিন্ট / সেভ
+                              </button>
+
+                              {card.status !== 'approved' && (
+                                <button
+                                  onClick={() => handleApproveIdCard(card._id, 'approved')}
+                                  className="p-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-lg transition"
+                                  title="অনুমোদন করুন"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              {card.status !== 'rejected' && (
+                                <button
+                                  onClick={() => handleApproveIdCard(card._id, 'rejected')}
+                                  className="p-1.5 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white rounded-lg transition"
+                                  title="বাতিল করুন"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              <button
+                                onClick={() => handleDeleteIdCard(card._id)}
+                                className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition"
+                                title="মুছে ফেলুন"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* MODAL: HIGH-DEFINITION ID CARD PREVIEW & PRINT FOR ADMIN */}
+        {selectedPreviewCard && (
+          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 relative max-h-[90vh] overflow-y-auto">
+              
+              <button
+                onClick={() => setSelectedPreviewCard(null)}
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 print:hidden"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+
+              <div className="text-center border-b border-slate-100 pb-3 print:hidden">
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-0.5 rounded-full">
+                  অফিসিয়াল আইডি কার্ড ভিউয়ার
+                </span>
+                <h3 className="text-base font-black text-slate-900 mt-1">{selectedPreviewCard.name}</h3>
+              </div>
+
+              {/* Printable Card Template */}
+              <div className="w-full max-w-[340px] mx-auto bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-300 relative print:border-none print:shadow-none">
+                
+                {/* Header */}
+                <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white p-4 text-center">
+                  <div className="w-10 h-10 mx-auto rounded-xl bg-white text-blue-900 flex items-center justify-center font-black text-sm mb-1 shadow-md">
+                    DRM
+                  </div>
+                  <h4 className="font-black text-xs leading-tight text-white">
+                    ডাঃ মুজিব-রুবি মডেল হাই স্কুল
+                  </h4>
+                  <p className="text-[9px] text-sky-200 mt-0.5">স্থাপিত: ১৯৯৮ | কোড: ১০৯২৮৩</p>
+                  <div className="mt-1.5 inline-block px-3 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[9px] uppercase tracking-wider">
+                    {selectedPreviewCard.cardType === 'student' ? 'Student Identity Card' : 'Faculty & Staff ID'}
+                  </div>
+                </div>
+
+                {/* Body */}
+                <div className="p-5 space-y-4 text-center bg-gradient-to-b from-white via-slate-50/50 to-white">
+                  <div className="relative w-28 h-28 mx-auto rounded-2xl overflow-hidden border-3 border-blue-600 shadow-md bg-slate-100">
+                    {selectedPreviewCard.photoUrl ? (
+                      <img src={selectedPreviewCard.photoUrl} alt="Photo" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-bold">No Photo</div>
+                    )}
+                    <div className="absolute bottom-0 inset-x-0 bg-blue-600 text-white text-[9px] font-bold py-0.5">
+                      রক্ত: {selectedPreviewCard.bloodGroup || 'B+'}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-black text-base text-slate-900">{selectedPreviewCard.name}</h4>
+                    <p className="text-xs font-bold text-blue-600 mt-0.5">
+                      {selectedPreviewCard.className || selectedPreviewCard.designation}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200 text-left text-xs space-y-1.5 font-medium">
+                    <div className="flex justify-between border-b border-slate-200 pb-1">
+                      <span className="text-slate-500 font-bold">কার্ড আইডি:</span>
+                      <span className="font-mono font-bold text-slate-900">{selectedPreviewCard.studentId || selectedPreviewCard.teacherId}</span>
+                    </div>
+                    {selectedPreviewCard.roll && (
+                      <div className="flex justify-between border-b border-slate-200 pb-1">
+                        <span className="text-slate-500 font-bold">রোল নম্বর:</span>
+                        <span className="font-bold text-slate-900">{selectedPreviewCard.roll}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-b border-slate-200 pb-1">
+                      <span className="text-slate-500 font-bold">শিক্ষাবর্ষ:</span>
+                      <span className="font-bold text-slate-900">{selectedPreviewCard.session || '২০২৬'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 font-bold">জরুরি যোগাযোগ:</span>
+                      <span className="font-bold text-blue-700">{selectedPreviewCard.emergencyContact || selectedPreviewCard.phone || 'অফিস'}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between px-2 border-t border-slate-200">
+                    <div className="text-left space-y-1">
+                      <div className="w-12 h-12 bg-slate-900 rounded-lg p-1 text-white flex items-center justify-center">
+                        <QrCode className="w-full h-full" />
+                      </div>
+                      <span className="text-[9px] font-mono text-emerald-700 font-bold">OFFICIAL DRM ID</span>
+                    </div>
+
+                    <div className="text-right space-y-1">
+                      <div className="font-serif italic font-bold text-blue-900 text-sm border-b border-slate-400 pb-0.5">
+                        K. M. Rahman
+                      </div>
+                      <p className="text-[9px] font-bold text-slate-600">প্রধান শিক্ষক</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 py-1.5 text-center text-[9px] text-slate-400">
+                  www.drmujibrubi.edu.bd | অফিসিয়াল আইডি কার্ড
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 pt-2 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.success('আইডি কার্ড প্রিন্টিং উইন্ডো খোলা হচ্ছে...');
+                    setTimeout(() => window.print(), 300);
+                  }}
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>প্রিন্ট / PDF ডাউনলোড</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedPreviewCard(null)}
+                  className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition"
+                >
+                  বন্ধ করুন
+                </button>
+              </div>
+
+            </div>
           </div>
         )}
 
