@@ -40,6 +40,8 @@ export default function TeachersGridSection({ teachers = [] }: TeachersGridSecti
                   <img 
                     src={teacher.image || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80'} 
                     alt={teacher.name} 
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   />
                 </div>

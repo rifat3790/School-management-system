@@ -39,11 +39,13 @@ export default function GalleryAndVirtualTour({ gallery = [] }: GalleryAndVirtua
                   <Link 
                     href="/gallery"
                     key={item._id || idx} 
-                    className="relative rounded-2xl overflow-hidden aspect-[4/3] border border-slate-200 shadow-2xs group cursor-pointer"
+                    className="relative rounded-2xl overflow-hidden aspect-[4/3] border border-slate-200 shadow-2xs group cursor-pointer bg-slate-100"
                   >
                     <img 
                       src={item.url || item.image} 
                       alt={item.title} 
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-2">
@@ -77,10 +79,12 @@ export default function GalleryAndVirtualTour({ gallery = [] }: GalleryAndVirtua
             </div>
 
             {/* Video Container with Play Button */}
-            <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 shadow-lg aspect-video group cursor-pointer">
+            <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 shadow-lg aspect-video group cursor-pointer bg-slate-100">
               <img 
                 src={imagesToRender[0]?.url || 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=800&q=80'} 
                 alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুল ভার্চুয়াল ট্যুর"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
               />
               <a 

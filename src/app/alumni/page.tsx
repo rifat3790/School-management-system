@@ -176,6 +176,8 @@ export default function AlumniPage() {
                     <img
                       src={story.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80'}
                       alt={story.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-16 h-16 rounded-2xl object-cover border-2 border-blue-600 shadow-md"
                     />
                     <div>

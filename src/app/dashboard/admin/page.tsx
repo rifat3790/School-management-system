@@ -37,6 +37,7 @@ import {
   Award
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
+import ImageUploadInput from '@/components/ImageUploadInput';
 
 interface UserRecord {
   _id: string;
@@ -1430,36 +1431,11 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">হিরো স্লাইডার ছবি URL (একাধিক ছবি কমা (,) দিয়ে আলাদা করুন - যেমন: url1, url2)</label>
-                  <input type="text" placeholder="https://image1.jpg, https://image2.jpg" value={siteSettings.heroImage || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono" />
-                  
-                  {/* Live Image Thumbnails Preview */}
-                  {siteSettings.heroImage && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-[11px] font-bold text-slate-600">লাইভ ছবি প্রিভিউ (Live Preview):</p>
-                      <div className="flex flex-wrap gap-3">
-                        {siteSettings.heroImage.split(/[\n,]+/).map((url: string, idx: number) => {
-                          const cleanUrl = url.trim();
-                          if (!cleanUrl) return null;
-                          return (
-                            <div key={idx} className="relative w-24 h-16 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 shadow-xs group">
-                              <img 
-                                src={cleanUrl} 
-                                alt={`Hero Slide ${idx + 1}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&q=80';
-                                }}
-                              />
-                              <span className="absolute bottom-0.5 left-0.5 bg-slate-900/80 text-white font-bold text-[9px] px-1 rounded">
-                                Slide {idx + 1}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                  <ImageUploadInput
+                    label="হিরো ব্যানার স্লাইডার ছবি আপলোড (Direct File Upload)"
+                    value={siteSettings.heroImage || ''}
+                    onChange={(url) => setSiteSettings({ ...siteSettings, heroImage: url })}
+                  />
                 </div>
 
                 <div className="md:col-span-2">
@@ -1939,8 +1915,11 @@ export default function AdminDashboard() {
                   <input type="text" value={siteSettings.principalTitle} onChange={(e) => setSiteSettings({ ...siteSettings, principalTitle: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি URL</label>
-                  <input type="text" value={siteSettings.principalImage} onChange={(e) => setSiteSettings({ ...siteSettings, principalImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                  <ImageUploadInput
+                    label="প্রধান শিক্ষকের ছবি আপলোড"
+                    value={siteSettings.principalImage || ''}
+                    onChange={(url) => setSiteSettings({ ...siteSettings, principalImage: url })}
+                  />
                 </div>
                 <div className="md:col-span-3">
                   <label className="block text-xs font-bold text-slate-700 mb-1">প্রধান শিক্ষকের মূল বাণী</label>
@@ -1962,8 +1941,11 @@ export default function AdminDashboard() {
                   <input type="text" value={siteSettings.chairmanTitle} onChange={(e) => setSiteSettings({ ...siteSettings, chairmanTitle: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি URL</label>
-                  <input type="text" value={siteSettings.chairmanImage} onChange={(e) => setSiteSettings({ ...siteSettings, chairmanImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
+                  <ImageUploadInput
+                    label="সভাপতির ছবি আপলোড"
+                    value={siteSettings.chairmanImage || ''}
+                    onChange={(url) => setSiteSettings({ ...siteSettings, chairmanImage: url })}
+                  />
                 </div>
                 <div className="md:col-span-3">
                   <label className="block text-xs font-bold text-slate-700 mb-1"> সভাপতির মূল বাণী</label>
@@ -2218,14 +2200,11 @@ export default function AdminDashboard() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://..."
+                <div className="md:col-span-2">
+                  <ImageUploadInput
+                    label="শিক্ষকের ছবি আপলোড"
                     value={newTeacher.image}
-                    onChange={(e) => setNewTeacher({ ...newTeacher, image: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                    onChange={(url) => setNewTeacher({ ...newTeacher, image: url })}
                   />
                 </div>
 
@@ -2687,13 +2666,10 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block font-bold text-slate-700 mb-1">ছবি URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://..."
+                  <ImageUploadInput
+                    label="অ্যালুমনির ছবি আপলোড"
                     value={newAlumni.image}
-                    onChange={(e) => setNewAlumni({ ...newAlumni, image: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                    onChange={(url) => setNewAlumni({ ...newAlumni, image: url })}
                   />
                 </div>
 
@@ -2793,13 +2769,10 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">সংবাদের ছবি URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://..."
+                  <ImageUploadInput
+                    label="সংবাদের থাম্বনেইল / ছবি আপলোড"
                     value={newNews.image}
-                    onChange={(e) => setNewNews({ ...newNews, image: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                    onChange={(url) => setNewNews({ ...newNews, image: url })}
                   />
                 </div>
 
@@ -2920,14 +2893,10 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="md:col-span-3">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">ছবি URL</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="https://..."
+                  <ImageUploadInput
+                    label="গ্যালারির ছবি আপলোড"
                     value={newGallery.url}
-                    onChange={(e) => setNewGallery({ ...newGallery, url: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                    onChange={(url) => setNewGallery({ ...newGallery, url })}
                   />
                 </div>
               </div>
@@ -3452,12 +3421,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div>
-                <label className="block font-bold text-slate-700 mb-1">ছবি URL</label>
-                <input
-                  type="text"
+                <ImageUploadInput
+                  label="শিক্ষকের ছবি আপলোড"
                   value={editingTeacher.image}
-                  onChange={(e) => setEditingTeacher({ ...editingTeacher, image: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  onChange={(url) => setEditingTeacher({ ...editingTeacher, image: url })}
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
@@ -3509,12 +3476,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div>
-                <label className="block font-bold text-slate-700 mb-1">সংবাদের ছবি URL</label>
-                <input
-                  type="text"
+                <ImageUploadInput
+                  label="সংবাদের ছবি আপলোড"
                   value={editingNews.image}
-                  onChange={(e) => setEditingNews({ ...editingNews, image: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  onChange={(url) => setEditingNews({ ...editingNews, image: url })}
                 />
               </div>
               <div>
@@ -3564,12 +3529,10 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-slate-700 mb-1">ছবি URL</label>
-                <input
-                  type="text"
+                <ImageUploadInput
+                  label="গ্যালারির ছবি আপলোড"
                   value={editingGallery.url}
-                  onChange={(e) => setEditingGallery({ ...editingGallery, url: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  onChange={(url) => setEditingGallery({ ...editingGallery, url })}
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">

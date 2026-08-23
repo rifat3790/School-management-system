@@ -18,10 +18,7 @@ export default function NewsPage() {
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<NewsItem | null>(null);
   const [commentInput, setCommentInput] = useState('');
-  const [comments, setComments] = useState<string[]>([
-    'আমাদের স্কুলের রোবোটিক্স টিমের এই সাফল্যে আমরা অত্যন্ত গর্বিত!',
-    'নতুন ডিজিটাল বোর্ডগুলো আসায় ক্লাস করতে অনেক সুবিধা হচ্ছে।'
-  ]);
+  const [comments, setComments] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,6 +75,8 @@ export default function NewsPage() {
                     <img
                       src={article.image}
                       alt={article.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <span className="absolute top-3 left-3 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">

@@ -15,6 +15,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
+import ImageUploadInput from '@/components/ImageUploadInput';
 
 export default function AdmissionPage() {
   const toast = useToast();
@@ -35,6 +36,8 @@ export default function AdmissionPage() {
     guardianPhone: '',
     guardianEmail: '',
     address: '',
+    photoUrl: '',
+    birthCertUrl: '',
     paymentMethod: 'bKash',
     trxId: '',
   });
@@ -78,10 +81,10 @@ export default function AdmissionPage() {
           motherName: formData.motherName,
           phone: formData.guardianPhone,
           classApply: formData.desiredClass,
-          birthCertNo: formData.birthReg || '১৯৯৮৮৭৭৬৬৫৫',
-          address: formData.address || 'শেরপুর ডিস্ট্রিক্ট',
-          photoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&q=80',
-          birthCertUrl: 'https://example.com/birthcert.pdf',
+          birthCertNo: formData.birthReg || '',
+          address: formData.address || '',
+          photoUrl: formData.photoUrl || '',
+          birthCertUrl: formData.birthCertUrl || '',
           paymentStatus: payLater ? 'pay_later' : 'paid',
           paymentTxId: payLater ? 'PAY_LATER' : (formData.trxId || 'TXN-BKASH'),
           status: 'pending'
@@ -302,24 +305,12 @@ export default function AdmissionPage() {
                     প্রয়োজনীয় ডকুমেন্টস আপলোড
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center space-y-2 hover:border-primary transition-colors cursor-pointer bg-slate-50">
-                      <Upload className="w-8 h-8 text-primary mx-auto" />
-                      <p className="font-bold text-xs text-slate-700">শিক্ষার্থীর ছবি আপলোড (300x300 px)</p>
-                      <p className="text-[10px] text-slate-400">সর্বোচ্চ ফাইল সাইজ: 1MB (JPG/PNG)</p>
-                      <span className="inline-block bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-md">
-                        ফাইল বাছুন
-                      </span>
-                    </div>
-
-                    <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center space-y-2 hover:border-primary transition-colors cursor-pointer bg-slate-50">
-                      <Upload className="w-8 h-8 text-secondary mx-auto" />
-                      <p className="font-bold text-xs text-slate-700">জন্ম সনদ পত্র (PDF/Image)</p>
-                      <p className="text-[10px] text-slate-400">ডিজিটাল জন্ম নিবন্ধনের কপি</p>
-                      <span className="inline-block bg-secondary text-white text-[10px] font-bold px-2.5 py-1 rounded-md">
-                        ফাইল বাছুন
-                      </span>
-                    </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    <ImageUploadInput
+                      label="শিক্ষার্থীর পাসপোর্ট সাইজ ছবি আপলোড (300x300 px - সর্বোচ্চ ১০MB)"
+                      value={formData.photoUrl}
+                      onChange={(url) => handleChange('photoUrl', url)}
+                    />
                   </div>
                 </div>
               )}

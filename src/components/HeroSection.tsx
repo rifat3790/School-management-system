@@ -197,11 +197,15 @@ export default function HeroSection({ settings }: HeroSectionProps) {
               <div className="absolute -inset-4 bg-gradient-to-tr from-blue-600 via-sky-400 to-indigo-600 rounded-[55px_15px_55px_15px] blur-xl opacity-35" />
               
               {/* Main Curved Leaf Mask Frame */}
-              <div className="relative rounded-[50px_15px_50px_15px] overflow-hidden border-4 border-white shadow-2xl bg-white aspect-[4/3] sm:aspect-[14/10]">
+              <div className="relative rounded-[50px_15px_50px_15px] overflow-hidden border-4 border-white shadow-2xl bg-slate-100 aspect-[4/3] sm:aspect-[14/10]">
                 <img 
                   key={activeSlide.image}
                   src={activeSlide.image} 
                   alt={activeSlide.title1} 
+                  loading="eager"
+                  // @ts-ignore
+                  fetchpriority="high"
+                  decoding="async"
                   className="w-full h-full object-cover transform hover:scale-105 transition duration-700"
                 />
                 

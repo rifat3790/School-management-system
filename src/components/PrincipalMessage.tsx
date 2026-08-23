@@ -93,10 +93,12 @@ export default function PrincipalMessage({ settings }: PrincipalMessageProps) {
             </div>
 
             {/* Campus Preview Photo */}
-            <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm h-36">
+            <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm h-36 bg-slate-100">
               <img 
-                src="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=800&q=80" 
+                src={settings?.heroImage?.split(/[\n,]+/)?.[0]?.trim() || principalImage} 
                 alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুল ক্যাম্পাস"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover hover:scale-105 transition duration-500"
               />
             </div>

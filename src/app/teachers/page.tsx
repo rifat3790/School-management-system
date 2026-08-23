@@ -116,6 +116,8 @@ export default function TeachersPage() {
                     <img
                       src={teacher.image || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&q=80'}
                       alt={teacher.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </div>
