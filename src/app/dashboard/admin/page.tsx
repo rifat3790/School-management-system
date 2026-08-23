@@ -40,7 +40,8 @@ import {
   Menu,
   ChevronRight,
   Paperclip,
-  User
+  User,
+  Volume2
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import ImageUploadInput from '@/components/ImageUploadInput';
@@ -2607,6 +2608,375 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* 7. Live Emergency Announcement & Ticker Bar */}
+            <div className="p-5 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-rose-800 flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-rose-600" /> ৭. হোমপেজ জরুরি ঘোষণা ও লাইভ ব্রেকিং বার (Emergency Alert Ticker)
+                </h4>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-xs font-bold text-slate-700">ব্যানার চালু রাখুন:</span>
+                  <input
+                    type="checkbox"
+                    checked={siteSettings.emergencyAlert?.enabled !== false}
+                    onChange={(e) => {
+                      setSiteSettings({
+                        ...siteSettings,
+                        emergencyAlert: {
+                          ...(siteSettings.emergencyAlert || {}),
+                          enabled: e.target.checked
+                        }
+                      });
+                    }}
+                    className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500"
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-xl border border-rose-100">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">ঘোষণার ধরন / ব্যাজ</label>
+                  <select
+                    value={siteSettings.emergencyAlert?.badge || 'জরুরি ঘোষণা'}
+                    onChange={(e) => {
+                      setSiteSettings({
+                        ...siteSettings,
+                        emergencyAlert: {
+                          ...(siteSettings.emergencyAlert || {}),
+                          badge: e.target.value
+                        }
+                      });
+                    }}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                  >
+                    <option value="জরুরি ঘোষণা">🔴 জরুরি ঘোষণা</option>
+                    <option value="গুরুত্বপূর্ণ নোটিশ">🔵 গুরুত্বপূর্ণ নোটিশ</option>
+                    <option value="সুখবর ও অভিনন্দন">🟢 সুখবর ও অভিনন্দন</option>
+                    <option value="২০২৬ ভর্তি তথ্য">🎓 ২০২৬ ভর্তি তথ্য</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">অ্যাকশন লিংক (ঐচ্ছিক)</label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: /admission বা /notices"
+                    value={siteSettings.emergencyAlert?.link || ''}
+                    onChange={(e) => {
+                      setSiteSettings({
+                        ...siteSettings,
+                        emergencyAlert: {
+                          ...(siteSettings.emergencyAlert || {}),
+                          link: e.target.value
+                        }
+                      });
+                    }}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                  />
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">ঘোষণার মূল বার্তা (ব্রেকিং টেক্সট)</label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: পবিত্র শব-ই-বরাত উপলক্ষে আগামী ৩ মার্চ বিদ্যালয় বন্ধ থাকবে..."
+                    value={siteSettings.emergencyAlert?.text || ''}
+                    onChange={(e) => {
+                      setSiteSettings({
+                        ...siteSettings,
+                        emergencyAlert: {
+                          ...(siteSettings.emergencyAlert || {}),
+                          text: e.target.value
+                        }
+                      });
+                    }}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 8. Star Achievers & Top Students Spotlight */}
+            <div className="p-5 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-amber-900 flex items-center gap-2">
+                  <Award className="w-4 h-4 text-amber-600" /> ৮. স্টার অ্যাচিভার্স ও কৃতি শিক্ষার্থী স্পটলাইট ({siteSettings.topAchievers?.length || 0})
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newAchiever = {
+                      name: 'শিক্ষার্থীর নাম',
+                      exam: 'এসএসসি ২০২৬ (বিজ্ঞান শাখা)',
+                      gpa: 'জিপিএ ৫.০০ (গোল্ডেন A+)',
+                      badge: '🥇 বোর্ড সেরা',
+                      quote: 'নিয়মিত পড়াশোনা ও শিক্ষকদের গাইডলাইনেই সাফল্য।',
+                      year: '২০২৬',
+                      image: ''
+                    };
+                    setSiteSettings({
+                      ...siteSettings,
+                      topAchievers: [...(siteSettings.topAchievers || []), newAchiever]
+                    });
+                  }}
+                  className="px-3 py-1 bg-amber-600 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-amber-700 transition flex items-center gap-1"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" /> কৃতি শিক্ষার্থী যোগ করুন
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(siteSettings.topAchievers || []).map((st: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white border border-amber-200 rounded-xl space-y-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = siteSettings.topAchievers.filter((_: any, i: number) => i !== idx);
+                        setSiteSettings({ ...siteSettings, topAchievers: updated });
+                      }}
+                      className="absolute top-3 right-3 text-rose-600 hover:text-rose-800 text-xs font-bold"
+                    >
+                      মুছুন
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">শিক্ষার্থীর নাম</label>
+                        <input
+                          type="text"
+                          value={st.name || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.topAchievers];
+                            copy[idx].name = e.target.value;
+                            setSiteSettings({ ...siteSettings, topAchievers: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">পরীক্ষা / অলিম্পিয়াড</label>
+                        <input
+                          type="text"
+                          value={st.exam || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.topAchievers];
+                            copy[idx].exam = e.target.value;
+                            setSiteSettings({ ...siteSettings, topAchievers: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">জিপিএ / স্থান</label>
+                        <input
+                          type="text"
+                          value={st.gpa || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.topAchievers];
+                            copy[idx].gpa = e.target.value;
+                            setSiteSettings({ ...siteSettings, topAchievers: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">অ্যাওয়ার্ড ব্যাজ</label>
+                        <input
+                          type="text"
+                          value={st.badge || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.topAchievers];
+                            copy[idx].badge = e.target.value;
+                            setSiteSettings({ ...siteSettings, topAchievers: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <ImageUploadInput
+                          label="শিক্ষার্থীর ছবি আপলোড"
+                          value={st.image || ''}
+                          onChange={(url) => {
+                            const copy = [...siteSettings.topAchievers];
+                            copy[idx].image = url;
+                            setSiteSettings({ ...siteSettings, topAchievers: copy });
+                          }}
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">শিক্ষার্থীর উক্তি / অনুভূতি</label>
+                        <textarea
+                          rows={2}
+                          value={st.quote || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.topAchievers];
+                            copy[idx].quote = e.target.value;
+                            setSiteSettings({ ...siteSettings, topAchievers: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 9. Campus Facilities Manager */}
+            <div className="p-5 bg-indigo-50/70 border border-indigo-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm text-indigo-900 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-600" /> ৯. ক্যাম্পাস সুবিধাসমূহ ও ল্যাব ({siteSettings.campusFacilities?.length || 0})
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newFacility = {
+                      title: 'নতুন ল্যাব / সুবিধা',
+                      desc: 'সুবিধার বিস্তারিত বিবরণ লিখুন...',
+                      badge: 'আধুনিক সুবিধা',
+                      image: ''
+                    };
+                    setSiteSettings({
+                      ...siteSettings,
+                      campusFacilities: [...(siteSettings.campusFacilities || []), newFacility]
+                    });
+                  }}
+                  className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-indigo-700 transition flex items-center gap-1"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" /> সুবিধা যোগ করুন
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(siteSettings.campusFacilities || []).map((fac: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white border border-indigo-200 rounded-xl space-y-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = siteSettings.campusFacilities.filter((_: any, i: number) => i !== idx);
+                        setSiteSettings({ ...siteSettings, campusFacilities: updated });
+                      }}
+                      className="absolute top-3 right-3 text-rose-600 hover:text-rose-800 text-xs font-bold"
+                    >
+                      মুছুন
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">সুবিধার নাম</label>
+                        <input
+                          type="text"
+                          value={fac.title || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.campusFacilities];
+                            copy[idx].title = e.target.value;
+                            setSiteSettings({ ...siteSettings, campusFacilities: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">হাইলাইট ব্যাজ</label>
+                        <input
+                          type="text"
+                          value={fac.badge || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.campusFacilities];
+                            copy[idx].badge = e.target.value;
+                            setSiteSettings({ ...siteSettings, campusFacilities: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <ImageUploadInput
+                          label="ল্যাব / সুবিধার ছবি আপলোড"
+                          value={fac.image || ''}
+                          onChange={(url) => {
+                            const copy = [...siteSettings.campusFacilities];
+                            copy[idx].image = url;
+                            setSiteSettings({ ...siteSettings, campusFacilities: copy });
+                          }}
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">বিবরণ</label>
+                        <textarea
+                          rows={2}
+                          value={fac.desc || ''}
+                          onChange={(e) => {
+                            const copy = [...siteSettings.campusFacilities];
+                            copy[idx].desc = e.target.value;
+                            setSiteSettings({ ...siteSettings, campusFacilities: copy });
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 10. School Anthem & Prayer Audio Manager */}
+            <div className="p-5 bg-sky-50/70 border border-sky-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-sky-900 flex items-center gap-2">
+                <Volume2 className="w-4 h-4 text-sky-600" /> ১০. বিদ্যালয় সঙ্গীত ও লিরিক্স অডিও কর্নার
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-4 rounded-xl border border-sky-100">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">সঙ্গীতের শিরোনাম</label>
+                  <input
+                    type="text"
+                    value={siteSettings.schoolAnthem?.title || 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল সঙ্গীত'}
+                    onChange={(e) => {
+                      setSiteSettings({
+                        ...siteSettings,
+                        schoolAnthem: {
+                          ...(siteSettings.schoolAnthem || {}),
+                          title: e.target.value
+                        }
+                      });
+                    }}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">রচয়িতা / সুরকার</label>
+                  <input
+                    type="text"
+                    value={siteSettings.schoolAnthem?.composer || 'বিদ্যালয় পরিচালনা পর্ষদ'}
+                    onChange={(e) => {
+                      setSiteSettings({
+                        ...siteSettings,
+                        schoolAnthem: {
+                          ...(siteSettings.schoolAnthem || {}),
+                          composer: e.target.value
+                        }
+                      });
+                    }}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">পূর্ণাঙ্গ লিরিক্স</label>
+                  <textarea
+                    rows={4}
+                    value={siteSettings.schoolAnthem?.lyrics || ''}
+                    onChange={(e) => {
+                      setSiteSettings({
+                        ...siteSettings,
+                        schoolAnthem: {
+                          ...(siteSettings.schoolAnthem || {}),
+                          lyrics: e.target.value
+                        }
+                      });
+                    }}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-serif leading-relaxed"
+                  />
+                </div>
               </div>
             </div>
 
