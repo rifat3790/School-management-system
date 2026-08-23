@@ -139,14 +139,20 @@ export default function NoticesPage() {
                     <Eye className="w-4 h-4" /> বিস্তারিত পড়ুন
                   </button>
 
-                  <a
-                    href={n.pdfUrl || '#'}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="p-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition"
-                  >
-                    <Download className="w-4 h-4" />
-                  </a>
+                  {n.pdfUrl ? (
+                    <a
+                      href={n.pdfUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white font-bold text-xs transition flex items-center gap-1.5 shadow-2xs"
+                      title="পিডিএফ ফাইল ডাউনলোড"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>পিডিএফ</span>
+                    </a>
+                  ) : (
+                    <span className="text-[11px] text-slate-400 font-medium">পিডিএফ নেই</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -177,10 +183,21 @@ export default function NoticesPage() {
               {activeModalNotice.content}
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex items-center justify-between gap-3 pt-2">
+              {activeModalNotice.pdfUrl ? (
+                <a
+                  href={activeModalNotice.pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <Download className="w-4 h-4" /> মূল পিডিএফ ডাউনলোড করুন
+                </a>
+              ) : <div />}
+
               <button
                 onClick={() => setActiveModalNotice(null)}
-                className="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs"
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition"
               >
                 বন্ধ করুন
               </button>

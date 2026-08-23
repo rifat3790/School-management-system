@@ -36,10 +36,13 @@ import {
   Calendar,
   Award,
   Loader2,
-  Send
+  Send,
+  Menu,
+  ChevronRight
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import ImageUploadInput from '@/components/ImageUploadInput';
+import FileUploadInput from '@/components/FileUploadInput';
 
 interface UserRecord {
   _id: string;
@@ -59,6 +62,28 @@ interface UserRecord {
 export default function AdminDashboard() {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'assignments' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'results' | 'library' | 'alumni' | 'news' | 'gallery' | 'admissions' | 'donations' | 'inquiries'>('users');
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Sync tab with URL query parameter (?tab=notices)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam) {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
+
+  const switchTab = (tabId: string) => {
+    setActiveTab(tabId as any);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tabId);
+      window.history.pushState({}, '', url.toString());
+    }
+    setMobileSidebarOpen(false);
+  };
   
   // Assignment State
   const [assignTeacherId, setAssignTeacherId] = useState('');
@@ -929,6 +954,51 @@ export default function AdminDashboard() {
     setShowPasswords(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const adminMenuGroups = [
+    {
+      groupTitle: 'ব্যবহারকারী ও অ্যাক্সেস',
+      items: [
+        { id: 'users' as const, label: 'সকল ইউজার ডাটাবেজ', icon: Users, count: allUsers.length, alert: false, isLive: false },
+        { id: 'assignments' as const, label: 'শিক্ষক-শিক্ষার্থী অ্যাসাইন', icon: UserCheck, count: undefined, alert: false, isLive: false },
+        { id: 'approvals' as const, label: 'পেন্ডিং এপ্রুভাল', icon: Clock, count: pendingUsers.length, alert: pendingUsers.length > 0, isLive: false },
+        { id: 'resets' as const, label: 'রিসেট আবেদন কোড', icon: Key, count: resetUsers.length, alert: resetUsers.length > 0, isLive: false },
+      ]
+    },
+    {
+      groupTitle: 'লাইভ যোগাযোগ ও সার্ভিস',
+      items: [
+        { id: 'chat' as const, label: 'লাইভ চ্যাট ইনবক্স', icon: MessageSquare, count: chatMessages.length, alert: false, isLive: true },
+        { id: 'admissions' as const, label: 'ভর্তি আবেদনসমূহ', icon: FileText, count: admissionsList.length, alert: false, isLive: false },
+        { id: 'inquiries' as const, label: 'কন্টাক্ট ইনকোয়ারি', icon: Mail, count: contactList.length, alert: false, isLive: false },
+      ]
+    },
+    {
+      groupTitle: 'একাডেমিক ও পাবলিকেশন',
+      items: [
+        { id: 'notices' as const, label: 'নোটিশ বোর্ড', icon: Bell, count: notices.length, alert: false, isLive: false },
+        { id: 'teachers' as const, label: 'শিক্ষক প্যানেল', icon: Users, count: teachers.length, alert: false, isLive: false },
+        { id: 'results' as const, label: 'পরীক্ষার রেজাল্ট', icon: Award, count: resultsList.length, alert: false, isLive: false },
+        { id: 'library' as const, label: 'লাইব্রেরি ক্যাটালগ', icon: BookOpen, count: booksList.length, alert: false, isLive: false },
+      ]
+    },
+    {
+      groupTitle: 'ক্যাম্পাস ও কন্টেন্ট',
+      items: [
+        { id: 'news' as const, label: 'ক্যাম্পাস নিউজ', icon: Newspaper, count: newsList.length, alert: false, isLive: false },
+        { id: 'gallery' as const, label: 'ফটো গ্যালারি', icon: ImageIcon, count: galleryList.length, alert: false, isLive: false },
+        { id: 'alumni' as const, label: 'অ্যালুমনি গল্প', icon: GraduationCap, count: alumniList.length, alert: false, isLive: false },
+        { id: 'donations' as const, label: 'অনলাইন অনুদান', icon: HeartHandshake, count: donationsList.length, alert: false, isLive: false },
+      ]
+    },
+    {
+      groupTitle: 'সাইট কনফিগারেশন',
+      items: [
+        { id: 'settings' as const, label: 'সাইট ও ব্যানার সেটিংস', icon: Settings, count: undefined, alert: false, isLive: false },
+        { id: 'about' as const, label: 'সম্পর্কে ও বাণী এডিটর', icon: HeartHandshake, count: undefined, alert: false, isLive: false },
+      ]
+    }
+  ];
+
   return (
     <div className="py-10 bg-slate-50 min-h-[85vh]">
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
@@ -976,45 +1046,165 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Navigation Tabs Bar */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto no-scrollbar">
-          {[
-            { id: 'users', label: `👥 সকল ইউজার ডাটাবেজ (${allUsers.length})`, icon: Users },
-            { id: 'assignments', label: '🔗 শিক্ষক-শিক্ষার্থী অ্যাসাইনমেন্ট', icon: UserCheck },
-            { id: 'chat', label: '💬 লাইভ চ্যাট ইনবক্স (Live Support)', icon: MessageSquare },
-            { id: 'resets', label: `🔑 রিসেট আবেদন (${resetUsers.length})`, icon: Key },
-            { id: 'approvals', label: `⏰ পেন্ডিং এপ্রুভাল (${pendingUsers.length})`, icon: Clock },
-            { id: 'settings', label: '⚙️ সাইট ও ব্যানার সেটিংস', icon: Settings },
-            { id: 'about', label: '📜 সম্পর্কে ও বাণী এডিটর', icon: HeartHandshake },
-            { id: 'notices', label: `🔔 নোটিশ বোর্ড (${notices.length})`, icon: Bell },
-            { id: 'teachers', label: `👨‍🏫 শিক্ষক প্যানেল (${teachers.length})`, icon: Users },
-            { id: 'results', label: `📝 পরীক্ষার রেজাল্ট (${resultsList.length})`, icon: Award },
-            { id: 'library', label: `📚 লাইব্রেরি ক্যাটালগ (${booksList.length})`, icon: BookOpen },
-            { id: 'alumni', label: `🎓 অ্যালুমনি গল্প (${alumniList.length})`, icon: GraduationCap },
-            { id: 'news', label: `📰 ক্যাম্পাস নিউজ (${newsList.length})`, icon: Newspaper },
-            { id: 'gallery', label: `🖼️ ফটো গ্যালারি (${galleryList.length})`, icon: ImageIcon },
-            { id: 'admissions', label: `📝 ভর্তি আবেদন (${admissionsList.length})`, icon: FileText },
-            { id: 'donations', label: `❤️ অনুদান এপ্রুভাল (${donationsList.length})`, icon: HeartHandshake },
-            { id: 'inquiries', label: `📬 কন্টাক্ট ইনকোয়ারি (${contactList.length})`, icon: Mail },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shrink-0 transition ${
-                  active 
-                    ? 'bg-blue-600 text-white shadow-md' 
-                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
+        {/* Mobile Navigation Trigger Bar */}
+        <div className="lg:hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition"
+          >
+            <Menu className="w-4 h-4" />
+            <span>অ্যাডমিন মেনু ব্রাউজার</span>
+          </button>
+          
+          <div className="text-right">
+            <span className="text-[10px] font-bold text-slate-400 block uppercase">বর্তমান বিভাগ</span>
+            <span className="text-xs font-black text-blue-700 capitalize">
+              {activeTab}
+            </span>
+          </div>
         </div>
+
+        {/* Mobile Slide-over Drawer Backdrop */}
+        {mobileSidebarOpen && (
+          <div 
+            className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            <div 
+              className="w-72 max-w-[85vw] h-full bg-white p-5 overflow-y-auto shadow-2xl flex flex-col justify-between"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="space-y-6">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                  <div className="flex items-center gap-2.5 font-black text-slate-900 text-sm">
+                    <ShieldCheck className="w-5 h-5 text-blue-600" />
+                    <span>এডমিন কন্ট্রোল মেনু</span>
+                  </div>
+                  <button onClick={() => setMobileSidebarOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-5">
+                  {adminMenuGroups.map((group, gIdx) => (
+                    <div key={gIdx} className="space-y-1.5">
+                      <p className="text-[10px] font-black tracking-wider text-slate-400 uppercase px-2">{group.groupTitle}</p>
+                      <div className="space-y-1">
+                        {group.items.map((item) => {
+                          const Icon = item.icon;
+                          const active = activeTab === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => switchTab(item.id)}
+                              className={`w-full px-3 py-2.5 rounded-xl font-bold text-xs flex items-center justify-between transition ${
+                                active
+                                  ? 'bg-blue-600 text-white shadow-md'
+                                  : 'text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 truncate">
+                                <Icon className="w-4 h-4 shrink-0" />
+                                <span className="truncate">{item.label}</span>
+                              </div>
+                              {item.count !== undefined && (
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                                  active
+                                    ? 'bg-white/20 text-white'
+                                    : item.alert
+                                    ? 'bg-rose-100 text-rose-700 font-black animate-pulse'
+                                    : item.isLive
+                                    ? 'bg-emerald-100 text-emerald-700 font-bold'
+                                    : 'bg-slate-100 text-slate-600'
+                                }`}>
+                                  {item.count}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200">
+                <button
+                  onClick={fetchAllData}
+                  className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> ডাটা রিফ্রেশ
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Two-Column Responsive Layout: Left Sticky Sidebar + Right Tab Content */}
+        <div className="flex flex-col lg:flex-row items-start gap-6">
+          
+          {/* Left Desktop Sidebar */}
+          <aside className="hidden lg:block w-72 shrink-0 bg-white rounded-3xl p-5 border border-slate-200 shadow-sm sticky top-6 space-y-6">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900 text-xs">মাস্টার নেভিগেশন</h4>
+                <p className="text-[10px] text-slate-400">কন্ট্রোল সেন্টার মেনু</p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {adminMenuGroups.map((group, gIdx) => (
+                <div key={gIdx} className="space-y-1.5">
+                  <p className="text-[10px] font-black tracking-wider text-slate-400 uppercase px-2.5">{group.groupTitle}</p>
+                  <div className="space-y-1">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const active = activeTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => switchTab(item.id)}
+                          className={`w-full px-3 py-2.5 rounded-xl font-bold text-xs flex items-center justify-between transition-all duration-150 group ${
+                            active
+                              ? 'bg-blue-600 text-white shadow-md scale-[1.01]'
+                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 truncate">
+                            <Icon className={`w-4 h-4 shrink-0 transition-transform ${active ? 'scale-110' : 'group-hover:scale-110'}`} />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {item.count !== undefined ? (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                              active
+                                ? 'bg-white/20 text-white'
+                                : item.alert
+                                ? 'bg-rose-100 text-rose-700 animate-pulse font-black'
+                                : item.isLive
+                                ? 'bg-emerald-100 text-emerald-700 font-bold'
+                                : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              {item.count}
+                            </span>
+                          ) : (
+                            <ChevronRight className={`w-3 h-3 transition-opacity ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          {/* Right Main Content Area */}
+          <main className="flex-1 w-full min-w-0 space-y-6">
 
         {/* TAB 1: ALL USERS DATABASE */}
         {activeTab === 'users' && (
@@ -2189,13 +2379,10 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">পিডিএফ/সংযুক্তি URL (ঐচ্ছিক)</label>
-                  <input
-                    type="text"
-                    placeholder="https://example.com/notice.pdf"
+                  <FileUploadInput
+                    label="নোটিশের মূল পিডিএফ ফাইল আপলোড (PDF Upload)"
                     value={newNotice.pdfUrl || ''}
-                    onChange={(e) => setNewNotice({ ...newNotice, pdfUrl: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs"
+                    onChange={(url) => setNewNotice({ ...newNotice, pdfUrl: url })}
                   />
                 </div>
 
@@ -3266,6 +3453,8 @@ export default function AdminDashboard() {
           </div>
         )}
 
+          </main>
+        </div>
       </div>
 
       {/* CREATE USER MODAL */}
@@ -3503,12 +3692,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div>
-                <label className="block font-bold text-slate-700 mb-1">পিডিএফ/সংযুক্তি URL</label>
-                <input
-                  type="text"
+                <FileUploadInput
+                  label="নোটিশের মূল পিডিএফ ফাইল আপলোড (PDF Upload)"
                   value={editingNotice.pdfUrl || ''}
-                  onChange={(e) => setEditingNotice({ ...editingNotice, pdfUrl: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  onChange={(url) => setEditingNotice({ ...editingNotice, pdfUrl: url })}
                 />
               </div>
               <div>

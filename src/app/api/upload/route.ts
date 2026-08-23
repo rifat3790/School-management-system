@@ -13,16 +13,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'কোনো ফাইল পাওয়া যায়নি' }, { status: 400 });
     }
 
-    // Validate mime type
-    const validMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'image/avif'];
-    if (!validMimes.includes(file.type)) {
-      return NextResponse.json({ success: false, message: 'শুধুমাত্র ইমেজ ফাইল (JPG, PNG, WebP, GIF, SVG) সমর্থিত' }, { status: 400 });
+    // Validate mime type: images & PDF documents
+    const validMimes = [
+      'image/jpeg', 
+      'image/png', 
+      'image/webp', 
+      'image/gif', 
+      'image/svg+xml', 
+      'image/avif',
+      'application/pdf'
+    ];
+    
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const isImage = file.type.startsWith('image/');
+
+    if (!isPdf && !isImage && !validMimes.includes(file.type)) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'শুধুমাত্র ইমেজ (JPG, PNG, WebP) এবং পিডিএফ (PDF) ফাইল সমর্থিত' 
+      }, { status: 400 });
     }
 
-    // Size limit: 12MB
-    const maxSizeBytes = 12 * 1024 * 1024;
+    // Size limit: 20MB
+    const maxSizeBytes = 20 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      return NextResponse.json({ success: false, message: 'ফাইলের আকার ১২ মেগাবাইট (12MB) এর নিচে হতে হবে' }, { status: 400 });
+      return NextResponse.json({ 
+        success: false, 
+        message: 'ফাইলের আকার ২০ মেগাবাইট (20MB) এর নিচে হতে হবে' 
+      }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -32,8 +50,8 @@ export async function POST(req: NextRequest) {
 
     // Store in MongoDB Media collection
     const media = await Media.create({
-      filename: file.name || 'image.jpg',
-      contentType: file.type || 'image/jpeg',
+      filename: file.name || (isPdf ? 'document.pdf' : 'image.jpg'),
+      contentType: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
       data: buffer,
       size: file.size,
     });
@@ -45,10 +63,14 @@ export async function POST(req: NextRequest) {
       url: publicUrl,
       mediaId: media._id,
       fileName: file.name,
-      size: file.size
+      size: file.size,
+      contentType: media.contentType
     });
   } catch (error: any) {
     console.error('Database File Upload Error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'ছবি আপলোড করতে সমস্যা হয়েছে' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      message: error.message || 'ফাইল আপলোড করতে সমস্যা হয়েছে' 
+    }, { status: 500 });
   }
 }
