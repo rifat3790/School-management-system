@@ -39,7 +39,8 @@ import {
   Send,
   Menu,
   ChevronRight,
-  Paperclip
+  Paperclip,
+  User
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import ImageUploadInput from '@/components/ImageUploadInput';
@@ -105,6 +106,11 @@ export default function AdminDashboard() {
   const [donationsList, setDonationsList] = useState<any[]>([]);
   const [contactList, setContactList] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [conversationsList, setConversationsList] = useState<any[]>([]);
+  const [selectedConvId, setSelectedConvId] = useState<string>('');
+  const [selectedConvMessages, setSelectedConvMessages] = useState<any[]>([]);
+  const [visitorTyping, setVisitorTyping] = useState<boolean>(false);
+  const [convSearch, setConvSearch] = useState<string>('');
   const [adminReplyText, setAdminReplyText] = useState('');
   const [adminReplyImage, setAdminReplyImage] = useState('');
   const [uploadingAdminImage, setUploadingAdminImage] = useState(false);
@@ -305,6 +311,42 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchAdminChatData = async () => {
+    try {
+      const res = await fetch('/api/chat?admin=true');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.conversations)) {
+        setConversationsList(data.conversations);
+        
+        // If no conversation is selected, default to the first one
+        if (!selectedConvId && data.conversations.length > 0) {
+          setSelectedConvId(data.conversations[0].conversationId);
+        }
+      }
+
+      const activeConv = selectedConvId || (data.conversations && data.conversations[0]?.conversationId);
+      if (activeConv) {
+        const msgRes = await fetch(`/api/chat?conversationId=${activeConv}`);
+        const msgData = await msgRes.json();
+        if (msgData.success && Array.isArray(msgData.messages)) {
+          setSelectedConvMessages(msgData.messages);
+          if (msgData.typing) {
+            setVisitorTyping(Boolean(msgData.typing.userTyping));
+          }
+        }
+      }
+    } catch (err) {}
+  };
+
+  // Real-time live polling for admin chat
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      fetchAdminChatData();
+      const interval = setInterval(fetchAdminChatData, 1500);
+      return () => clearInterval(interval);
+    }
+  }, [activeTab, selectedConvId]);
+
   const handleAdminFileUpload = async (file: File) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -340,8 +382,27 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAdminTypingPulse = () => {
+    if (!selectedConvId) return;
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'typing',
+        conversationId: selectedConvId,
+        senderRole: 'admin',
+        isTyping: true
+      })
+    }).catch(() => {});
+  };
+
   const handleSendAdminReply = async (e?: React.FormEvent, customText?: string) => {
     if (e) e.preventDefault();
+    if (!selectedConvId) {
+      toast.error('অনুগ্রহ করে আগে একজন ব্যবহারকারী নির্বাচন করুন');
+      return;
+    }
+
     const text = (customText || adminReplyText).trim();
     const image = adminReplyImage;
 
@@ -353,6 +414,7 @@ export default function AdminDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          conversationId: selectedConvId,
           senderName: 'সুপার এডমিন (ম্যানেজমেন্ট)',
           senderRole: 'admin',
           text: text,
@@ -361,10 +423,10 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success('শিক্ষার্থী/অভিভাবকের নিকট উত্তর লাইভ পাঠানো হয়েছে!');
+        toast.success('উত্তর নির্দিষ্ট ব্যক্তির নিকট লাইভ পাঠানো হয়েছে!');
         setAdminReplyText('');
         setAdminReplyImage('');
-        fetchAllData();
+        fetchAdminChatData();
       } else {
         toast.error('উত্তর পাঠাতে সমস্যা হয়েছে');
       }
@@ -375,14 +437,30 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteConversation = async (cId: string) => {
+    if (!confirm('আপনি কি এই নির্দিষ্ট ব্যক্তির সম্পূর্ণ চ্যাট ইতিহাস মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/chat?conversationId=${cId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('কনভারসেশন সফলভাবে মুছে ফেলা হয়েছে');
+        setSelectedConvId('');
+        fetchAdminChatData();
+      }
+    } catch (err) {
+      toast.error('মুছতে সমস্যা হয়েছে');
+    }
+  };
+
   const handleClearChatHistory = async () => {
-    if (!confirm('আপনি কি সত্যিই সম্পূর্ণ চ্যাট ইতিহাস মুছে ফেলতে চান?')) return;
+    if (!confirm('আপনি কি সত্যিই সম্পূর্ণ চ্যাট ডাটাবেজ মুছে ফেলতে চান?')) return;
     try {
       const res = await fetch('/api/chat', { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
-        toast.success('চ্যাট ইতিহাস মুছে ফেলা হয়েছে');
-        fetchAllData();
+        toast.success('সকল চ্যাট ইতিহাস মুছে ফেলা হয়েছে');
+        setSelectedConvId('');
+        fetchAdminChatData();
       }
     } catch (err) {
       toast.error('মুছতে সমস্যা হয়েছে');
@@ -1390,18 +1468,18 @@ export default function AdminDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-slate-900">💬 লাইভ ম্যানেজমেন্ট চ্যাট ইনবক্স (Live Support Chat)</h3>
+                  <h3 className="text-lg font-bold text-slate-900">💬 লাইভ চ্যাট ও সাপোর্ট ইনবক্স (Live Support Chat)</h3>
                   <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> লাইভ সক্রিয়
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> রিয়েল-টাইম মাল্টি-ইউজার সিংক
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">শিক্ষার্থী ও অভিভাবকদের লাইভ বার্তা দেখুন এবং সরাসরি রিয়েল-টাইমে উত্তর বা ছবি পাঠান</p>
+                <p className="text-xs text-slate-500 mt-0.5">ব্যবহারকারী ও ডিভাইস অনুযায়ী আলাদা আলাদা ইনবক্স। নির্দিষ্ট ব্যক্তিকে সরাসরি রিপ্লাই ও ছবি পাঠান।</p>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={fetchAllData}
+                  onClick={fetchAdminChatData}
                   className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> রিফ্রেশ
@@ -1411,182 +1489,302 @@ export default function AdminDashboard() {
                   onClick={handleClearChatHistory}
                   className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition"
                 >
-                  <Trash2 className="w-3.5 h-3.5" /> চ্যাট মুছুন
+                  <Trash2 className="w-3.5 h-3.5" /> চ্যাট হিস্ট্রি মুছুন
                 </button>
               </div>
             </div>
 
-            {/* Quick Canned Responses */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-500 block">কুইক রিপ্লাই টেমপ্লেট (এক ক্লিকে উত্তর পাঠান):</label>
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                {[
-                  'আসসালামু আলাইকুম। আপনার বার্তাটি গ্রহণ করা হয়েছে।',
-                  'ওয়েবসাইটের নোটিশ বোর্ডে বিস্তারিত সিলেবাস ও রুটিন প্রকাশ করা হয়েছে।',
-                  'অফিস চলাকালীন (সকাল ৯টা - বিকাল ৪টা) প্রধান শিক্ষকের সাথে যোগাযোগ করুন।',
-                  'অনলাইন পেমেন্ট সংক্রান্ত বিস্তারিত তথ্য এসএমএস-এর মাধ্যমে পাঠানো হবে।'
-                ].map((canned, cIdx) => (
-                  <button
-                    key={cIdx}
-                    type="button"
-                    onClick={() => handleSendAdminReply(undefined, canned)}
-                    className="px-3 py-1.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[11px] font-medium rounded-xl border border-slate-200 shrink-0 transition"
-                  >
-                    + {canned}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Chat Messages Log */}
-            <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 max-h-[480px] overflow-y-auto space-y-3.5 text-xs">
-              {chatMessages.length === 0 ? (
-                <div className="py-12 text-center text-slate-400 space-y-2">
-                  <MessageSquare className="w-8 h-8 mx-auto text-slate-300" />
-                  <p className="font-bold">বর্তমানে কোনো চ্যাট মেসেজ নেই</p>
-                  <p className="text-[11px]">শিক্ষার্থী বা অভিভাবক ওয়েবসাইট থেকে বার্তা পাঠালে এখানে লাইভ প্রদর্শিত হবে</p>
+            {/* Split Screen Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[580px]">
+              
+              {/* Left Conversations List (4 Columns) */}
+              <div className="lg:col-span-4 bg-slate-50 rounded-2xl border border-slate-200 p-3 space-y-3 flex flex-col">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-blue-600" />
+                    কথোপকথন তালিকা ({conversationsList.length})
+                  </span>
                 </div>
-              ) : (
-                chatMessages.map((msg: any, mIdx: number) => {
-                  const isUser = msg.senderRole === 'user' || msg.senderRole === 'student' || msg.senderRole === 'guest' || msg.senderRole === 'parent';
-                  const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
-                  const isTeacher = msg.senderRole === 'teacher';
-                  const isSystem = msg.senderRole === 'system';
 
-                  return (
-                    <div
-                      key={msg._id || mIdx}
-                      className={`p-4 rounded-2xl border transition-all ${
-                        isUser
-                          ? 'bg-white border-slate-200 shadow-xs'
-                          : isAdmin
-                          ? 'bg-blue-50/80 border-blue-200 text-blue-950'
-                          : isTeacher
-                          ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-                          : 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                            {msg.senderName || (isUser ? 'শিক্ষার্থী / অভিভাবক' : 'স্কুল কর্তৃপক্ষ')}
-                          </span>
-                          
-                          {isUser && (
-                            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full font-bold text-[10px] border border-slate-200">
-                              👤 ভিজিটর / শিক্ষার্থী
-                            </span>
-                          )}
-                          {isAdmin && (
-                            <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-bold text-[10px] border border-blue-200">
-                              👑 সুপার এডমিন
-                            </span>
-                          )}
-                          {isTeacher && (
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px] border border-emerald-200">
-                              👨‍🏫 শিক্ষক প্যানেল
-                            </span>
-                          )}
-                          {isSystem && (
-                            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-full font-bold text-[10px] border border-indigo-200">
-                              🏢 সাপোর্ট ডেস্ক
-                            </span>
-                          )}
+                {/* Conversation Search Filter */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="নাম বা ফোন দিয়ে খুঁজুন..."
+                    value={convSearch}
+                    onChange={(e) => setConvSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                {/* List Items */}
+                <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5 max-h-[500px]">
+                  {conversationsList.filter(c => 
+                    (c.visitorName || '').toLowerCase().includes(convSearch.toLowerCase()) ||
+                    (c.visitorContact || '').toLowerCase().includes(convSearch.toLowerCase())
+                  ).length === 0 ? (
+                    <div className="py-12 text-center text-slate-400 space-y-1">
+                      <MessageSquare className="w-6 h-6 mx-auto text-slate-300" />
+                      <p className="text-xs font-bold">কোনো সক্রিয় বার্তা নেই</p>
+                    </div>
+                  ) : (
+                    conversationsList
+                      .filter(c => 
+                        (c.visitorName || '').toLowerCase().includes(convSearch.toLowerCase()) ||
+                        (c.visitorContact || '').toLowerCase().includes(convSearch.toLowerCase())
+                      )
+                      .map((conv) => {
+                        const isSelected = selectedConvId === conv.conversationId;
+                        return (
+                          <div
+                            key={conv.conversationId}
+                            onClick={() => setSelectedConvId(conv.conversationId)}
+                            className={`p-3 rounded-xl cursor-pointer transition-all border text-left flex items-start gap-2.5 ${
+                              isSelected
+                                ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-[1.01]'
+                                : 'bg-white hover:bg-slate-100/80 border-slate-200 text-slate-800'
+                            }`}
+                          >
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                              isSelected ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-700 border border-blue-100'
+                            }`}>
+                              {conv.visitorName ? conv.visitorName.charAt(0) : 'U'}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <p className="font-bold text-xs truncate">
+                                  {conv.visitorName || 'শিক্ষার্থী / অভিভাবক'}
+                                </p>
+                                <span className={`text-[10px] shrink-0 ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
+                                  {conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                </span>
+                              </div>
+
+                              {conv.visitorContact && (
+                                <p className={`text-[10px] truncate ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
+                                  📞 {conv.visitorContact}
+                                </p>
+                              )}
+
+                              <p className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-600'}`}>
+                                {conv.isTyping ? (
+                                  <span className="font-bold text-emerald-300 animate-pulse">✍️ টাইপ করছেন...</span>
+                                ) : (
+                                  conv.lastMessage || 'নতুন কথোপকথন'
+                                )}
+                              </p>
+                            </div>
+
+                            {conv.unreadCount > 0 && !isSelected && (
+                              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0 mt-1 animate-pulse"></span>
+                            )}
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+              </div>
+
+              {/* Right Active Conversation Window (8 Columns) */}
+              <div className="lg:col-span-8 bg-slate-50/50 rounded-2xl border border-slate-200 p-4 flex flex-col justify-between space-y-4">
+                
+                {!selectedConvId ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-slate-400 space-y-2 py-20">
+                    <MessageSquare className="w-10 h-10 text-slate-300" />
+                    <p className="text-sm font-bold">বামপাশের তালিকা থেকে একটি চ্যাট সিলেক্ট করুন</p>
+                    <p className="text-xs text-slate-400">ব্যক্তির সাথে সরাসরি ওয়ান-টু-ওয়ান লাইভ রিপ্লাই পাঠাতে পারবেন</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Active Conversation Header */}
+                    {(() => {
+                      const activeConv = conversationsList.find(c => c.conversationId === selectedConvId) || {
+                        visitorName: 'ব্যবহারকারী',
+                        visitorContact: ''
+                      };
+                      return (
+                        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
+                              {activeConv.visitorName ? activeConv.visitorName.charAt(0) : 'U'}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <span>{activeConv.visitorName}</span>
+                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                  ● সংযুক্ত
+                                </span>
+                              </h4>
+                              <p className="text-[11px] text-slate-500">
+                                {activeConv.visitorContact ? `যোগাযোগ: ${activeConv.visitorContact}` : 'গেস্ট ভিজিটর'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteConversation(selectedConvId)}
+                            className="p-2 hover:bg-rose-50 text-rose-600 rounded-xl transition border border-transparent hover:border-rose-200"
+                            title="এই ব্যবহারকারীর চ্যাট মুছুন"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
+                      );
+                    })()}
 
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {msg.createdAt ? new Date(msg.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : ''}
-                        </span>
-                      </div>
+                    {/* Messages Body */}
+                    <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-white rounded-xl border border-slate-200 max-h-[360px]">
+                      {selectedConvMessages.length === 0 ? (
+                        <div className="py-12 text-center text-slate-400">এই কনভারসেশনে কোনো মেসেজ পাওয়া যায়নি</div>
+                      ) : (
+                        selectedConvMessages.map((msg: any, mIdx: number) => {
+                          const isUser = msg.senderRole === 'user' || msg.senderRole === 'student' || msg.senderRole === 'guest';
+                          const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
+                          const isTeacher = msg.senderRole === 'teacher';
+                          const isSystem = msg.senderRole === 'system';
 
-                      {msg.text && (
-                        <p className="text-slate-800 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
-                          {msg.text}
-                        </p>
+                          return (
+                            <div
+                              key={msg._id || mIdx}
+                              className={`flex gap-2.5 ${isUser ? 'justify-start' : 'justify-end'}`}
+                            >
+                              <div className={`max-w-[80%] space-y-1 ${isUser ? 'items-start' : 'items-end'}`}>
+                                <div className={`flex items-center gap-1.5 text-[10px] ${isUser ? 'text-slate-500' : 'justify-end text-slate-500'}`}>
+                                  {isUser && <span className="font-bold text-slate-800">👤 {msg.senderName}</span>}
+                                  {isAdmin && <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold">👑 এডমিন (আপনি)</span>}
+                                  {isTeacher && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">👨‍🏫 শিক্ষক</span>}
+                                  {isSystem && <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded font-bold">🏢 সিস্টেম</span>}
+                                  <span>{msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                </div>
+
+                                <div className={`p-3 rounded-2xl text-xs leading-relaxed ${
+                                  isUser
+                                    ? 'bg-slate-100 text-slate-900 border border-slate-200 rounded-tl-xs'
+                                    : isAdmin
+                                    ? 'bg-blue-600 text-white rounded-tr-xs shadow-xs'
+                                    : 'bg-emerald-600 text-white rounded-tr-xs shadow-xs'
+                                }`}>
+                                  {msg.text && <p className="whitespace-pre-wrap">{msg.text}</p>}
+                                  {msg.imageUrl && (
+                                    <div className="mt-2">
+                                      <img
+                                        src={msg.imageUrl}
+                                        alt="Attachment"
+                                        className="max-h-40 rounded-xl object-cover border border-black/10 cursor-pointer hover:opacity-90 transition"
+                                        onClick={() => window.open(msg.imageUrl, '_blank')}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
                       )}
 
-                      {msg.imageUrl && (
-                        <div className="mt-2.5">
-                          <img
-                            src={msg.imageUrl}
-                            alt="Attachment"
-                            className="max-h-48 rounded-xl object-cover border border-slate-200 cursor-pointer hover:opacity-90 transition"
-                            onClick={() => window.open(msg.imageUrl, '_blank')}
-                          />
+                      {/* Visitor Typing Indicator */}
+                      {visitorTyping && (
+                        <div className="flex gap-2 items-center text-xs text-blue-700 bg-blue-50/80 p-2 rounded-xl border border-blue-200 animate-pulse w-fit">
+                          <User className="w-3.5 h-3.5 text-blue-600" />
+                          <span className="font-bold">ব্যবহারকারী টাইপ করছেন...</span>
+                          <span className="flex gap-1 items-center">
+                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce"></span>
+                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                          </span>
                         </div>
                       )}
                     </div>
-                  );
-                })
-              )}
+
+                    {/* Attached Image Preview */}
+                    {adminReplyImage && (
+                      <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <img src={adminReplyImage} alt="Attachment Preview" className="w-8 h-8 rounded-lg object-cover border border-blue-300" />
+                          <span className="text-xs font-bold text-blue-900 truncate">ছবি সংযুক্ত হয়েছে</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setAdminReplyImage('')}
+                          className="p-1 hover:bg-blue-100 text-blue-700 rounded-lg"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Quick Canned Responses */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                      {[
+                        'আসসালামু আলাইকুম। আপনার বার্তাটি গ্রহণ করা হয়েছে।',
+                        'ওয়েবসাইটের নোটিশ বোর্ডে বিস্তারিত সিলেবাস ও রুটিন প্রকাশ করা হয়েছে।',
+                        'অফিস চলাকালীন (সকাল ৯টা - বিকাল ৪টা) প্রধান শিক্ষকের সাথে যোগাযোগ করুন।'
+                      ].map((canned, cIdx) => (
+                        <button
+                          key={cIdx}
+                          type="button"
+                          onClick={() => handleSendAdminReply(undefined, canned)}
+                          className="px-2.5 py-1 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[10px] font-medium rounded-lg border border-slate-200 shrink-0 transition"
+                        >
+                          + {canned}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Admin Live Reply Form */}
+                    <form onSubmit={(e) => handleSendAdminReply(e)} className="flex items-center gap-2">
+                      <label className="p-2.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-xl border border-slate-200 cursor-pointer transition shrink-0" title="ছবি ফাইল আপলোড করুন">
+                        {uploadingAdminImage ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                        ) : (
+                          <Paperclip className="w-4 h-4" />
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleAdminFileUpload(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="এই ব্যক্তিকে নির্দিষ্টভাবে উত্তর লিখুন..."
+                        value={adminReplyText}
+                        onChange={(e) => {
+                          setAdminReplyText(e.target.value);
+                          handleAdminTypingPulse();
+                        }}
+                        className="flex-1 p-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600 transition"
+                      />
+
+                      <button
+                        type="submit"
+                        disabled={(!adminReplyText.trim() && !adminReplyImage) || adminSending}
+                        className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 text-white disabled:text-slate-400 font-bold rounded-xl text-xs shadow-md flex items-center gap-1.5 transition shrink-0"
+                      >
+                        {adminSending ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Send className="w-3.5 h-3.5" />
+                        )}
+                        <span>রিপ্লাই পাঠান</span>
+                      </button>
+                    </form>
+                  </>
+                )}
+
+              </div>
+
             </div>
 
-            {/* Attached Image Preview */}
-            {adminReplyImage && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5 overflow-hidden">
-                  <img src={adminReplyImage} alt="Attachment Preview" className="w-10 h-10 rounded-lg object-cover border border-blue-300" />
-                  <div>
-                    <p className="text-xs font-bold text-blue-900">ছবি সংযুক্ত হয়েছে</p>
-                    <p className="text-[10px] text-blue-600 truncate font-mono">{adminReplyImage}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setAdminReplyImage('')}
-                  className="p-1.5 bg-white hover:bg-rose-50 text-rose-600 rounded-lg border border-slate-200"
-                  title="ছবি মুছুন"
-                >
-                  <XCircle className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* Admin Live Reply Form */}
-            <form onSubmit={(e) => handleSendAdminReply(e)} className="space-y-3 pt-2">
-              <label className="block text-xs font-bold text-slate-900">ইনস্ট্যান্ট এডমিন লাইভ রিপ্লাই লিখুন</label>
-              
-              <div className="flex items-center gap-2">
-                <label className="p-3 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-2xl border border-slate-200 cursor-pointer transition shrink-0" title="ছবি ফাইল আপলোড করুন">
-                  {uploadingAdminImage ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                  ) : (
-                    <Paperclip className="w-5 h-5" />
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        handleAdminFileUpload(e.target.files[0]);
-                      }
-                    }}
-                  />
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="আপনার উত্তর লিখুন... (শিক্ষার্থী/অভিভাবক রিয়েল-টাইমে দেখতে পাবেন)"
-                  value={adminReplyText}
-                  onChange={(e) => setAdminReplyText(e.target.value)}
-                  className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition"
-                />
-
-                <button
-                  type="submit"
-                  disabled={(!adminReplyText.trim() && !adminReplyImage) || adminSending}
-                  className="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 text-white disabled:text-slate-400 font-bold rounded-2xl text-xs sm:text-sm shadow-md flex items-center gap-2 transition shrink-0"
-                >
-                  {adminSending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                  <span>মেসেজ পাঠান</span>
-                </button>
-              </div>
-            </form>
           </div>
         )}
 

@@ -20,7 +20,8 @@ import {
   Paperclip,
   Loader2,
   Trash2,
-  XCircle
+  XCircle,
+  Search
 } from 'lucide-react';
 
 import { useToast } from '@/components/Toast';
@@ -50,6 +51,11 @@ export default function TeacherDashboard() {
   const [donationsList, setDonationsList] = useState<any[]>([]);
   const [contactList, setContactList] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [conversationsList, setConversationsList] = useState<any[]>([]);
+  const [selectedConvId, setSelectedConvId] = useState<string>('');
+  const [selectedConvMessages, setSelectedConvMessages] = useState<any[]>([]);
+  const [visitorTyping, setVisitorTyping] = useState<boolean>(false);
+  const [convSearch, setConvSearch] = useState<string>('');
   const [teacherReplyText, setTeacherReplyText] = useState('');
   const [teacherReplyImage, setTeacherReplyImage] = useState('');
   const [uploadingTeacherImage, setUploadingTeacherImage] = useState(false);
@@ -122,6 +128,41 @@ export default function TeacherDashboard() {
     }
   };
 
+  const fetchTeacherChatData = async () => {
+    try {
+      const res = await fetch('/api/chat?admin=true');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.conversations)) {
+        setConversationsList(data.conversations);
+        
+        if (!selectedConvId && data.conversations.length > 0) {
+          setSelectedConvId(data.conversations[0].conversationId);
+        }
+      }
+
+      const activeConv = selectedConvId || (data.conversations && data.conversations[0]?.conversationId);
+      if (activeConv) {
+        const msgRes = await fetch(`/api/chat?conversationId=${activeConv}`);
+        const msgData = await msgRes.json();
+        if (msgData.success && Array.isArray(msgData.messages)) {
+          setSelectedConvMessages(msgData.messages);
+          if (msgData.typing) {
+            setVisitorTyping(Boolean(msgData.typing.userTyping));
+          }
+        }
+      }
+    } catch (err) {}
+  };
+
+  // Real-time live polling for teacher chat
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      fetchTeacherChatData();
+      const interval = setInterval(fetchTeacherChatData, 1500);
+      return () => clearInterval(interval);
+    }
+  }, [activeTab, selectedConvId]);
+
   const handleTeacherFileUpload = async (file: File) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -157,8 +198,27 @@ export default function TeacherDashboard() {
     }
   };
 
+  const handleTeacherTypingPulse = () => {
+    if (!selectedConvId) return;
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'typing',
+        conversationId: selectedConvId,
+        senderRole: 'teacher',
+        isTyping: true
+      })
+    }).catch(() => {});
+  };
+
   const handleSendTeacherReply = async (e?: React.FormEvent, customText?: string) => {
     if (e) e.preventDefault();
+    if (!selectedConvId) {
+      toast.error('অনুগ্রহ করে আগে একজন শিক্ষার্থী বা অভিভাবক নির্বাচন করুন');
+      return;
+    }
+
     const text = (customText || teacherReplyText).trim();
     const image = teacherReplyImage;
 
@@ -170,6 +230,7 @@ export default function TeacherDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          conversationId: selectedConvId,
           senderName: `${teacherUser?.name || 'শিক্ষক'} (${teacherUser?.details?.subject || 'শিক্ষক প্যানেল'})`,
           senderRole: 'teacher',
           text: text,
@@ -181,7 +242,7 @@ export default function TeacherDashboard() {
         toast.success('শিক্ষার্থীর কাছে শিক্ষকের উত্তর লাইভ পাঠানো হয়েছে!');
         setTeacherReplyText('');
         setTeacherReplyImage('');
-        fetchTeacherAndStudents();
+        fetchTeacherChatData();
       } else {
         toast.error('উত্তর পাঠাতে সমস্যা হয়েছে');
       }
@@ -659,182 +720,299 @@ export default function TeacherDashboard() {
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> শিক্ষক প্যানেল সক্রিয়
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">শিক্ষার্থী ও অভিভাবকদের লাইভ প্রশ্ন ও অনুসন্ধানের সরাসরি উত্তর দিন</p>
+                <p className="text-xs text-slate-500 mt-0.5">শিক্ষার্থী ও অভিভাবকদের লাইভ বার্তা আলাদা কনভারসেশনে দেখুন এবং নির্দিষ্ট ব্যক্তিকে সরাসরি উত্তর দিন</p>
               </div>
 
               <button
                 type="button"
-                onClick={fetchTeacherAndStudents}
+                onClick={fetchTeacherChatData}
                 className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition self-start sm:self-auto"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> চ্যাট রিফ্রেশ
               </button>
             </div>
 
-            {/* Quick Canned Responses */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-500 block">শিক্ষকের দ্রুত উত্তর টেমপ্লেট:</label>
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                {[
-                  'আসসালামু আলাইকুম। আগামী ক্লাসে এই বিষয়ে বিস্তারিত আলোচনা করা হবে।',
-                  'হোমওয়ার্ক সম্পন্ন করে কালকের ক্লাসে নিয়ে আসবে।',
-                  'পরীক্ষার সিলেবাস ও মানবন্টন হোমওয়ার্ক ট্যাবে আপডেট করা হয়েছে।',
-                  'ক্লাস টাইমে শিক্ষক কক্ষে এসে দেখা করতে পারো।'
-                ].map((canned, cIdx) => (
-                  <button
-                    key={cIdx}
-                    type="button"
-                    onClick={() => handleSendTeacherReply(undefined, canned)}
-                    className="px-3 py-1.5 bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[11px] font-medium rounded-xl border border-slate-200 shrink-0 transition"
-                  >
-                    + {canned}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Chat Messages Log */}
-            <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 max-h-[460px] overflow-y-auto space-y-3.5 text-xs">
-              {chatMessages.length === 0 ? (
-                <div className="py-12 text-center text-slate-400 space-y-2">
-                  <MessageSquare className="w-8 h-8 mx-auto text-slate-300" />
-                  <p className="font-bold">বর্তমানে কোনো চ্যাট মেসেজ নেই</p>
+            {/* Split Screen Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[560px]">
+              
+              {/* Left Conversations List (4 Columns) */}
+              <div className="lg:col-span-4 bg-slate-50 rounded-2xl border border-slate-200 p-3 space-y-3 flex flex-col">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-emerald-600" />
+                    শিক্ষার্থী / অভিভাবক তালিকা ({conversationsList.length})
+                  </span>
                 </div>
-              ) : (
-                chatMessages.map((msg: any, mIdx: number) => {
-                  const isUser = msg.senderRole === 'user' || msg.senderRole === 'student' || msg.senderRole === 'guest' || msg.senderRole === 'parent';
-                  const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
-                  const isTeacher = msg.senderRole === 'teacher';
 
-                  return (
-                    <div
-                      key={msg._id || mIdx}
-                      className={`p-4 rounded-2xl border transition-all ${
-                        isUser
-                          ? 'bg-white border-slate-200 shadow-xs'
-                          : isTeacher
-                          ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-                          : isAdmin
-                          ? 'bg-blue-50/80 border-blue-200 text-blue-950'
-                          : 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                            {msg.senderName || (isUser ? 'শিক্ষার্থী / অভিভাবক' : 'শিক্ষক')}
-                          </span>
-                          
-                          {isUser && (
-                            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full font-bold text-[10px] border border-slate-200">
-                              👤 শিক্ষার্থী / অভিভাবক
-                            </span>
-                          )}
-                          {isTeacher && (
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px] border border-emerald-200">
-                              👨‍🏫 শিক্ষক
-                            </span>
-                          )}
-                          {isAdmin && (
-                            <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-bold text-[10px] border border-blue-200">
-                              👑 প্রশাসন
-                            </span>
-                          )}
+                {/* Conversation Search Filter */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="নাম বা ফোন দিয়ে খুঁজুন..."
+                    value={convSearch}
+                    onChange={(e) => setConvSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
+
+                {/* List Items */}
+                <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5 max-h-[480px]">
+                  {conversationsList.filter(c => 
+                    (c.visitorName || '').toLowerCase().includes(convSearch.toLowerCase()) ||
+                    (c.visitorContact || '').toLowerCase().includes(convSearch.toLowerCase())
+                  ).length === 0 ? (
+                    <div className="py-12 text-center text-slate-400 space-y-1">
+                      <MessageSquare className="w-6 h-6 mx-auto text-slate-300" />
+                      <p className="text-xs font-bold">কোনো সক্রিয় বার্তা নেই</p>
+                    </div>
+                  ) : (
+                    conversationsList
+                      .filter(c => 
+                        (c.visitorName || '').toLowerCase().includes(convSearch.toLowerCase()) ||
+                        (c.visitorContact || '').toLowerCase().includes(convSearch.toLowerCase())
+                      )
+                      .map((conv) => {
+                        const isSelected = selectedConvId === conv.conversationId;
+                        return (
+                          <div
+                            key={conv.conversationId}
+                            onClick={() => setSelectedConvId(conv.conversationId)}
+                            className={`p-3 rounded-xl cursor-pointer transition-all border text-left flex items-start gap-2.5 ${
+                              isSelected
+                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-md scale-[1.01]'
+                                : 'bg-white hover:bg-slate-100/80 border-slate-200 text-slate-800'
+                            }`}
+                          >
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                              isSelected ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                            }`}>
+                              {conv.visitorName ? conv.visitorName.charAt(0) : 'U'}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <p className="font-bold text-xs truncate">
+                                  {conv.visitorName || 'শিক্ষার্থী / অভিভাবক'}
+                                </p>
+                                <span className={`text-[10px] shrink-0 ${isSelected ? 'text-emerald-100' : 'text-slate-400'}`}>
+                                  {conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                </span>
+                              </div>
+
+                              {conv.visitorContact && (
+                                <p className={`text-[10px] truncate ${isSelected ? 'text-emerald-100' : 'text-slate-500'}`}>
+                                  📞 {conv.visitorContact}
+                                </p>
+                              )}
+
+                              <p className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-slate-600'}`}>
+                                {conv.isTyping ? (
+                                  <span className="font-bold text-emerald-200 animate-pulse">✍️ টাইপ করছেন...</span>
+                                ) : (
+                                  conv.lastMessage || 'নতুন কথোপকথন'
+                                )}
+                              </p>
+                            </div>
+
+                            {conv.unreadCount > 0 && !isSelected && (
+                              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0 mt-1 animate-pulse"></span>
+                            )}
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+              </div>
+
+              {/* Right Active Conversation Window (8 Columns) */}
+              <div className="lg:col-span-8 bg-slate-50/50 rounded-2xl border border-slate-200 p-4 flex flex-col justify-between space-y-4">
+                
+                {!selectedConvId ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-slate-400 space-y-2 py-20">
+                    <MessageSquare className="w-10 h-10 text-slate-300" />
+                    <p className="text-sm font-bold">বামপাশের তালিকা থেকে একজন শিক্ষার্থী বা অভিভাবক সিলেক্ট করুন</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Active Conversation Header */}
+                    {(() => {
+                      const activeConv = conversationsList.find(c => c.conversationId === selectedConvId) || {
+                        visitorName: 'ব্যবহারকারী',
+                        visitorContact: ''
+                      };
+                      return (
+                        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+                              {activeConv.visitorName ? activeConv.visitorName.charAt(0) : 'U'}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <span>{activeConv.visitorName}</span>
+                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                  ● লাইভ চ্যাট
+                                </span>
+                              </h4>
+                              <p className="text-[11px] text-slate-500">
+                                {activeConv.visitorContact ? `যোগাযোগ: ${activeConv.visitorContact}` : 'গেস্ট শিক্ষার্থী / অভিভাবক'}
+                              </p>
+                            </div>
+                          </div>
                         </div>
+                      );
+                    })()}
 
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {msg.createdAt ? new Date(msg.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : ''}
-                        </span>
-                      </div>
+                    {/* Messages Body */}
+                    <div className="flex-1 overflow-y-auto space-y-3 p-3 bg-white rounded-xl border border-slate-200 max-h-[350px]">
+                      {selectedConvMessages.length === 0 ? (
+                        <div className="py-12 text-center text-slate-400">এই কনভারসেশনে কোনো মেসেজ পাওয়া যায়নি</div>
+                      ) : (
+                        selectedConvMessages.map((msg: any, mIdx: number) => {
+                          const isUser = msg.senderRole === 'user' || msg.senderRole === 'student' || msg.senderRole === 'guest';
+                          const isTeacher = msg.senderRole === 'teacher';
+                          const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
+                          const isSystem = msg.senderRole === 'system';
 
-                      {msg.text && (
-                        <p className="text-slate-800 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
-                          {msg.text}
-                        </p>
+                          return (
+                            <div
+                              key={msg._id || mIdx}
+                              className={`flex gap-2.5 ${isUser ? 'justify-start' : 'justify-end'}`}
+                            >
+                              <div className={`max-w-[80%] space-y-1 ${isUser ? 'items-start' : 'items-end'}`}>
+                                <div className={`flex items-center gap-1.5 text-[10px] ${isUser ? 'text-slate-500' : 'justify-end text-slate-500'}`}>
+                                  {isUser && <span className="font-bold text-slate-800">👤 {msg.senderName}</span>}
+                                  {isTeacher && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">👨‍🏫 শিক্ষক (আপনি)</span>}
+                                  {isAdmin && <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold">👑 এডমিন</span>}
+                                  {isSystem && <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded font-bold">🏢 সিস্টেম</span>}
+                                  <span>{msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                </div>
+
+                                <div className={`p-3 rounded-2xl text-xs leading-relaxed ${
+                                  isUser
+                                    ? 'bg-slate-100 text-slate-900 border border-slate-200 rounded-tl-xs'
+                                    : isTeacher
+                                    ? 'bg-emerald-600 text-white rounded-tr-xs shadow-xs'
+                                    : 'bg-blue-600 text-white rounded-tr-xs shadow-xs'
+                                }`}>
+                                  {msg.text && <p className="whitespace-pre-wrap">{msg.text}</p>}
+                                  {msg.imageUrl && (
+                                    <div className="mt-2">
+                                      <img
+                                        src={msg.imageUrl}
+                                        alt="Attachment"
+                                        className="max-h-40 rounded-xl object-cover border border-black/10 cursor-pointer hover:opacity-90 transition"
+                                        onClick={() => window.open(msg.imageUrl, '_blank')}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
                       )}
 
-                      {msg.imageUrl && (
-                        <div className="mt-2.5">
-                          <img
-                            src={msg.imageUrl}
-                            alt="Attachment"
-                            className="max-h-48 rounded-xl object-cover border border-slate-200 cursor-pointer hover:opacity-90 transition"
-                            onClick={() => window.open(msg.imageUrl, '_blank')}
-                          />
+                      {/* Visitor Typing Indicator */}
+                      {visitorTyping && (
+                        <div className="flex gap-2 items-center text-xs text-emerald-700 bg-emerald-50/80 p-2 rounded-xl border border-emerald-200 animate-pulse w-fit">
+                          <User className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="font-bold">শিক্ষার্থী টাইপ করছেন...</span>
+                          <span className="flex gap-1 items-center">
+                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce"></span>
+                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                          </span>
                         </div>
                       )}
                     </div>
-                  );
-                })
-              )}
+
+                    {/* Attached Image Preview */}
+                    {teacherReplyImage && (
+                      <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <img src={teacherReplyImage} alt="Attachment Preview" className="w-8 h-8 rounded-lg object-cover border border-emerald-300" />
+                          <span className="text-xs font-bold text-emerald-900 truncate">ছবি সংযুক্ত হয়েছে</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setTeacherReplyImage('')}
+                          className="p-1 hover:bg-emerald-100 text-emerald-700 rounded-lg"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Quick Canned Responses */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                      {[
+                        'আসসালামু আলাইকুম। আগামী ক্লাসে এই বিষয়ে আলোচনা করা হবে।',
+                        'হোমওয়ার্ক সম্পন্ন করে কালকের ক্লাসে নিয়ে আসবে।',
+                        'ক্লাস টাইমে শিক্ষক কক্ষে এসে দেখা করতে পারো।'
+                      ].map((canned, cIdx) => (
+                        <button
+                          key={cIdx}
+                          type="button"
+                          onClick={() => handleSendTeacherReply(undefined, canned)}
+                          className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-medium rounded-lg border border-slate-200 shrink-0 transition"
+                        >
+                          + {canned}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Teacher Live Reply Form */}
+                    <form onSubmit={(e) => handleSendTeacherReply(e)} className="flex items-center gap-2">
+                      <label className="p-2.5 bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 rounded-xl border border-slate-200 cursor-pointer transition shrink-0" title="ছবি ফাইল আপলোড করুন">
+                        {uploadingTeacherImage ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+                        ) : (
+                          <Paperclip className="w-4 h-4" />
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleTeacherFileUpload(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="এই শিক্ষার্থীকে উত্তর লিখুন..."
+                        value={teacherReplyText}
+                        onChange={(e) => {
+                          setTeacherReplyText(e.target.value);
+                          handleTeacherTypingPulse();
+                        }}
+                        className="flex-1 p-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-emerald-600 transition"
+                      />
+
+                      <button
+                        type="submit"
+                        disabled={(!teacherReplyText.trim() && !teacherReplyImage) || teacherSending}
+                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 text-white disabled:text-slate-400 font-bold rounded-xl text-xs shadow-md flex items-center gap-1.5 transition shrink-0"
+                      >
+                        {teacherSending ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Send className="w-3.5 h-3.5" />
+                        )}
+                        <span>উত্তর পাঠান</span>
+                      </button>
+                    </form>
+                  </>
+                )}
+
+              </div>
+
             </div>
 
-            {/* Attached Image Preview */}
-            {teacherReplyImage && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5 overflow-hidden">
-                  <img src={teacherReplyImage} alt="Attachment Preview" className="w-10 h-10 rounded-lg object-cover border border-emerald-300" />
-                  <div>
-                    <p className="text-xs font-bold text-emerald-900">ছবি সংযুক্ত হয়েছে</p>
-                    <p className="text-[10px] text-emerald-600 truncate font-mono">{teacherReplyImage}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setTeacherReplyImage('')}
-                  className="p-1.5 bg-white hover:bg-rose-50 text-rose-600 rounded-lg border border-slate-200"
-                  title="ছবি মুছুন"
-                >
-                  <XCircle className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* Teacher Live Reply Form */}
-            <form onSubmit={(e) => handleSendTeacherReply(e)} className="space-y-3 pt-2">
-              <label className="block text-xs font-bold text-slate-900">শিক্ষক হিসেবে লাইভ উত্তর পাঠান</label>
-              
-              <div className="flex items-center gap-2">
-                <label className="p-3 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 rounded-2xl border border-slate-200 cursor-pointer transition shrink-0" title="ছবি ফাইল আপলোড করুন">
-                  {uploadingTeacherImage ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
-                  ) : (
-                    <Paperclip className="w-5 h-5" />
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        handleTeacherFileUpload(e.target.files[0]);
-                      }
-                    }}
-                  />
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="শিক্ষার্থীর প্রশ্নের উত্তর লিখুন..."
-                  value={teacherReplyText}
-                  onChange={(e) => setTeacherReplyText(e.target.value)}
-                  className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm focus:outline-none focus:border-emerald-600 focus:bg-white transition"
-                />
-
-                <button
-                  type="submit"
-                  disabled={(!teacherReplyText.trim() && !teacherReplyImage) || teacherSending}
-                  className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 text-white disabled:text-slate-400 font-bold rounded-2xl text-xs sm:text-sm shadow-md flex items-center gap-2 transition shrink-0"
-                >
-                  {teacherSending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                  <span>উত্তর পাঠান</span>
-                </button>
-              </div>
-            </form>
           </div>
         )}
 
