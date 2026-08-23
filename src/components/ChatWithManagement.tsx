@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, Image as ImageIcon, Sparkles, User, ShieldCheck, CheckCheck } from 'lucide-react';
-import { SCHOOL_INFO } from '@/data/schoolData';
 import { useToast } from '@/components/Toast';
 
 interface ChatMsg {

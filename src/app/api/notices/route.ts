@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Notice from '@/models/Notice';
-import { NOTICES_LIST } from '@/data/schoolData';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,16 +11,7 @@ export async function GET() {
     return NextResponse.json({ success: true, notices });
   } catch (error: any) {
     console.error('Notices fetch error:', error);
-    const mockNotices = NOTICES_LIST.map(n => ({
-      _id: n.id,
-      title: n.title,
-      category: n.category,
-      date: n.date,
-      pdfUrl: n.pdfUrl || '#',
-      isImportant: n.isImportant || false,
-      content: n.content
-    }));
-    return NextResponse.json({ success: true, notices: mockNotices });
+    return NextResponse.json({ success: false, notices: [], message: error.message }, { status: 500 });
   }
 }
 

@@ -144,6 +144,8 @@ const SiteSettingsSchema: Schema = new Schema(
     events: { type: Array, default: [] },
     noticesList: { type: Array, default: [] },
     testimonials: { type: Array, default: [] },
+    classRoutines: { type: Array, default: [] },
+    faqs: { type: Array, default: [] },
   },
   { timestamps: true, strict: false }
 );

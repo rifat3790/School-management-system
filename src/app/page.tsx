@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import HeroSection from '@/components/HeroSection';
 import QuickLinksSection from '@/components/QuickLinksSection';
 import PrincipalMessage from '@/components/PrincipalMessage';
@@ -10,54 +8,17 @@ import AchievementsBanner from '@/components/AchievementsBanner';
 import TeachersGridSection from '@/components/TeachersGridSection';
 import GalleryAndVirtualTour from '@/components/GalleryAndVirtualTour';
 import AdmissionStepper from '@/components/AdmissionStepper';
+import { getSiteSettings, getNotices, getTeachers, getGallery } from '@/lib/dataFetchers';
 
-export default function Home() {
-  const [siteSettings, setSiteSettings] = useState<any>(null);
-  const [notices, setNotices] = useState<any[]>([]);
-  const [teachers, setTeachers] = useState<any[]>([]);
-  const [gallery, setGallery] = useState<any[]>([]);
+export const dynamic = 'force-dynamic';
 
-  useEffect(() => {
-    // 1. Fetch site settings from MongoDB
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.settings) {
-          setSiteSettings(data.settings);
-        }
-      })
-      .catch((err) => console.error(err));
-
-    // 2. Fetch notices from MongoDB
-    fetch('/api/notices')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.notices) {
-          setNotices(data.notices);
-        }
-      })
-      .catch((err) => console.error(err));
-
-    // 3. Fetch teachers from MongoDB
-    fetch('/api/teachers')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.teachers) {
-          setTeachers(data.teachers);
-        }
-      })
-      .catch((err) => console.error(err));
-
-    // 4. Fetch gallery items from MongoDB
-    fetch('/api/gallery')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.gallery) {
-          setGallery(data.gallery);
-        }
-      })
-      .catch((err) => console.error(err));
-  }, []);
+export default async function Home() {
+  const [siteSettings, notices, teachers, gallery] = await Promise.all([
+    getSiteSettings(),
+    getNotices(10),
+    getTeachers(10),
+    getGallery(12),
+  ]);
 
   return (
     <div className="bg-slate-50 min-h-screen space-y-0 selection:bg-blue-600 selection:text-white">
@@ -74,7 +35,11 @@ export default function Home() {
       <FeaturesGrid />
 
       {/* 5. 3-Column Info Hub (Academic Depts | Latest Notices | Upcoming Events) */}
-      <InfoHubSection notices={notices} events={siteSettings?.events} academicPrograms={siteSettings?.academicPrograms} />
+      <InfoHubSection 
+        notices={notices} 
+        events={siteSettings?.events} 
+        academicPrograms={siteSettings?.academicPrograms} 
+      />
 
       {/* 6. Our Achievements Banner (Dark Navy Full-Width Section) */}
       <AchievementsBanner settings={siteSettings} />

@@ -1,30 +1,22 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Target, Compass, ShieldCheck } from 'lucide-react';
+import React from 'react';
+import { Sparkles, Target, Compass } from 'lucide-react';
 import PrincipalMessage from '@/components/PrincipalMessage';
 import StatsCounter from '@/components/StatsCounter';
+import { getSiteSettings } from '@/lib/dataFetchers';
 
-export default function AboutPage() {
-  const [settings, setSettings] = useState({
-    schoolName: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
-    slogan: 'শিক্ষাই শক্তি, প্রযুক্তিই ভবিষ্যৎ',
-    eiin: '১৩০৯৫৪',
-    code: '৪৫২০',
-    established: '১৯৯৮',
-    aboutHistory: '১৯৯৮ সালে প্রতিষ্ঠিত ডাঃ মুজিব-রুবি মডেল হাই স্কুল শেরপুর জেলার প্রাচীনতম ও শ্রেষ্ঠতম ডিজিটাল শিক্ষাঙ্গন। প্রত্যন্ত অঞ্চল থেকে আধুনিক প্রযুক্তিনির্ভর শিক্ষা ব্যবস্থার প্রসারের লক্ষ্য নিয়ে যাত্রা শুরু করেছিল এই প্রতিষ্ঠানটি।',
-    missionText: 'আধুনিক প্রযুক্তিনির্ভর শিক্ষা ও নৈতিক মূল্যবোধের সমন্বয়ে আন্তর্জাতিক মানের মেধা বিকাশ।',
-    visionText: 'স্মার্ট বাংলাদেশ গড়ার লক্ষ্যে দক্ষ, বিজ্ঞ ও চরিত্রবান ভবিষ্যৎ প্রজন্ম তৈরি করা।'
-  });
+export const dynamic = 'force-dynamic';
 
-  useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.settings) setSettings(data.settings);
-      })
-      .catch((err) => console.error(err));
-  }, []);
+export default async function AboutPage() {
+  const settings = await getSiteSettings();
+
+  const schoolName = settings?.schoolName || 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল';
+  const slogan = settings?.slogan || 'শিক্ষাই শক্তি, প্রযুক্তিই ভবিষ্যৎ';
+  const eiin = settings?.eiin || '১৩০৯৫৪';
+  const code = settings?.code || '৪৫২০';
+  const established = settings?.established || '১৯৯৮';
+  const aboutHistory = settings?.aboutHistory || 'প্রতিষ্ঠালগ্ন থেকেই আমাদের বিদ্যালয় মানবতা শিক্ষা, সুস্থতা, নৈতিকতা এবং প্রযুক্তিনির্ভর শিক্ষার মাধ্যমে শিক্ষার্থীদের একটি সুন্দর ভবিষ্যৎ গড়ে তুলতে কাজ করে যাচ্ছে।';
+  const missionText = settings?.missionText || 'গুণগত মানসম্মত শিক্ষা, সুশৃঙ্খল পরিবেশ ও আধুনিক ল্যাব সুবিধার মাধ্যমে আন্তর্জাতিক মানের নাগরিক তৈরি করা।';
+  const visionText = settings?.visionText || 'প্রযুক্তিনির্ভর ও নৈতিক মূল্যবোধসম্পন্ন স্মার্ট বাংলাদেশ গড়ার নেতৃত্ব দানকারী প্রজন্ম গড়ে তোলা।';
 
   return (
     <div className="py-12 space-y-12 bg-slate-50 min-h-screen">
@@ -35,9 +27,9 @@ export default function AboutPage() {
             <Sparkles className="w-3.5 h-3.5" />
             প্রতিষ্ঠানের বিবরণ ও ইতিহাস (Live Database)
           </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black">{settings.schoolName}</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black">{schoolName}</h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto">
-            {settings.slogan} — {settings.established} সাল থেকে শিক্ষার আলো ছড়িয়ে চলেছে আমাদের প্রিয় এই বিদ্যাপীঠ।
+            {slogan} — {established} সাল থেকে শিক্ষার আলো ছড়িয়ে চলেছে আমাদের প্রিয় এই বিদ্যাপীঠ।
           </p>
         </div>
       </section>
@@ -48,7 +40,7 @@ export default function AboutPage() {
           <div className="lg:col-span-6 relative">
             <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-200">
               <img
-                src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1000&auto=format&fit=crop&q=80"
+                src={settings?.heroImage || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1000&auto=format&fit=crop&q=80"}
                 alt="School Campus Building"
                 className="w-full h-[400px] object-cover"
               />
@@ -63,17 +55,17 @@ export default function AboutPage() {
               একটি স্বপ্ন থেকে আজ দেশের অন্যতম সেরা স্মার্ট শিক্ষা নিকেতন
             </h2>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-              {settings.aboutHistory}
+              {aboutHistory}
             </p>
             
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
                 <p className="text-xs font-bold text-blue-600">ইআইআইএন (EIIN)</p>
-                <p className="text-lg font-bold text-slate-900">{settings.eiin}</p>
+                <p className="text-lg font-bold text-slate-900">{eiin}</p>
               </div>
               <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
                 <p className="text-xs font-bold text-emerald-600">স্কুল কোড</p>
-                <p className="text-lg font-bold text-slate-900">{settings.code}</p>
+                <p className="text-lg font-bold text-slate-900">{code}</p>
               </div>
             </div>
           </div>
@@ -88,7 +80,7 @@ export default function AboutPage() {
               <Target className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">আমাদের লক্ষ্য (Mission)</h3>
-            <p className="text-sm text-slate-600 leading-relaxed">{settings.missionText}</p>
+            <p className="text-sm text-slate-600 leading-relaxed">{missionText}</p>
           </div>
 
           <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
@@ -96,17 +88,16 @@ export default function AboutPage() {
               <Compass className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">আমাদের ভিশন (Vision)</h3>
-            <p className="text-sm text-slate-600 leading-relaxed">{settings.visionText}</p>
+            <p className="text-sm text-slate-600 leading-relaxed">{visionText}</p>
           </div>
         </div>
       </section>
 
       {/* Stats Counter (Live Database Stats) */}
-      <StatsCounter stats={(settings as any).stats} />
-
+      <StatsCounter stats={(settings as any)?.stats} />
 
       {/* Principal & Chairman Message */}
-      <PrincipalMessage />
+      <PrincipalMessage settings={settings} />
     </div>
   );
 }

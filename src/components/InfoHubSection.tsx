@@ -9,8 +9,8 @@ interface InfoHubSectionProps {
   academicPrograms?: any[];
 }
 
-export default function InfoHubSection({ notices, events, academicPrograms }: InfoHubSectionProps) {
-  const departmentsToRender = academicPrograms && academicPrograms.length > 0
+export default function InfoHubSection({ notices = [], events = [], academicPrograms = [] }: InfoHubSectionProps) {
+  const departmentsToRender = academicPrograms.length > 0
     ? academicPrograms
     : [
         {
@@ -30,22 +30,36 @@ export default function InfoHubSection({ notices, events, academicPrograms }: In
         }
       ];
 
-  const noticeListToRender = notices && notices.length > 0 
-    ? notices.slice(0, 5).map(n => ({
-        day: n.date ? n.date.split(' ')[0] : '২৬',
-        month: n.date ? n.date.split(' ')[1] || 'মে' : 'মে',
-        title: n.title,
-        href: '/notices'
-      }))
-    : [];
+  const noticeListToRender = notices.slice(0, 5).map(n => {
+    let day = '০১';
+    let month = 'মে';
+    if (n.date && typeof n.date === 'string') {
+      const parts = n.date.split(' ');
+      if (parts.length >= 2) {
+        day = parts[0];
+        month = parts[1];
+      } else {
+        day = n.date;
+      }
+    } else if (n.createdAt) {
+      const d = new Date(n.createdAt);
+      day = d.getDate().toString();
+      month = d.toLocaleString('bn-BD', { month: 'short' });
+    }
+    return {
+      _id: n._id,
+      day,
+      month,
+      title: n.title,
+      href: '/notices'
+    };
+  });
 
-  const eventListToRender = events && events.length > 0
-    ? events.slice(0, 5).map(e => ({
-        day: e.day || e.date?.split(' ')[0] || '১৫',
-        month: e.month || e.date?.split(' ')[1] || 'মে',
-        title: e.title
-      }))
-    : [];
+  const eventListToRender = events.slice(0, 5).map(e => ({
+    day: e.day || e.date?.split(' ')[0] || '১৫',
+    month: e.month || e.date?.split(' ')[1] || 'মে',
+    title: e.title
+  }));
 
   return (
     <section className="py-14 bg-white border-b border-slate-200/80">
@@ -98,7 +112,7 @@ export default function InfoHubSection({ notices, events, academicPrograms }: In
                 </div>
               ) : (
                 noticeListToRender.map((notice, idx) => (
-                  <div key={idx} className="bg-slate-50 p-3 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-3 hover:bg-white hover:shadow-md transition">
+                  <div key={notice._id || idx} className="bg-slate-50 p-3 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-3 hover:bg-white hover:shadow-md transition">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-blue-100/80 border border-blue-200 flex flex-col items-center justify-center shrink-0">
                         <span className="text-sm font-black text-blue-800 leading-none">{notice.day}</span>

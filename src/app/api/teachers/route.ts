@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Teacher from '@/models/Teacher';
-import { TEACHERS_LIST } from '@/data/schoolData';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,18 +11,7 @@ export async function GET() {
     return NextResponse.json({ success: true, teachers });
   } catch (error: any) {
     console.error('Teachers fetch error:', error);
-    const mockTeachers = TEACHERS_LIST.map(t => ({
-      _id: t.id,
-      name: t.name,
-      designation: t.designation,
-      subject: t.subject,
-      qualification: t.qualification,
-      experience: t.experience,
-      email: t.email,
-      phone: t.phone,
-      image: t.image
-    }));
-    return NextResponse.json({ success: true, teachers: mockTeachers });
+    return NextResponse.json({ success: false, teachers: [], message: error.message }, { status: 500 });
   }
 }
 

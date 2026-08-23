@@ -11,23 +11,7 @@ export async function GET() {
     return NextResponse.json({ success: true, admissions });
   } catch (error: any) {
     console.error('Admissions fetch error:', error);
-    const mockAdmissions = [
-      {
-        _id: 'adm-1',
-        studentName: 'সাব্বির আহমেদ',
-        fatherName: 'মোঃ রফিকুল ইসলাম',
-        motherName: 'মোছাঃ সেলিনা আক্তার',
-        phone: '০১৭০০-১১২২২৩',
-        classApply: '১০ম',
-        birthCertNo: '১৯৯৮৮৭৭৬৬৫৫',
-        address: 'কোর্ট রোড, শেরপুর',
-        paymentStatus: 'paid',
-        paymentTxId: 'TXN-998811',
-        status: 'pending',
-        createdAt: new Date()
-      }
-    ];
-    return NextResponse.json({ success: true, admissions: mockAdmissions });
+    return NextResponse.json({ success: false, admissions: [], message: error.message }, { status: 500 });
   }
 }
 

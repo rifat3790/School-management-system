@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, X, Sparkles, MessageCircle, HelpCircle, User, RefreshCw } from 'lucide-react';
 import { AIMessage, AI_QUICK_PROMPTS, generateAIResponse } from '@/data/aiKnowledge';
-import { SCHOOL_INFO } from '@/data/schoolData';
 
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,7 +11,7 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<AIMessage[]>([
     {
       sender: 'bot',
-      text: `আসসালামু আলাইকুম! আমি ${SCHOOL_INFO.name}-এর স্মার্ট এআই সহকারী। ভর্তি, রেজাল্ট, ক্লাস রুটিন বা নোটিশ যেকোনো বিষয়ে আপনার প্রশ্ন করুন।`,
+      text: `আসসালামু আলাইকুম! আমি বিদ্যালয়ের স্মার্ট এআই সহকারী। ভর্তি, রেজাল্ট, ক্লাস রুটিন বা নোটিশ যেকোনো বিষয়ে আপনার প্রশ্ন করুন।`,
       time: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }),
     }
   ]);

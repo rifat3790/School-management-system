@@ -6,7 +6,6 @@ import Footer from '@/components/Footer';
 import ChatWithManagement from '@/components/ChatWithManagement';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import { ToastProvider } from '@/components/Toast';
-import { SCHOOL_INFO } from '@/data/schoolData';
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ['bengali', 'latin'],
@@ -23,13 +22,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: `${SCHOOL_INFO.name} | ${SCHOOL_INFO.sloganPrimary}`,
-  description: `${SCHOOL_INFO.name} - আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তিনির্ভর ভবিষ্যৎ গড়ার প্রত্যয়ে সেরা ডিজিটাল মডেল হাই স্কুল।`,
-  keywords: ['school', 'school management system', 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল', 'ঢাকা স্কুল', 'অনলাইন ভর্তি', 'রেজাল্ট'],
+  title: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল | সুশিক্ষাই উজ্জ্বল ভবিষ্যতের ভিত্তি',
+  description: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল - আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তিনির্ভর ভবিষ্যৎ গড়ার প্রত্যয়ে সেরা ডিজিটাল মডেল হাই স্কুল।',
+  keywords: ['school', 'school management system', 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল', 'শেরপুর মডেল হাই স্কুল', 'অনলাইন ভর্তি', 'রেজাল্ট'],
   openGraph: {
-    title: SCHOOL_INFO.name,
-    description: SCHOOL_INFO.sloganPrimary,
-    siteName: SCHOOL_INFO.name,
+    title: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
+    description: 'সুশিক্ষাই উজ্জ্বল ভবিষ্যতের ভিত্তি',
+    siteName: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল',
     locale: 'bn_BD',
     type: 'website',
   },

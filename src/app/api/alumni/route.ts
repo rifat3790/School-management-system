@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
-import Donation from '@/models/Donation';
+import AlumniStory from '@/models/AlumniStory';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     await dbConnect();
-    const donations = await Donation.find().sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, donations });
+    const stories = await AlumniStory.find().sort({ createdAt: -1 });
+    return NextResponse.json({ success: true, stories });
   } catch (error: any) {
-    console.error('Donations fetch error:', error);
-    return NextResponse.json({ success: false, donations: [], message: error.message }, { status: 500 });
+    console.error('Alumni stories fetch error:', error);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
 
@@ -19,8 +19,8 @@ export async function POST(req: NextRequest) {
   try {
     await dbConnect();
     const body = await req.json();
-    const donation = await Donation.create(body);
-    return NextResponse.json({ success: true, donation }, { status: 201 });
+    const story = await AlumniStory.create(body);
+    return NextResponse.json({ success: true, story }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
@@ -29,9 +29,10 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     await dbConnect();
-    const { id, isApproved } = await req.json();
-    const donation = await Donation.findByIdAndUpdate(id, { isApproved }, { new: true });
-    return NextResponse.json({ success: true, donation });
+    const { id, _id, ...updateData } = await req.json();
+    const targetId = id || _id;
+    const story = await AlumniStory.findByIdAndUpdate(targetId, updateData, { new: true });
+    return NextResponse.json({ success: true, story });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
@@ -44,8 +45,8 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ success: false, message: 'ID required' }, { status: 400 });
 
-    await Donation.findByIdAndDelete(id);
-    return NextResponse.json({ success: true, message: 'Donation deleted' });
+    await AlumniStory.findByIdAndDelete(id);
+    return NextResponse.json({ success: true, message: 'Story deleted' });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }

@@ -33,9 +33,9 @@ import {
   UserCheck,
   MessageSquare,
   Sparkles,
-  Calendar
+  Calendar,
+  Award
 } from 'lucide-react';
-import { SCHOOL_INFO } from '@/data/schoolData';
 import { useToast } from '@/components/Toast';
 
 interface UserRecord {
@@ -55,7 +55,7 @@ interface UserRecord {
 
 export default function AdminDashboard() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'assignments' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'news' | 'gallery' | 'admissions' | 'donations' | 'inquiries'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'chat' | 'assignments' | 'approvals' | 'resets' | 'settings' | 'about' | 'notices' | 'teachers' | 'results' | 'library' | 'alumni' | 'news' | 'gallery' | 'admissions' | 'donations' | 'inquiries'>('users');
   
   // Assignment State
   const [assignTeacherId, setAssignTeacherId] = useState('');
@@ -67,6 +67,9 @@ export default function AdminDashboard() {
   const [resetUsers, setResetUsers] = useState<UserRecord[]>([]);
   const [notices, setNotices] = useState<any[]>([]);
   const [teachers, setTeachers] = useState<any[]>([]);
+  const [resultsList, setResultsList] = useState<any[]>([]);
+  const [booksList, setBooksList] = useState<any[]>([]);
+  const [alumniList, setAlumniList] = useState<any[]>([]);
   const [newsList, setNewsList] = useState<any[]>([]);
   const [galleryList, setGalleryList] = useState<any[]>([]);
   const [admissionsList, setAdmissionsList] = useState<any[]>([]);
@@ -140,6 +143,36 @@ export default function AdminDashboard() {
   const [newTeacher, setNewTeacher] = useState({ name: '', designation: 'সহকারী শিক্ষক', subject: '', qualification: 'এম.এ, বি.এড', experience: '৫ বছর', email: '', phone: '', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&q=80' });
   const [newNews, setNewNews] = useState({ title: '', category: 'সংবাদ', date: new Date().toLocaleDateString('bn-BD'), summary: '', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80' });
   const [newGallery, setNewGallery] = useState({ title: '', category: 'ক্যাম্পাস', url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&q=80' });
+  const [newResult, setNewResult] = useState({
+    roll: '',
+    regNo: '',
+    studentName: '',
+    className: '১০ম শ্রেণী',
+    section: 'A',
+    examType: 'বার্ষিক পরীক্ষা (Annual)',
+    gpa: 5.00,
+    grade: 'A+',
+    marksText: 'বাংলা:100:85:A+:5.0, ইংরেজি:100:80:A+:5.0, গণিত:100:95:A+:5.0, পদার্থবিজ্ঞান:100:90:A+:5.0'
+  });
+  const [newBook, setNewBook] = useState({
+    title: '',
+    author: '',
+    category: 'বিজ্ঞান',
+    isbn: '',
+    classLevel: '৯ম-১০ম শ্রেণী',
+    location: 'র্যাক-১',
+    availableCopies: 10,
+    totalCopies: 10
+  });
+  const [newAlumni, setNewAlumni] = useState({
+    name: '',
+    batch: 'এসএসসি ব্যাচ ২০১৫',
+    profession: '',
+    organization: '',
+    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+    story: '',
+    isFeatured: true
+  });
 
   // Editing Item States
   const [editingNotice, setEditingNotice] = useState<any | null>(null);
@@ -204,9 +237,8 @@ export default function AdminDashboard() {
         });
       }
 
-
-      // 3. Notices, Teachers, News, Gallery, Admissions, Donations, Contact
-      const [rN, rT, rNw, rG, rAdm, rDon, rCnt] = await Promise.all([
+      // 3. Notices, Teachers, News, Gallery, Admissions, Donations, Contact, Results, Library, Alumni
+      const [rN, rT, rNw, rG, rAdm, rDon, rCnt, rRes, rBk, rAlm] = await Promise.all([
         fetch('/api/notices').then(r => r.json()),
         fetch('/api/teachers').then(r => r.json()),
         fetch('/api/news').then(r => r.json()),
@@ -214,6 +246,9 @@ export default function AdminDashboard() {
         fetch('/api/admissions').then(r => r.json()),
         fetch('/api/donations').then(r => r.json()),
         fetch('/api/contact').then(r => r.json()),
+        fetch('/api/results').then(r => r.json()),
+        fetch('/api/library').then(r => r.json()),
+        fetch('/api/alumni').then(r => r.json()),
       ]);
 
       if (rN.success) setNotices(rN.notices);
@@ -223,6 +258,9 @@ export default function AdminDashboard() {
       if (rAdm.success) setAdmissionsList(rAdm.admissions);
       if (rDon.success) setDonationsList(rDon.donations);
       if (rCnt.success) setContactList(rCnt.messages);
+      if (rRes.success) setResultsList(rRes.results || []);
+      if (rBk.success) setBooksList(rBk.books || []);
+      if (rAlm.success) setAlumniList(rAlm.stories || []);
 
     } catch (err) {
       console.error('Error fetching admin data:', err);
@@ -636,6 +674,156 @@ export default function AdminDashboard() {
     } catch (err) { toast.error('আপডেট করতে সমস্যা হয়েছে'); }
   };
 
+  // RESULT CRUD HANDLERS
+  const handleCreateResult = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newResult.roll || !newResult.studentName) {
+      toast.error('রোল এবং শিক্ষার্থীর নাম প্রদান করুন');
+      return;
+    }
+    try {
+      const marks = newResult.marksText.split(',').map(m => {
+        const parts = m.trim().split(':');
+        return {
+          subject: parts[0] || 'বিষয়',
+          fullMarks: Number(parts[1]) || 100,
+          obtained: Number(parts[2]) || 80,
+          letterGrade: parts[3] || 'A+',
+          point: Number(parts[4]) || 5.0
+        };
+      });
+
+      const res = await fetch('/api/results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roll: newResult.roll,
+          regNo: newResult.regNo,
+          studentName: newResult.studentName,
+          className: newResult.className,
+          section: newResult.section,
+          examType: newResult.examType,
+          gpa: Number(newResult.gpa),
+          grade: newResult.grade,
+          marks
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('পরীক্ষার রেজাল্ট সফলভাবে যুক্ত হয়েছে!');
+        setNewResult({
+          roll: '',
+          regNo: '',
+          studentName: '',
+          className: '১০ম শ্রেণী',
+          section: 'A',
+          examType: 'বার্ষিক পরীক্ষা (Annual)',
+          gpa: 5.00,
+          grade: 'A+',
+          marksText: 'বাংলা:100:85:A+:5.0, ইংরেজি:100:80:A+:5.0, গণিত:100:95:A+:5.0, পদার্থবিজ্ঞান:100:90:A+:5.0'
+        });
+        fetchAllData();
+      }
+    } catch (err) { toast.error('রেজাল্ট যোগ করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleDeleteResult = async (id: string) => {
+    if (!confirm('আপনি কি এই রেজাল্ট রেকর্ডটি মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/results?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('রেজাল্ট মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
+  };
+
+  // LIBRARY BOOK CRUD HANDLERS
+  const handleCreateBook = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBook.title || !newBook.author) {
+      toast.error('বইয়ের নাম ও লেখক নাম প্রদান করুন');
+      return;
+    }
+    try {
+      const res = await fetch('/api/library', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBook)
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('নতুন বই সফলভাবে লাইব্রেরি ক্যাটালগে যুক্ত হয়েছে!');
+        setNewBook({
+          title: '',
+          author: '',
+          category: 'বিজ্ঞান',
+          isbn: '',
+          classLevel: '৯ম-১০ম শ্রেণী',
+          location: 'র্যাক-১',
+          availableCopies: 10,
+          totalCopies: 10
+        });
+        fetchAllData();
+      }
+    } catch (err) { toast.error('বই যোগ করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleDeleteBook = async (id: string) => {
+    if (!confirm('আপনি কি এই বইটি লাইব্রেরি ক্যাটালগ থেকে মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/library?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('বই মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
+  };
+
+  // ALUMNI CRUD HANDLERS
+  const handleCreateAlumni = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAlumni.name || !newAlumni.story) {
+      toast.error('অ্যালুমনির নাম ও গল্প প্রদান করুন');
+      return;
+    }
+    try {
+      const res = await fetch('/api/alumni', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAlumni)
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('অ্যালুমনি গল্প সফলভাবে যুক্ত হয়েছে!');
+        setNewAlumni({
+          name: '',
+          batch: 'এসএসসি ব্যাচ ২০১৫',
+          profession: '',
+          organization: '',
+          image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+          story: '',
+          isFeatured: true
+        });
+        fetchAllData();
+      }
+    } catch (err) { toast.error('অ্যালুমনি যোগ করতে সমস্যা হয়েছে'); }
+  };
+
+  const handleDeleteAlumni = async (id: string) => {
+    if (!confirm('আপনি কি এই অ্যালুমনি গল্পটি মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch(`/api/alumni?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('অ্যালুমনি গল্প মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) { toast.error('মুছে ফেলতে সমস্যা হয়েছে'); }
+  };
+
   const handleAssignStudentToTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignTeacherId || !assignStudentId) {
@@ -710,7 +898,7 @@ export default function AdminDashboard() {
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl font-bold text-slate-900 mt-1">{SCHOOL_INFO.name} — মাস্টার কন্ট্রোল সেন্টার</h1>
+              <h1 className="text-2xl font-bold text-slate-900 mt-1">{siteSettings.schoolName || 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল'} — মাস্টার কন্ট্রোল সেন্টার</h1>
               <p className="text-xs text-slate-500">
                 ইউজার অ্যাকাউন্ট তৈরি, পাসওয়ার্ড সিংক, রোল সেট, সাইট সেটিংস এবং ডাটাবেজ লাইভ কন্ট্রোল করুন
               </p>
@@ -748,6 +936,9 @@ export default function AdminDashboard() {
             { id: 'about', label: '📜 সম্পর্কে ও বাণী এডিটর', icon: HeartHandshake },
             { id: 'notices', label: `🔔 নোটিশ বোর্ড (${notices.length})`, icon: Bell },
             { id: 'teachers', label: `👨‍🏫 শিক্ষক প্যানেল (${teachers.length})`, icon: Users },
+            { id: 'results', label: `📝 পরীক্ষার রেজাল্ট (${resultsList.length})`, icon: Award },
+            { id: 'library', label: `📚 লাইব্রেরি ক্যাটালগ (${booksList.length})`, icon: BookOpen },
+            { id: 'alumni', label: `🎓 অ্যালুমনি গল্প (${alumniList.length})`, icon: GraduationCap },
             { id: 'news', label: `📰 ক্যাম্পাস নিউজ (${newsList.length})`, icon: Newspaper },
             { id: 'gallery', label: `🖼️ ফটো গ্যালারি (${galleryList.length})`, icon: ImageIcon },
             { id: 'admissions', label: `📝 ভর্তি আবেদন (${admissionsList.length})`, icon: FileText },
@@ -2107,6 +2298,455 @@ export default function AdminDashboard() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: RESULTS MANAGER */}
+        {activeTab === 'results' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">📝 পরীক্ষার রেজাল্ট ও মার্কশীট ম্যানেজার (Results CRUD)</h3>
+              <p className="text-xs text-slate-500">শিক্ষার্থীদের পরীক্ষার ফলাফল ও সাবজেক্টভিত্তিক নম্বর যুক্ত ও পরিচালনা করুন</p>
+            </div>
+
+            {/* Create Result Form */}
+            <form onSubmit={handleCreateResult} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-blue-600" /> নতুন পরীক্ষার ফলাফল যুক্ত করুন
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">রোল নম্বর *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: 101"
+                    value={newResult.roll}
+                    onChange={(e) => setNewResult({ ...newResult, roll: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">রেজিস্ট্রেশন নম্বর</label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: 2026900101"
+                    value={newResult.regNo}
+                    onChange={(e) => setNewResult({ ...newResult, regNo: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block font-bold text-slate-700 mb-1">শিক্ষার্থীর পূর্ণ নাম *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: রাফসান আহমেদ"
+                    value={newResult.studentName}
+                    onChange={(e) => setNewResult({ ...newResult, studentName: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">শ্রেণী</label>
+                  <select
+                    value={newResult.className}
+                    onChange={(e) => setNewResult({ ...newResult, className: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold"
+                  >
+                    <option value="১০ম শ্রেণী">১০ম শ্রেণী</option>
+                    <option value="৯ম শ্রেণী">৯ম শ্রেণী</option>
+                    <option value="৮ম শ্রেণী">৮ম শ্রেণী</option>
+                    <option value="৭ম শ্রেণী">৭ম শ্রেণী</option>
+                    <option value="৬ষ্ঠ শ্রেণী">৬ষ্ঠ শ্রেণী</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">শাখা / সেকশন</label>
+                  <input
+                    type="text"
+                    value={newResult.section}
+                    onChange={(e) => setNewResult({ ...newResult, section: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block font-bold text-slate-700 mb-1">পরীক্ষার নাম</label>
+                  <select
+                    value={newResult.examType}
+                    onChange={(e) => setNewResult({ ...newResult, examType: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold"
+                  >
+                    <option value="বার্ষিক পরীক্ষা (Annual)">বার্ষিক পরীক্ষা (Annual)</option>
+                    <option value="অর্ধ-বার্ষিকী পরীক্ষা (Half-Yearly)">অর্ধ-বার্ষিকী পরীক্ষা (Half-Yearly)</option>
+                    <option value="১ম কোয়ার্টার পরীক্ষা">১ম কোয়ার্টার পরীক্ষা</option>
+                    <option value="২য় কোয়ার্টার পরীক্ষা">২য় কোয়ার্টার পরীক্ষা</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">মোট জিপিএ (GPA)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newResult.gpa}
+                    onChange={(e) => setNewResult({ ...newResult, gpa: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-emerald-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">লেটার গ্রেড</label>
+                  <input
+                    type="text"
+                    value={newResult.grade}
+                    onChange={(e) => setNewResult({ ...newResult, grade: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block font-bold text-slate-700 mb-1">বিষয় ও নম্বর (Subject:Full:Obt:Grade:GP - কমা দিয়ে)</label>
+                  <input
+                    type="text"
+                    value={newResult.marksText}
+                    onChange={(e) => setNewResult({ ...newResult, marksText: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
+                >
+                  <Award className="w-4 h-4" /> রেজাল্ট সেভ করুন
+                </button>
+              </div>
+            </form>
+
+            {/* Results Table */}
+            <div className="space-y-3 pt-2">
+              <h4 className="font-bold text-sm text-slate-900">ডাটাবেজে সংরক্ষিত রেজাল্ট তালিকা ({resultsList.length})</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="p-3">রোল</th>
+                      <th className="p-3">শিক্ষার্থীর নাম</th>
+                      <th className="p-3">শ্রেণী ও শাখা</th>
+                      <th className="p-3">পরীক্ষা</th>
+                      <th className="p-3">GPA & Grade</th>
+                      <th className="p-3 text-right">অ্যাকশন</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {resultsList.map((r: any) => (
+                      <tr key={r._id || r.id} className="hover:bg-slate-50 transition">
+                        <td className="p-3 font-mono font-bold text-blue-600">{r.roll}</td>
+                        <td className="p-3 font-bold text-slate-900">{r.studentName}</td>
+                        <td className="p-3">{r.className} ({r.section})</td>
+                        <td className="p-3"><span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-bold">{r.examType}</span></td>
+                        <td className="p-3 font-bold text-emerald-600">GPA {r.gpa?.toFixed(2)} ({r.grade})</td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => handleDeleteResult(r._id || r.id)}
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition"
+                            title="মুছুন"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: LIBRARY MANAGER */}
+        {activeTab === 'library' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">📚 লাইব্রেরি বুক ক্যাটালগ ম্যানেজার (Library Books CRUD)</h3>
+              <p className="text-xs text-slate-500">কেন্দ্রীয় লাইব্রেরির বই যুক্ত, স্টক আপডেট এবং পরিচালনা করুন</p>
+            </div>
+
+            {/* Create Book Form */}
+            <form onSubmit={handleCreateBook} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-blue-600" /> নতুন বই ক্যাটালগে যুক্ত করুন
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <div className="md:col-span-2">
+                  <label className="block font-bold text-slate-700 mb-1">বইয়ের শিরোনাম *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: উচ্চতর পদার্থবিজ্ঞান"
+                    value={newBook.title}
+                    onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">লেখক / প্রকাশনী *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: ড. শাহজাহান তপন"
+                    value={newBook.author}
+                    onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">ক্যাটাগরি</label>
+                  <select
+                    value={newBook.category}
+                    onChange={(e) => setNewBook({ ...newBook, category: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold"
+                  >
+                    <option value="বিজ্ঞান">বিজ্ঞান</option>
+                    <option value="ভাষা ও সাহিত্য">ভাষা ও সাহিত্য</option>
+                    <option value="গণিত">গণিত</option>
+                    <option value="ইতিহাস">ইতিহাস</option>
+                    <option value="ধর্ম ও নৈতিক শিক্ষা">ধর্ম ও নৈতিক শিক্ষা</option>
+                    <option value="সাধারণ জ্ঞান">সাধারণ জ্ঞান</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">আইএসবিএন (ISBN)</label>
+                  <input
+                    type="text"
+                    placeholder="978-..."
+                    value={newBook.isbn}
+                    onChange={(e) => setNewBook({ ...newBook, isbn: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">শ্রেণী স্তর</label>
+                  <input
+                    type="text"
+                    value={newBook.classLevel}
+                    onChange={(e) => setNewBook({ ...newBook, classLevel: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">সেলফ অবস্থান (Location)</label>
+                  <input
+                    type="text"
+                    placeholder="র্যাক-১ (বিজ্ঞান কর্নার)"
+                    value={newBook.location}
+                    onChange={(e) => setNewBook({ ...newBook, location: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">মজুদ কপি সংখ্যা</label>
+                  <input
+                    type="number"
+                    value={newBook.availableCopies}
+                    onChange={(e) => setNewBook({ ...newBook, availableCopies: parseInt(e.target.value) || 0, totalCopies: parseInt(e.target.value) || 0 })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
+                >
+                  <BookOpen className="w-4 h-4" /> বই যুক্ত করুন
+                </button>
+              </div>
+            </form>
+
+            {/* Books Table */}
+            <div className="space-y-3 pt-2">
+              <h4 className="font-bold text-sm text-slate-900">ক্যাটালগের বই তালিকা ({booksList.length})</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="p-3">বইয়ের নাম</th>
+                      <th className="p-3">লেখক</th>
+                      <th className="p-3">ক্যাটাগরি</th>
+                      <th className="p-3">সেলফ অবস্থান</th>
+                      <th className="p-3">মজুদ কপি</th>
+                      <th className="p-3 text-right">অ্যাকশন</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {booksList.map((b: any) => (
+                      <tr key={b._id || b.id} className="hover:bg-slate-50 transition">
+                        <td className="p-3 font-bold text-slate-900">{b.title}</td>
+                        <td className="p-3">{b.author}</td>
+                        <td className="p-3"><span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-bold">{b.category}</span></td>
+                        <td className="p-3 font-mono font-bold text-slate-600">{b.location}</td>
+                        <td className="p-3 font-bold text-emerald-600">{b.availableCopies} টি</td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => handleDeleteBook(b._id || b.id)}
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition"
+                            title="মুছুন"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: ALUMNI MANAGER */}
+        {activeTab === 'alumni' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">🎓 অ্যালুমনি সাফল্য গল্প ম্যানেজার (Alumni CRUD)</h3>
+              <p className="text-xs text-slate-500">প্রাক্তন শিক্ষার্থীদের সাফল্যের গল্প ও অর্জন যুক্ত ও পরিচালনা করুন</p>
+            </div>
+
+            {/* Create Alumni Form */}
+            <form onSubmit={handleCreateAlumni} className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-blue-600" /> নতুন অ্যালুমনি গল্প যুক্ত করুন
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">অ্যালুমনির নাম *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="যেমন: ইঞ্জিনিয়ার রেজওয়ান আহমেদ"
+                    value={newAlumni.name}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, name: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">ব্যাচ (পাসের বছর)</label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: এসএসসি ব্যাচ ২০০৮"
+                    value={newAlumni.batch}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, batch: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">পেশা ও পদবী</label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: সফটওয়্যার আর্কিটেক্ট"
+                    value={newAlumni.profession}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, profession: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">বর্তমান প্রতিষ্ঠান / দেশ</label>
+                  <input
+                    type="text"
+                    placeholder="যেমন: গুগল (Google, USA)"
+                    value={newAlumni.organization}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, organization: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block font-bold text-slate-700 mb-1">ছবি URL</label>
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    value={newAlumni.image}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, image: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+
+                <div className="md:col-span-3">
+                  <label className="block font-bold text-slate-700 mb-1">সাফল্যের গল্প / স্মৃতিচারণ *</label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="বিদ্যালয়ের অনুপ্রেরণা ও সাফল্য সম্পর্কিত বক্তব্য লিখুন..."
+                    value={newAlumni.story}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, story: e.target.value })}
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
+                >
+                  <GraduationCap className="w-4 h-4" /> গল্প প্রকাশ করুন
+                </button>
+              </div>
+            </form>
+
+            {/* Alumni Stories List */}
+            <div className="space-y-3 pt-2">
+              <h4 className="font-bold text-sm text-slate-900">প্রকাশিত অ্যালুমনি গল্প ({alumniList.length})</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {alumniList.map((a: any) => (
+                  <div key={a._id || a.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-start gap-4 justify-between">
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={a.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80'}
+                        alt={a.name}
+                        className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
+                      />
+                      <div>
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold text-[10px]">{a.batch}</span>
+                        <h5 className="font-bold text-slate-900 text-sm mt-1">{a.name}</h5>
+                        <p className="text-xs text-slate-500 font-semibold">{a.profession} — {a.organization}</p>
+                        <p className="text-xs text-slate-600 italic line-clamp-2 mt-1">"{a.story}"</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleDeleteAlumni(a._id || a.id)}
+                      className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition shrink-0"
+                      title="মুছুন"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>

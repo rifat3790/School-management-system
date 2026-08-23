@@ -7,12 +7,12 @@ import {
   Users, 
   UserCheck, 
   Award, 
-  ArrowRight,
-  Sparkles,
-  ChevronLeft,
-  ChevronRight,
-  ShieldCheck,
-  Cpu
+  ArrowRight, 
+  Sparkles, 
+  ChevronLeft, 
+  ChevronRight, 
+  ShieldCheck, 
+  Cpu 
 } from 'lucide-react';
 
 interface HeroSectionProps {
@@ -36,41 +36,41 @@ export default function HeroSection({ settings }: HeroSectionProps) {
     return [];
   }, [settings?.heroImage]);
 
-  const defaultImages = [
-    'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&q=80',
-    'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&q=80',
-    'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80'
-  ];
+  const defaultHeroImage = 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&q=80';
 
-  const slides = [
-    {
+  const slides = useMemo(() => {
+    const s1 = {
       tagline: settings?.heroTagline || '২০২৬ শিক্ষাবর্ষে ভর্তি চলছে',
       title1: settings?.heroTitleLine1 || 'শিক্ষাই জাতির মেরুদণ্ড',
       title2: settings?.heroTitleLine2 || 'সুশিক্ষাই উজ্জ্বল ভবিষ্যতের ভিত্তি',
-      description: settings?.heroDescription || 'আমাদের বিদ্যালয় প্রতিটি শিক্ষার্থীর মধ্যে নৈতিক স্তম্ভতার সাথে আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তির মাধ্যমে আগামী দিনে তুলে ধরছি আগামী প্রজন্মের সেরা, সৃজনশীল ও সামাজিক নেতৃত্ব।',
-      image: customImages[0] || defaultImages[0],
-      badge: 'সেরা ডিজিটাল শিক্ষাঙ্গন',
+      description: settings?.heroDescription || 'আমাদের বিদ্যালয় প্রতিটি শিক্ষার্থীর মধ্যে নৈতিক মূল্যবোধ এবং প্রযুক্তির মাধ্যমে আগামী দিনে তুলে ধরছি আগামী প্রজন্মের সেরা ও সৃজনশীল নেতৃত্ব।',
+      image: customImages[0] || defaultHeroImage,
+      badge: settings?.schoolName || 'সেরা ডিজিটাল শিক্ষাঙ্গন',
       badgeIcon: ShieldCheck
-    },
-    {
-      tagline: 'আধুনিক স্টেম ও রোবোটিক্স ল্যাব',
+    };
+
+    const s2 = {
+      tagline: 'আধুনিক বিজ্ঞান ও রোবোটিক্স ল্যাব',
       title1: 'প্রযুক্তি ও উদ্ভাবনের নতুন দিগন্ত',
-      title2: 'ভবিষ্যতের স্মার্ট স্কিলস ও কোডিং',
-      description: 'আমাদের ক্লাসরুমে রয়েছে ৪র্থ প্রজন্মের ইন্টারেক্টিভ ডিসপ্লে, মাইক্রোকন্ট্রোলার ও ৩ডি প্রিন্টিং ল্যাব যা প্রতিটি শিক্ষার্থীকে বিশ্বমানের গবেষণায় সাহায্য করে।',
-      image: customImages[1] || customImages[0] || defaultImages[1],
+      title2: 'স্মার্ট স্কিলস ও চতুর্থ শিল্পবিপ্লব',
+      description: 'আমাদের ক্যাম্পাসে রয়েছে আধুনিক মাল্টিমিডিয়া ক্লাসরুম, সাইন্স ও আইসিটি ল্যাব যা প্রতিটি শিক্ষার্থীকে ভবিষ্যৎ গবেষণায় দক্ষ করে তোলে।',
+      image: customImages[1] || customImages[0] || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&q=80',
       badge: 'রোবোটিক্স ও কোডিং ল্যাব',
       badgeIcon: Cpu
-    },
-    {
+    };
+
+    const s3 = {
       tagline: 'জাতীয় ও আন্তর্জাতিক সাফল্য',
       title1: 'মেধা, ক্রীড়া ও সংস্কৃতিতে শীর্ষস্থান',
       title2: 'অলিম্পিয়াড ও চ্যাম্পিয়নশিপ বিজয়',
-      description: 'জাতীয় বিজ্ঞান অলিম্পিয়াড, বিতর্ক ও বার্ষিক ক্রীড়ায় আমাদের ট্রফি অর্জন অত্র অঞ্চলের শিক্ষাঙ্গনে এক অনন্য রেকর্ড তৈরি করেছে।',
-      image: customImages[2] || customImages[0] || defaultImages[2],
+      description: 'বিজ্ঞান অলিম্পিয়াড, বিতর্ক ও বার্ষিক ক্রীড়া প্রতিযোগিতায় আমাদের শিক্ষার্থীদের সাফল্য এক অনন্য রেকর্ড গড়েছে।',
+      image: customImages[2] || customImages[0] || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80',
       badge: 'জাতীয় চ্যাম্পিয়ন ট্রফি জয়ী',
       badgeIcon: Award
-    }
-  ];
+    };
+
+    return [s1, s2, s3];
+  }, [settings, customImages]);
 
   // Auto slide transition every 5 seconds
   useEffect(() => {
@@ -88,11 +88,11 @@ export default function HeroSection({ settings }: HeroSectionProps) {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
-  const activeSlide = slides[currentSlide];
+  const activeSlide = slides[currentSlide] || slides[0];
   const BadgeIcon = activeSlide.badgeIcon;
 
   const statsList = [
-    { value: settings?.stats?.establishedYear || '৩০+ বছর', label: 'ঐতিহ্য ও সাফল্য', icon: Building2 },
+    { value: settings?.stats?.establishedYear || settings?.established || '৩০+ বছর', label: 'ঐতিহ্য ও সাফল্য', icon: Building2 },
     { value: settings?.stats?.students || '৩,৫০০+', label: 'শিক্ষার্থী', icon: Users },
     { value: settings?.stats?.teachers || '১৪০+', label: 'অভিজ্ঞ শিক্ষক', icon: UserCheck },
     { value: settings?.stats?.passRate || '৯৮%', label: 'বোর্ড পরীক্ষায় পাসের হার', icon: Award }
@@ -203,10 +203,6 @@ export default function HeroSection({ settings }: HeroSectionProps) {
                   src={activeSlide.image} 
                   alt={activeSlide.title1} 
                   className="w-full h-full object-cover transform hover:scale-105 transition duration-700"
-                  onError={(e) => {
-                    // Fallback to default high-definition image if URL fails to load
-                    e.currentTarget.src = defaultImages[currentSlide] || defaultImages[0];
-                  }}
                 />
                 
                 {/* Floating Glassmorphic Badge Tag */}
@@ -216,7 +212,7 @@ export default function HeroSection({ settings }: HeroSectionProps) {
                   </div>
                   <div>
                     <h4 className="font-extrabold text-xs text-slate-900">{activeSlide.badge}</h4>
-                    <p className="text-[10px] font-bold text-blue-700">ডাঃ মুজিব-রুবি মডেল হাই স্কুল</p>
+                    <p className="text-[10px] font-bold text-blue-700">{settings?.schoolName || 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল'}</p>
                   </div>
                 </div>
               </div>
