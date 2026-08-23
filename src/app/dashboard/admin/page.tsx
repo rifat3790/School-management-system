@@ -34,7 +34,9 @@ import {
   MessageSquare,
   Sparkles,
   Calendar,
-  Award
+  Award,
+  Loader2,
+  Send
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import ImageUploadInput from '@/components/ImageUploadInput';
@@ -76,6 +78,9 @@ export default function AdminDashboard() {
   const [admissionsList, setAdmissionsList] = useState<any[]>([]);
   const [donationsList, setDonationsList] = useState<any[]>([]);
   const [contactList, setContactList] = useState<any[]>([]);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [adminReplyText, setAdminReplyText] = useState('');
+  const [adminSending, setAdminSending] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // User Filter States
@@ -238,8 +243,8 @@ export default function AdminDashboard() {
         });
       }
 
-      // 3. Notices, Teachers, News, Gallery, Admissions, Donations, Contact, Results, Library, Alumni
-      const [rN, rT, rNw, rG, rAdm, rDon, rCnt, rRes, rBk, rAlm] = await Promise.all([
+      // 3. Notices, Teachers, News, Gallery, Admissions, Donations, Contact, Results, Library, Alumni, Chat
+      const [rN, rT, rNw, rG, rAdm, rDon, rCnt, rRes, rBk, rAlm, rChat] = await Promise.all([
         fetch('/api/notices').then(r => r.json()),
         fetch('/api/teachers').then(r => r.json()),
         fetch('/api/news').then(r => r.json()),
@@ -250,6 +255,7 @@ export default function AdminDashboard() {
         fetch('/api/results').then(r => r.json()),
         fetch('/api/library').then(r => r.json()),
         fetch('/api/alumni').then(r => r.json()),
+        fetch('/api/chat').then(r => r.json()).catch(() => ({ success: false })),
       ]);
 
       if (rN.success) setNotices(rN.notices);
@@ -262,11 +268,56 @@ export default function AdminDashboard() {
       if (rRes.success) setResultsList(rRes.results || []);
       if (rBk.success) setBooksList(rBk.books || []);
       if (rAlm.success) setAlumniList(rAlm.stories || []);
+      if (rChat?.success && Array.isArray(rChat.messages)) setChatMessages(rChat.messages);
 
     } catch (err) {
       console.error('Error fetching admin data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendAdminReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminReplyText.trim()) return;
+
+    setAdminSending(true);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderName: 'স্কুল এডমিন',
+          senderRole: 'admin',
+          text: adminReplyText.trim()
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('উত্তর সফলভাবে প্রেরিত হয়েছে!');
+        setAdminReplyText('');
+        fetchAllData();
+      } else {
+        toast.error('উত্তর পাঠাতে সমস্যা হয়েছে');
+      }
+    } catch (err) {
+      toast.error('নেটওয়ার্ক সমস্যা হয়েছে');
+    } finally {
+      setAdminSending(false);
+    }
+  };
+
+  const handleClearChatHistory = async () => {
+    if (!confirm('আপনি কি সত্যিই সম্পূর্ণ চ্যাট ইতিহাস মুছে ফেলতে চান?')) return;
+    try {
+      const res = await fetch('/api/chat', { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('চ্যাট ইতিহাস মুছে ফেলা হয়েছে');
+        fetchAllData();
+      }
+    } catch (err) {
+      toast.error('মুছতে সমস্যা হয়েছে');
     }
   };
 
@@ -1244,6 +1295,107 @@ export default function AdminDashboard() {
                 })}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB: LIVE SUPPORT CHAT INBOX */}
+        {activeTab === 'chat' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-blue-600" />
+                  লাইভ চ্যাট ও সাপোর্ট ইনবক্স (Live Support Chat)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  ওয়েবসাইটে ভিজিটর, শিক্ষার্থী ও অভিভাবকদের সাথে লাইভ চ্যাট করুন এবং সরাসরি রিপ্লাই পাঠান
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchAllData}
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> রিফ্রেশ
+                </button>
+                <button
+                  onClick={handleClearChatHistory}
+                  className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition flex items-center gap-1.5 border border-rose-200"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> চ্যাট হিস্ট্রি মুছুন
+                </button>
+              </div>
+            </div>
+
+            {/* Chat Message Stream */}
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 h-[420px] overflow-y-auto space-y-3">
+              {chatMessages.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center">
+                  <MessageSquare className="w-10 h-10 mb-2 opacity-40" />
+                  <p className="text-sm font-bold text-slate-600">কোন বার্তা পাওয়া যায়নি</p>
+                  <p className="text-xs">নতুন কোনো ভিজিটর মেসেজ পাঠালে এখানে লাইভ প্রদর্শিত হবে</p>
+                </div>
+              ) : (
+                chatMessages.map((msg: any, idx: number) => {
+                  const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
+                  const isBot = msg.senderRole === 'bot';
+
+                  return (
+                    <div
+                      key={msg._id || idx}
+                      className={`flex gap-3 ${isAdmin ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[75%] rounded-2xl p-3.5 text-xs sm:text-sm shadow-xs space-y-1.5 ${
+                          isAdmin
+                            ? 'bg-blue-600 text-white rounded-tr-xs'
+                            : isBot
+                            ? 'bg-white text-slate-800 border border-slate-200 rounded-tl-xs'
+                            : 'bg-white text-slate-900 border border-slate-200 rounded-tl-xs'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3 text-[10px] pb-1 border-b border-black/5 font-bold">
+                          <span className={isAdmin ? 'text-blue-100' : 'text-blue-600'}>
+                            {msg.senderName || (isAdmin ? 'এডমিন' : isBot ? 'স্মার্ট সহকারী' : 'ইউজার')} ({msg.senderRole || 'guest'})
+                          </span>
+                          <span className={isAdmin ? 'text-blue-200' : 'text-slate-400'}>
+                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </span>
+                        </div>
+
+                        {msg.imageUrl && (
+                          <div className="rounded-lg overflow-hidden max-w-[200px] border border-slate-200">
+                            <img src={msg.imageUrl} alt="Attached" className="w-full h-auto object-cover" />
+                          </div>
+                        )}
+
+                        <p className="whitespace-pre-line leading-relaxed">{msg.text}</p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Admin Reply Form */}
+            <form onSubmit={handleSendAdminReply} className="flex items-center gap-2 pt-2">
+              <input
+                type="text"
+                value={adminReplyText}
+                onChange={(e) => setAdminReplyText(e.target.value)}
+                placeholder="স্কুল কর্তৃপক্ষের পক্ষ থেকে লাইভ উত্তর লিখুন..."
+                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-blue-600 text-slate-900"
+              />
+              <button
+                type="submit"
+                disabled={adminSending || !adminReplyText.trim()}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2 shrink-0"
+              >
+                {adminSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                রিপ্লাই পাঠান
+              </button>
+            </form>
           </div>
         )}
 
