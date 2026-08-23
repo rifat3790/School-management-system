@@ -16,7 +16,7 @@ interface Testimonial {
   studentName: string;
   rating: number;
   text: string;
-  image: string;
+  image?: string;
 }
 
 interface TestimonialsSectionProps {
@@ -25,13 +25,12 @@ interface TestimonialsSectionProps {
 
 export default function TestimonialsSection({ testimonials = [] }: TestimonialsSectionProps) {
   const defaultTestimonials: Testimonial[] = [
-    { name: 'মাশরাফি আহমেদ', role: 'অভিভাবক (সপ্তম শ্রেণি)', studentName: 'তাহমিদ আহমেদ', rating: 5, text: 'স্কুলের বায়োমেট্রিক হাজিরা ও তাৎক্ষণিক মেসেজ অ্যালার্ট অভিভাবক হিসেবে আমার টেনশন অনেক কমিয়ে দিয়েছে। শিক্ষকরা খুবই আন্তরিক।', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80' },
-    { name: 'শারমিন সুলতানা', role: 'অভিভাবক (দশম শ্রেণি)', studentName: 'আফসানা সুলতানা', rating: 5, text: 'স্মার্ট ডিজিটাল ক্লাসরুম এবং অতিরিক্ত টিউটোরিয়াল ক্লাসের কারণে আমার মেয়ে এসএসসিতে গোল্ডেন এ+ প্রত্যাশী। চমৎকার ম্যানেজমেন্ট!', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&q=80' },
-    { name: 'ড. কামরুল হাসান', role: 'প্রাক্তন শিক্ষার্থী (ব্যাচ ২০০৫)', studentName: 'বুয়েট সিএসই গ্রাজুয়েট', rating: 5, text: 'আজ আমি বিদেশের স্বনামধন্য প্রতিষ্ঠানে সফটওয়্যার ইঞ্জিনিয়ার। এই স্কুলের লাইব্রেরি ও সায়েন্স ল্যাবেই আমার স্বপ্নের ভিত তৈরি হয়েছিল।', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&q=80' }
+    { name: 'মাশরাফি আহমেদ', role: 'অভিভাবক (সপ্তম শ্রেণি)', studentName: 'তাহমিদ আহমেদ', rating: 5, text: 'স্কুলের বায়োমেট্রিক হাজিরা ও তাৎক্ষণিক মেসেজ অ্যালার্ট অভিভাবক হিসেবে আমার টেনশন অনেক কমিয়ে দিয়েছে। শিক্ষকরা খুবই আন্তরিক।', image: '' },
+    { name: 'শারমিন সুলতানা', role: 'অভিভাবক (দশম শ্রেণি)', studentName: 'আফসানা সুলতানা', rating: 5, text: 'স্মার্ট ডিজিটাল ক্লাসরুম এবং অতিরিক্ত টিউটোরিয়াল ক্লাসের কারণে আমার মেয়ে এসএসসিতে গোল্ডেন এ+ প্রত্যাশী। চমৎকার ম্যানেজমেন্ট!', image: '' },
+    { name: 'ড. কামরুল হাসান', role: 'প্রাক্তন শিক্ষার্থী (ব্যাচ ২০০৫)', studentName: 'বুয়েট সিএসই গ্রাজুয়েট', rating: 5, text: 'আজ আমি বিদেশের স্বনামধন্য প্রতিষ্ঠানে সফটওয়্যার ইঞ্জিনিয়ার। এই স্কুলের লাইব্রেরি ও সায়েন্স ল্যাবেই আমার স্বপ্নের ভিত তৈরি হয়েছিল।', image: '' }
   ];
 
-  const list = testimonials;
-
+  const list = testimonials.length > 0 ? testimonials : defaultTestimonials;
 
   return (
     <section className="py-16 bg-slate-50 border-y border-slate-200/80">
@@ -77,11 +76,17 @@ export default function TestimonialsSection({ testimonials = [] }: TestimonialsS
               {/* Author Footer */}
               <div className="pt-6 border-t border-slate-100 mt-6 flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-3">
-                  <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    className="w-12 h-12 rounded-2xl object-cover border-2 border-blue-500 shadow-xs"
-                  />
+                  {item.image ? (
+                    <img 
+                      src={item.image} 
+                      alt={item.name} 
+                      className="w-12 h-12 rounded-2xl object-cover border-2 border-blue-500 shadow-xs"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-black text-base flex items-center justify-center shadow-xs">
+                      {item.name ? item.name.charAt(0) : 'U'}
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm">{item.name}</h3>
                     <p className="text-xs font-semibold text-blue-600">{item.role}</p>
@@ -95,7 +100,6 @@ export default function TestimonialsSection({ testimonials = [] }: TestimonialsS
             </div>
           ))}
         </div>
-
       </div>
     </section>
   );

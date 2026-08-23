@@ -38,14 +38,24 @@ export default async function AboutPage() {
       <section className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6 relative">
-            <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-200 bg-slate-100">
-              <img
-                src={settings?.heroImage?.split(/[\n,]+/)?.[0]?.trim() || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1000&auto=format&fit=crop&q=80"}
-                alt="School Campus Building"
-                loading="eager"
-                decoding="async"
-                className="w-full h-[400px] object-cover"
-              />
+            <div className="rounded-3xl overflow-hidden shadow-2xl border border-slate-200 bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-900 min-h-[380px] flex items-center justify-center">
+              {settings?.heroImage?.split(/[\n,]+/)?.[0]?.trim() ? (
+                <img
+                  src={settings?.heroImage?.split(/[\n,]+/)?.[0]?.trim()}
+                  alt="School Campus Building"
+                  loading="eager"
+                  decoding="async"
+                  className="w-full h-[400px] object-cover"
+                />
+              ) : (
+                <div className="text-center p-8 space-y-3 text-white">
+                  <div className="w-20 h-20 mx-auto rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center shadow-xl">
+                    <Compass className="w-10 h-10 text-sky-400" />
+                  </div>
+                  <h3 className="font-black text-xl text-white">{schoolName}</h3>
+                  <p className="text-xs text-sky-200 font-medium">প্রতিষ্ঠা: {established} সাল | EIIN: {eiin}</p>
+                </div>
+              )}
             </div>
           </div>
 

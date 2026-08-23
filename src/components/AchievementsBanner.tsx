@@ -49,14 +49,21 @@ export default function AchievementsBanner({ settings }: AchievementsBannerProps
             </div>
           </div>
 
-          {/* Right Column: Victory Trophy Photo */}
-          <div className="lg:col-span-5">
-            <div className="rounded-3xl overflow-hidden border-4 border-white/20 shadow-2xl">
-              <img 
-                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80" 
-                alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুলের সাফল্য ও ট্রফি"
-                className="w-full h-auto object-cover transform hover:scale-105 transition duration-700"
-              />
+          {/* Right Column: Victory Trophy Showcase */}
+          <div className="lg:col-span-5 flex items-center justify-center">
+            <div className="w-full bg-gradient-to-br from-amber-500/20 via-blue-900/40 to-slate-900/80 rounded-3xl p-8 border border-amber-400/30 shadow-2xl backdrop-blur-md text-center space-y-4">
+              <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shadow-lg">
+                <Trophy className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-black text-amber-400">জাতীয় শ্রেষ্ঠ শিক্ষাপ্রতিষ্ঠান স্বীকৃতি</h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+                বিজ্ঞান অলিম্পিয়াড, বিতর্ক ও বোর্ড পরীক্ষায় শতভাগ পাসের অনন্য গৌরব। সৃজনশীল শিক্ষা ও মেধা বিকাশের শ্রেষ্ঠ পদকপ্রাপ্ত প্রতিষ্ঠান।
+              </p>
+              <div className="pt-2 flex items-center justify-center gap-2">
+                <span className="px-3 py-1 bg-amber-400/20 text-amber-300 rounded-full text-xs font-bold border border-amber-400/30">
+                  ★ চ্যাম্পিয়ন অ্যাওয়ার্ড জয়ী
+                </span>
+              </div>
             </div>
           </div>
 

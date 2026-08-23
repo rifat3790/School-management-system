@@ -112,14 +112,20 @@ export default function TeachersPage() {
                 className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-xl transition group flex flex-col justify-between"
               >
                 <div className="space-y-4">
-                  <div className="relative w-28 h-28 mx-auto rounded-3xl overflow-hidden border-4 border-blue-50 shadow-md group-hover:scale-105 transition duration-500">
-                    <img
-                      src={teacher.image || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&q=80'}
-                      alt={teacher.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="relative w-28 h-28 mx-auto rounded-3xl overflow-hidden border-4 border-blue-50 shadow-md group-hover:scale-105 transition duration-500 bg-slate-100 flex items-center justify-center">
+                    {teacher.image ? (
+                      <img
+                        src={teacher.image}
+                        alt={teacher.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-3xl flex items-center justify-center">
+                        {teacher.name ? teacher.name.charAt(0) : 'T'}
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-center space-y-1">

@@ -12,7 +12,8 @@ import {
   ChevronLeft, 
   ChevronRight, 
   ShieldCheck, 
-  Cpu 
+  Cpu,
+  GraduationCap 
 } from 'lucide-react';
 
 interface HeroSectionProps {
@@ -36,15 +37,13 @@ export default function HeroSection({ settings }: HeroSectionProps) {
     return [];
   }, [settings?.heroImage]);
 
-  const defaultHeroImage = 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&q=80';
-
   const slides = useMemo(() => {
     const s1 = {
       tagline: settings?.heroTagline || '২০২৬ শিক্ষাবর্ষে ভর্তি চলছে',
       title1: settings?.heroTitleLine1 || 'শিক্ষাই জাতির মেরুদণ্ড',
       title2: settings?.heroTitleLine2 || 'সুশিক্ষাই উজ্জ্বল ভবিষ্যতের ভিত্তি',
       description: settings?.heroDescription || 'আমাদের বিদ্যালয় প্রতিটি শিক্ষার্থীর মধ্যে নৈতিক মূল্যবোধ এবং প্রযুক্তির মাধ্যমে আগামী দিনে তুলে ধরছি আগামী প্রজন্মের সেরা ও সৃজনশীল নেতৃত্ব।',
-      image: customImages[0] || defaultHeroImage,
+      image: customImages[0] || '',
       badge: settings?.schoolName || 'সেরা ডিজিটাল শিক্ষাঙ্গন',
       badgeIcon: ShieldCheck
     };
@@ -54,7 +53,7 @@ export default function HeroSection({ settings }: HeroSectionProps) {
       title1: 'প্রযুক্তি ও উদ্ভাবনের নতুন দিগন্ত',
       title2: 'স্মার্ট স্কিলস ও চতুর্থ শিল্পবিপ্লব',
       description: 'আমাদের ক্যাম্পাসে রয়েছে আধুনিক মাল্টিমিডিয়া ক্লাসরুম, সাইন্স ও আইসিটি ল্যাব যা প্রতিটি শিক্ষার্থীকে ভবিষ্যৎ গবেষণায় দক্ষ করে তোলে।',
-      image: customImages[1] || customImages[0] || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&q=80',
+      image: customImages[1] || customImages[0] || '',
       badge: 'রোবোটিক্স ও কোডিং ল্যাব',
       badgeIcon: Cpu
     };
@@ -64,7 +63,7 @@ export default function HeroSection({ settings }: HeroSectionProps) {
       title1: 'মেধা, ক্রীড়া ও সংস্কৃতিতে শীর্ষস্থান',
       title2: 'অলিম্পিয়াড ও চ্যাম্পিয়নশিপ বিজয়',
       description: 'বিজ্ঞান অলিম্পিয়াড, বিতর্ক ও বার্ষিক ক্রীড়া প্রতিযোগিতায় আমাদের শিক্ষার্থীদের সাফল্য এক অনন্য রেকর্ড গড়েছে।',
-      image: customImages[2] || customImages[0] || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80',
+      image: customImages[2] || customImages[0] || '',
       badge: 'জাতীয় চ্যাম্পিয়ন ট্রফি জয়ী',
       badgeIcon: Award
     };
@@ -197,17 +196,27 @@ export default function HeroSection({ settings }: HeroSectionProps) {
               <div className="absolute -inset-4 bg-gradient-to-tr from-blue-600 via-sky-400 to-indigo-600 rounded-[55px_15px_55px_15px] blur-xl opacity-35" />
               
               {/* Main Curved Leaf Mask Frame */}
-              <div className="relative rounded-[50px_15px_50px_15px] overflow-hidden border-4 border-white shadow-2xl bg-slate-100 aspect-[4/3] sm:aspect-[14/10]">
-                <img 
-                  key={activeSlide.image}
-                  src={activeSlide.image} 
-                  alt={activeSlide.title1} 
-                  loading="eager"
-                  // @ts-ignore
-                  fetchpriority="high"
-                  decoding="async"
-                  className="w-full h-full object-cover transform hover:scale-105 transition duration-700"
-                />
+              <div className="relative rounded-[50px_15px_50px_15px] overflow-hidden border-4 border-white shadow-2xl bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-900 aspect-[4/3] sm:aspect-[14/10] flex items-center justify-center">
+                {activeSlide.image ? (
+                  <img 
+                    key={activeSlide.image}
+                    src={activeSlide.image} 
+                    alt={activeSlide.title1} 
+                    loading="eager"
+                    // @ts-ignore
+                    fetchpriority="high"
+                    decoding="async"
+                    className="w-full h-full object-cover transform hover:scale-105 transition duration-700"
+                  />
+                ) : (
+                  <div className="text-center p-8 space-y-3 text-white">
+                    <div className="w-20 h-20 mx-auto rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-xl">
+                      <GraduationCap className="w-10 h-10 text-sky-400" />
+                    </div>
+                    <h3 className="font-black text-lg text-white">{settings?.schoolName || 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল'}</h3>
+                    <p className="text-xs text-sky-200 font-medium">স্মার্ট ডিজিটাল ক্যাম্পাস ও ইনোভেশন সেন্টার</p>
+                  </div>
+                )}
                 
                 {/* Floating Glassmorphic Badge Tag */}
                 <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-white/60 shadow-lg flex items-center gap-3">

@@ -8,7 +8,12 @@ export async function GET() {
   try {
     await dbConnect();
     const stories = await AlumniStory.find().sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, stories });
+    const sanitized = stories.map((s: any) => {
+      const obj = s.toObject ? s.toObject() : s;
+      if (obj.image && obj.image.includes('unsplash.com')) obj.image = '';
+      return obj;
+    });
+    return NextResponse.json({ success: true, stories: sanitized });
   } catch (error: any) {
     console.error('Alumni stories fetch error:', error);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });

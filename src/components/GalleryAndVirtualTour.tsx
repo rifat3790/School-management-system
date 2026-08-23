@@ -79,14 +79,16 @@ export default function GalleryAndVirtualTour({ gallery = [] }: GalleryAndVirtua
             </div>
 
             {/* Video Container with Play Button */}
-            <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 shadow-lg aspect-video group cursor-pointer bg-slate-100">
-              <img 
-                src={imagesToRender[0]?.url || 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=800&q=80'} 
-                alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুল ভার্চুয়াল ট্যুর"
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
+            <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 shadow-lg aspect-video group cursor-pointer bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-900 flex items-center justify-center">
+              {imagesToRender[0]?.url && (
+                <img 
+                  src={imagesToRender[0].url} 
+                  alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুল ভার্চুয়াল ট্যুর"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                />
+              )}
               <a 
                 href="https://youtube.com"
                 target="_blank"

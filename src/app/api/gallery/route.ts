@@ -8,7 +8,8 @@ export async function GET() {
   try {
     await dbConnect();
     const gallery = await Gallery.find().sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, gallery });
+    const filtered = gallery.filter((g: any) => g.url && !g.url.includes('unsplash.com'));
+    return NextResponse.json({ success: true, gallery: filtered });
   } catch (error: any) {
     console.error('Gallery fetch error:', error);
     return NextResponse.json({ success: false, gallery: [], message: error.message }, { status: 500 });

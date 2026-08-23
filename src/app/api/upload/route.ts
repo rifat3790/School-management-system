@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import dbConnect from '@/lib/dbConnect';
+import Media from '@/models/Media';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,37 +19,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'শুধুমাত্র ইমেজ ফাইল (JPG, PNG, WebP, GIF, SVG) সমর্থিত' }, { status: 400 });
     }
 
-    // Size limit: 10MB
-    const maxSizeBytes = 10 * 1024 * 1024;
+    // Size limit: 12MB
+    const maxSizeBytes = 12 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      return NextResponse.json({ success: false, message: 'ফাইলের আকার ১০ মেগাবাইট (10MB) এর নিচে হতে হবে' }, { status: 400 });
+      return NextResponse.json({ success: false, message: 'ফাইলের আকার ১২ মেগাবাইট (12MB) এর নিচে হতে হবে' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Ensure public/uploads directory exists
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadsDir, { recursive: true });
+    await dbConnect();
 
-    // Generate safe clean filename with timestamp & random token
-    const ext = path.extname(file.name) || '.jpg';
-    const cleanName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
-    const uniqueFileName = `${cleanName}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${ext.toLowerCase()}`;
+    // Store in MongoDB Media collection
+    const media = await Media.create({
+      filename: file.name || 'image.jpg',
+      contentType: file.type || 'image/jpeg',
+      data: buffer,
+      size: file.size,
+    });
 
-    const filePath = path.join(uploadsDir, uniqueFileName);
-    await writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/${uniqueFileName}`;
+    const publicUrl = `/api/media/${media._id}`;
 
     return NextResponse.json({
       success: true,
       url: publicUrl,
-      fileName: uniqueFileName,
+      mediaId: media._id,
+      fileName: file.name,
       size: file.size
     });
   } catch (error: any) {
-    console.error('File Upload Error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'আপলোড ব্যর্থ হয়েছে' }, { status: 500 });
+    console.error('Database File Upload Error:', error);
+    return NextResponse.json({ success: false, message: error.message || 'ছবি আপলোড করতে সমস্যা হয়েছে' }, { status: 500 });
   }
 }

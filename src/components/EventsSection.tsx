@@ -18,7 +18,7 @@ interface EventItem {
   time: string;
   location: string;
   category: string;
-  image: string;
+  image?: string;
 }
 
 interface EventsSectionProps {
@@ -27,12 +27,12 @@ interface EventsSectionProps {
 
 export default function EventsSection({ events = [] }: EventsSectionProps) {
   const defaultEvents: EventItem[] = [
-    { title: 'বার্ষিক বিজ্ঞান মেলা ও রোবোটিক্স প্রদর্শনী ২০২৬', date: '১৫ মার্চ, ২০২৬', time: 'সকাল ০৯:০০ - বিকেল ০৪:০০', location: 'স্কুল অডিটোরিয়াম', category: 'বিজ্ঞান', image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&q=80' },
-    { title: 'আন্তঃশ্রেণি বিতর্ক ও দেয়াল পত্রিকা উৎসব', date: '২৮ মার্চ, ২০২৬', time: 'সকাল ১০:০০ - দুপুর ০২:০০', location: 'সেন্ট্রাল লাইব্রেরি হল', category: 'সংস্কৃতি', image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80' },
-    { title: 'প্রথম সাময়িক মডেল টেস্ট ও অভিভাবক মতবিনিময়', date: '১০ এপ্রিল, ২০২৬', time: 'সকাল ০৯:৩০ - দুপুর ০১:০০', location: 'প্রধান ক্যাম্পাস', category: 'একাডেমিক', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80' }
+    { title: 'বার্ষিক বিজ্ঞান মেলা ও রোবোটিক্স প্রদর্শনী ২০২৬', date: '১৫ মার্চ, ২০২৬', time: 'সকাল ০৯:০০ - বিকেল ০৪:০০', location: 'স্কুল অডিটোরিয়াম', category: 'বিজ্ঞান' },
+    { title: 'আন্তঃশ্রেণি বিতর্ক ও দেয়াল পত্রিকা উৎসব', date: '২৮ মার্চ, ২০২৬', time: 'সকাল ১০:০০ - দুপুর ০২:০০', location: 'সেন্ট্রাল লাইব্রেরি হল', category: 'সংস্কৃতি' },
+    { title: 'প্রথম সাময়িক মডেল টেস্ট ও অভিভাবক মতবিনিময়', date: '১০ এপ্রিল, ২০২৬', time: 'সকাল ০৯:৩০ - দুপুর ০১:০০', location: 'প্রধান ক্যাম্পাস', category: 'একাডেমিক' }
   ];
 
-  const list = events;
+  const list = events.length > 0 ? events : defaultEvents;
 
 
   return (
@@ -58,7 +58,8 @@ export default function EventsSection({ events = [] }: EventsSectionProps) {
             href="/notices"
             className="shrink-0 px-5 py-2.5 bg-slate-900 text-white hover:bg-slate-800 rounded-2xl font-bold text-xs shadow-md transition flex items-center gap-1.5 self-start sm:self-auto"
           >
-            ক্যালেন্ডার নোটিশ <ArrowRight className="w-3.5 h-3.5" />
+            <span>সব ইভেন্ট দেখুন</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -69,13 +70,22 @@ export default function EventsSection({ events = [] }: EventsSectionProps) {
               key={idx}
               className="bg-slate-50 rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl transition duration-300 group flex flex-col justify-between"
             >
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={evt.image} 
-                  alt={evt.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+              <div className="relative h-44 overflow-hidden bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-900 flex items-center justify-center">
+                {evt.image ? (
+                  <img 
+                    src={evt.image} 
+                    alt={evt.title} 
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                ) : (
+                  <div className="text-center p-6 space-y-1 text-white">
+                    <Calendar className="w-10 h-10 text-sky-400 mx-auto" />
+                    <span className="text-xs font-bold text-sky-200">{evt.category} ইভেন্ট</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none"></div>
 
                 <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-2xl text-center shadow-md border border-white">
                   <span className="block text-[10px] font-black uppercase text-blue-600">আসন্ন</span>

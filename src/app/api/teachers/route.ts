@@ -8,7 +8,12 @@ export async function GET() {
   try {
     await dbConnect();
     const teachers = await Teacher.find().sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, teachers });
+    const sanitized = teachers.map((t: any) => {
+      const obj = t.toObject ? t.toObject() : t;
+      if (obj.image && obj.image.includes('unsplash.com')) obj.image = '';
+      return obj;
+    });
+    return NextResponse.json({ success: true, teachers: sanitized });
   } catch (error: any) {
     console.error('Teachers fetch error:', error);
     return NextResponse.json({ success: false, teachers: [], message: error.message }, { status: 500 });

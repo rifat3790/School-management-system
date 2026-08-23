@@ -112,14 +112,14 @@ export const SCHOOL_INFO = {
     name: 'ড. মোহাম্মদ আবদুর রউফ',
     designation: 'প্রধান শিক্ষক (পিএইচডি, ঢাকা বিশ্ববিদ্যালয়)',
     message: 'আমাদের লক্ষ্য শুধুমাত্র সনদ প্রদান করা নয়, বরং প্রতিটি শিক্ষার্থীকে নৈতিক মূল্যবোধ ও আধুনিক প্রযুক্তিতে দক্ষ সুনাগরিক হিসেবে গড়ে তোলা। আমরা মানসম্মত শিক্ষা ও সহ-পাঠ্যক্রমিক কার্যক্রমের মাধ্যমে শিক্ষার্থীদের সুপ্ত প্রতিভার বিকাশ ঘটাতে প্রতিশ্রুতিবদ্ধ।',
-    image: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80',
+    image: '',
     signature: 'ড. রউফ',
   },
   chairman: {
     name: 'প্রকৌশলী এ কে এম সামসুল হক',
     designation: 'সভাপতি, ব্যবস্থাপনা কমিটি',
     message: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল অত্র অঞ্চলের অন্যতম সেরা শিক্ষাপ্রতিষ্ঠান হিসেবে আত্মপ্রকাশ করেছে। স্মার্ট ডিজিটাল ক্লাসরুম এবং আন্তর্জাতিক মানের ল্যাবরেটরির মাধ্যমে আমরা ভবিষ্যতের নতুন উদ্ভাবক তৈরি করছি।',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
+    image: '',
   }
 };
 
@@ -133,7 +133,7 @@ export const TEACHERS_LIST: Teacher[] = [
     experience: '২২ বছর',
     email: 'principal@mujibrubi-school.edu.bd',
     phone: '+880 1711-100200',
-    image: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 't-2',
@@ -144,7 +144,7 @@ export const TEACHERS_LIST: Teacher[] = [
     experience: '১৮ বছর',
     email: 'rezwana@mujibrubi-school.edu.bd',
     phone: '+880 1712-200300',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 't-3',
@@ -155,7 +155,7 @@ export const TEACHERS_LIST: Teacher[] = [
     experience: '১৫ বছর',
     email: 'ziaul.karim@mujibrubi-school.edu.bd',
     phone: '+880 1713-300400',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 't-4',
@@ -166,7 +166,7 @@ export const TEACHERS_LIST: Teacher[] = [
     experience: '১২ বছর',
     email: 'morshed.english@mujibrubi-school.edu.bd',
     phone: '+880 1714-400500',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 't-5',
@@ -177,7 +177,7 @@ export const TEACHERS_LIST: Teacher[] = [
     experience: '৮ বছর',
     email: 'nusrat.ict@mujibrubi-school.edu.bd',
     phone: '+880 1715-500600',
-    image: 'https://images.unsplash.com/photo-1580894732413-87ce4924c393?w=600&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 't-6',
@@ -188,7 +188,7 @@ export const TEACHERS_LIST: Teacher[] = [
     experience: '১০ বছর',
     email: 'sayma.chem@mujibrubi-school.edu.bd',
     phone: '+880 1716-600700',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 't-7',
@@ -199,7 +199,7 @@ export const TEACHERS_LIST: Teacher[] = [
     experience: '৭ বছর',
     email: 'mahmud.bio@mujibrubi-school.edu.bd',
     phone: '+880 1717-700800',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 't-8',
@@ -210,7 +210,7 @@ export const TEACHERS_LIST: Teacher[] = [
     experience: '৯ বছর',
     email: 'fatema.bgw@mujibrubi-school.edu.bd',
     phone: '+880 1718-800900',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop&q=80',
+    image: '',
   }
 ];
 
@@ -271,7 +271,7 @@ export const NEWS_LIST: NewsItem[] = [
     author: 'আইসিটি ক্লাব',
     summary: 'জাতীয় রোবোটিক্স ও বিজ্ঞান মেলায় আমাদের ৯ম শ্রেণীর শিক্ষার্থীরা ১ম স্থান অধিকার করে স্বর্ণপদক অর্জন করেছে।',
     content: 'বাংলাদেশ বিজ্ঞান একাডেমি কর্তৃক আয়োজিত ২৫তম জাতীয় বিজ্ঞান অলিম্পিয়াডে সারা দেশের ৫০০টি স্কুলের সাথে প্রতিযোগিতা করে ডাঃ মুজিব-রুবি মডেল হাই স্কুলের "স্মার্ট এগ্রো রোবট" প্রজেক্ট ১ম স্থান অধিকার করেছে। বিজয়ী শিক্ষার্থীদের স্কুলের পক্ষ থেকে সম্মাননা স্মারক দেওয়া হয়।',
-    image: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=800&auto=format&fit=crop&q=80',
+    image: '',
     tags: ['বিজ্ঞান', 'অলিম্পিয়াড', 'সাফল্য', 'রোবোটিক্স'],
   },
   {
@@ -282,7 +282,7 @@ export const NEWS_LIST: NewsItem[] = [
     author: 'মিডিয়া সেল',
     summary: 'আধুনিক প্রযুক্তিনির্ভর শিক্ষার অংশ হিসেবে প্রতিটি ক্লাসরুমে ইনস্টল করা হয়েছে ৪র্থ প্রজন্মের ইন্টারেক্টিভ ডিসপ্লে।',
     content: 'শিক্ষার্থীদের ভিজ্যুয়াল ও প্রযুক্তিগত মান বাড়াতে স্কুলের ৩২টি শ্রেণীকক্ষেই ৭৫ ইঞ্চি ৪কে ইন্টারেক্টিভ ডিজিটাল টাচ বোর্ড স্থাপন করা হয়েছে। এর ফলে শিক্ষার্থীরা সহজেই থ্রিডি এনিমেশন ও সিমুলেশনের মাধ্যমে কঠিন বিষয় বুঝতে পারবে।',
-    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&auto=format&fit=crop&q=80',
+    image: '',
     tags: ['ডিজিটাল', 'স্মার্ট ক্লাসরুম', 'প্রযুক্তি'],
   },
   {
@@ -293,7 +293,7 @@ export const NEWS_LIST: NewsItem[] = [
     author: 'স্পোর্টস ক্লাব',
     summary: 'স্কুল মাঠে অনুষ্ঠিত হলো জমকালো বার্ষিক ক্রীড়া প্রতিযোগিতা ও সাংস্কৃতিক পরিবেশনা।',
     content: 'তিন দিনব্যাপী বার্ষিক ক্রীড়া প্রতিযোগিতায় প্রায় ৮০০ শিক্ষার্থী দৌড়, লাফ, ফুটবল ও ক্রিকেটে অংশগ্রহণ করে। বিজয়ীদের হাতে ট্রফি তুলে দেন স্থানীয় সংসদ সদস্য ও পরিচালনা পর্ষদের সদস্যবৃন্দ।',
-    image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&auto=format&fit=crop&q=80',
+    image: '',
     tags: ['ক্রীড়া', 'পুরস্কার', 'উৎসব'],
   }
 ];
@@ -307,7 +307,7 @@ export const EVENTS_LIST: EventItem[] = [
     venue: 'স্কুল মিলনায়তন ও সায়েন্স ল্যাব',
     status: 'upcoming',
     description: 'শিক্ষার্থীদের ৫০টির বেশি উদ্ভাবনী প্রযুক্তি প্রজেক্ট প্রদর্শনী এবং লাইভ রোবট রেসিং প্রতিযোগিতা।',
-    image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 'e-2',
@@ -317,7 +317,7 @@ export const EVENTS_LIST: EventItem[] = [
     venue: 'ক্যাম্পাস গ্রাউন্ড',
     status: 'upcoming',
     description: '১৯৯৫ সাল থেকে ২০২৫ সালের সকল ব্যাচের প্রাক্তন শিক্ষার্থীদের মিলনমেলা ও সাংস্কৃতিক সন্ধ্যা।',
-    image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 'e-3',
@@ -327,7 +327,7 @@ export const EVENTS_LIST: EventItem[] = [
     venue: 'স্কুল শহীদ মিনার',
     status: 'past',
     description: 'প্রভাতফেরি, পুষ্পস্তবক অর্পণ এবং "ভাষাশহীদ ও আমাদের অঙ্গীকার" বিষয়ক আলোচনা সভা।',
-    image: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=800&auto=format&fit=crop&q=80',
+    image: '',
   }
 ];
 
@@ -490,7 +490,7 @@ export const ALUMNI_STORIES: AlumniStory[] = [
     profession: 'সফটওয়্যার আর্কিটেক্ট',
     organization: 'গুগল (Google, USA)',
     story: 'ডাঃ মুজিব-রুবি হাই স্কুলের আইসিটি ল্যাব থেকেই আমার প্রোগ্রামিংয়ের হাতেখড়ি। এখানকার শিক্ষকদের নিবিড় পরিচর্যা আজ আমাকে আন্তর্জাতিক পর্যায়ে সাফল্যের শিখরে পৌঁছাতে সাহায্য করেছে।',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
+    image: '',
   },
   {
     id: 'a-2',
@@ -499,7 +499,7 @@ export const ALUMNI_STORIES: AlumniStory[] = [
     profession: 'সহকারী অধ্যাপক ও চিকিৎসা বিজ্ঞানী',
     organization: 'বঙ্গবন্ধু শেখ মুজিব মেডিকেল বিশ্ববিদ্যালয়',
     story: 'স্কুলের সায়েন্স ল্যাবের ব্যবহারিক শিক্ষা এবং বিজ্ঞান মেলায় অংশ নেওয়ার অভিজ্ঞতাই আমাকে চিকিৎসাবিজ্ঞানে গবেষণায় অনুপ্রাণিত করেছিল।',
-    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&auto=format&fit=crop&q=80',
+    image: '',
   }
 ];
 

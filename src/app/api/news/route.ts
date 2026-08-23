@@ -8,7 +8,12 @@ export async function GET() {
   try {
     await dbConnect();
     const news = await News.find().sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, news });
+    const sanitized = news.map((n: any) => {
+      const obj = n.toObject ? n.toObject() : n;
+      if (obj.image && obj.image.includes('unsplash.com')) obj.image = '';
+      return obj;
+    });
+    return NextResponse.json({ success: true, news: sanitized });
   } catch (error: any) {
     console.error('News fetch error:', error);
     return NextResponse.json({ success: false, news: [], message: error.message }, { status: 500 });

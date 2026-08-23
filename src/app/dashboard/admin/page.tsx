@@ -111,18 +111,18 @@ export default function AdminDashboard() {
     heroTitleLine1: 'প্রযুক্তিই ভবিষ্যৎ',
     heroTitleLine2: 'জ্ঞান • শৃঙ্খলা • সাফল্য',
     heroDescription: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলে আমরা আধুনিক শিক্ষা, নৈতিক মূল্যবোধ এবং প্রযুক্তিনির্ভর ভবিষ্যৎ গড়ার প্রত্যয়ে প্রতিশ্রুতিবদ্ধ।',
-    heroImage: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80',
+    heroImage: '',
     phone: '+৮৮০ ১৭০০-০০০০০',
     email: 'info@drmujibrubi.edu.bd',
     address: 'কোর্ট রোড, শেরপুর ডিস্ট্রিক্ট, বাংলাদেশ',
     principalName: 'প্রফেসর মোহাম্মদ আব্দুর রশীদ',
     principalTitle: 'প্রধান শিক্ষক',
     principalMessage: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলে আমরা প্রতিটি শিক্ষার্থীর ভেতরের সুপ্ত মেধা ও সম্ভাবনা জাগ্রত করতে প্রতিশ্রুতিবদ্ধ।',
-    principalImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&q=80',
+    principalImage: '',
     chairmanName: 'ডাঃ মোজাম্মেল হক',
     chairmanTitle: 'প্রতিষ্ঠাতা ও সভাপতি',
     chairmanMessage: 'একটি আলোকিত সমাজ গঠনে মানসম্মত আধুনিক শিক্ষার কোনো বিকল্প নেই।',
-    chairmanImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80',
+    chairmanImage: '',
     aboutHistory: '১৯৯৮ সালে প্রতিষ্ঠিত ডাঃ মুজিব-রুবি মডেল হাই স্কুল শেরপুর জেলার প্রাচীনতম ও শ্রেষ্ঠতম ডিজিটাল শিক্ষাঙ্গন।',
     missionText: 'প্রযুক্তি ও মেধার সমন্বয়ে সেরা নাগরিক গড়ে তোলা।',
     visionText: 'স্মার্ট বাংলাদেশের উপযোগী ভবিষ্যৎ রূপকার তৈরি।',
@@ -141,9 +141,9 @@ export default function AdminDashboard() {
 
   // Forms
   const [newNotice, setNewNotice] = useState({ title: '', category: 'একাডেমিক', date: new Date().toLocaleDateString('bn-BD'), pdfUrl: '', content: '', isImportant: false });
-  const [newTeacher, setNewTeacher] = useState({ name: '', designation: 'সহকারী শিক্ষক', subject: '', qualification: 'এম.এ, বি.এড', experience: '৫ বছর', email: '', phone: '', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&q=80' });
-  const [newNews, setNewNews] = useState({ title: '', category: 'সংবাদ', date: new Date().toLocaleDateString('bn-BD'), summary: '', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80' });
-  const [newGallery, setNewGallery] = useState({ title: '', category: 'ক্যাম্পাস', url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&q=80' });
+  const [newTeacher, setNewTeacher] = useState({ name: '', designation: 'সহকারী শিক্ষক', subject: '', qualification: 'এম.এ, বি.এড', experience: '৫ বছর', email: '', phone: '', image: '' });
+  const [newNews, setNewNews] = useState({ title: '', category: 'সংবাদ', date: new Date().toLocaleDateString('bn-BD'), summary: '', image: '' });
+  const [newGallery, setNewGallery] = useState({ title: '', category: 'ক্যাম্পাস', url: '' });
   const [newResult, setNewResult] = useState({
     roll: '',
     regNo: '',
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
     batch: 'এসএসসি ব্যাচ ২০১৫',
     profession: '',
     organization: '',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+    image: '',
     story: '',
     isFeatured: true
   });
@@ -210,18 +210,18 @@ export default function AdminDashboard() {
           heroTitleLine1: s.heroTitleLine1 || '',
           heroTitleLine2: s.heroTitleLine2 || '',
           heroDescription: s.heroDescription || '',
-          heroImage: s.heroImage || 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80',
+          heroImage: s.heroImage || '',
           phone: s.phone || '',
           email: s.email || '',
           address: s.address || '',
           principalName: s.principalName || '',
           principalTitle: s.principalTitle || '',
           principalMessage: s.principalMessage || '',
-          principalImage: s.principalImage || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&q=80',
+          principalImage: s.principalImage || '',
           chairmanName: s.chairmanName || '',
           chairmanTitle: s.chairmanTitle || '',
           chairmanMessage: s.chairmanMessage || '',
-          chairmanImage: s.chairmanImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80',
+          chairmanImage: s.chairmanImage || '',
           aboutHistory: s.aboutHistory || '',
           missionText: s.missionText || '',
           visionText: s.visionText || '',
@@ -516,7 +516,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) {
         toast.success('নতুন শিক্ষক সফলভাবে যুক্ত করা হয়েছে!');
-        setNewTeacher({ name: '', designation: 'সহকারী শিক্ষক', subject: '', qualification: 'এম.এ, বি.এড', experience: '৫ বছর', email: '', phone: '', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&q=80' });
+        setNewTeacher({ name: '', designation: 'সহকারী শিক্ষক', subject: '', qualification: 'এম.এ, বি.এড', experience: '৫ বছর', email: '', phone: '', image: '' });
         fetchAllData();
       }
     } catch (err) { toast.error('শিক্ষক যুক্ত করতে সমস্যা হয়েছে'); }
@@ -550,7 +550,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) {
         toast.success('নতুন সংবাদ সফলভাবে প্রকাশ করা হয়েছে!');
-        setNewNews({ title: '', category: 'সংবাদ', date: new Date().toLocaleDateString('bn-BD'), summary: '', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80' });
+        setNewNews({ title: '', category: 'সংবাদ', date: new Date().toLocaleDateString('bn-BD'), summary: '', image: '' });
         fetchAllData();
       }
     } catch (err) { toast.error('সংবাদ প্রকাশ করতে সমস্যা হয়েছে'); }
@@ -572,7 +572,7 @@ export default function AdminDashboard() {
   const handleCreateGallery = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGallery.title || !newGallery.url) {
-      toast.error('ছবি টাইটেল ও URL প্রদান করুন');
+      toast.error('ছবি টাইটেল ও ছবি আপলোড সম্পন্ন করুন');
       return;
     }
     try {
@@ -584,7 +584,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) {
         toast.success('গ্যালারিতে নতুন ছবি যুক্ত হয়েছে!');
-        setNewGallery({ title: '', category: 'ক্যাম্পাস', url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&q=80' });
+        setNewGallery({ title: '', category: 'ক্যাম্পাস', url: '' });
         fetchAllData();
       }
     } catch (err) { toast.error('ছবি যুক্ত করতে সমস্যা হয়েছে'); }
@@ -804,7 +804,7 @@ export default function AdminDashboard() {
           batch: 'এসএসসি ব্যাচ ২০১৫',
           profession: '',
           organization: '',
-          image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+          image: '',
           story: '',
           isFeatured: true
         });
@@ -1397,10 +1397,6 @@ export default function AdminDashboard() {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">হিরো মেইন টাইটেল</label>
                   <input type="text" value={siteSettings.heroTitleLine1 || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroTitleLine1: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">হিরো স্লাইডার ছবি URL (একাধিক ছবি কমা (,) দিয়ে আলাদা করুন - যেমন: url1, url2)</label>
-                  <input type="text" placeholder="https://image1.jpg, https://image2.jpg" value={siteSettings.heroImage || ''} onChange={(e) => setSiteSettings({ ...siteSettings, heroImage: e.target.value })} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono" />
                 </div>
 
                 <div>
@@ -2248,11 +2244,17 @@ export default function AdminDashboard() {
                 {teachers.map((t: any) => (
                   <div key={t._id || t.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-start gap-4 justify-between">
                     <div className="flex items-start gap-3">
-                      <img
-                        src={t.image || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80'}
-                        alt={t.name}
-                        className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
-                      />
+                      {t.image ? (
+                        <img
+                          src={t.image}
+                          alt={t.name}
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-bold text-base flex items-center justify-center shrink-0">
+                          {t.name?.charAt(0) || 'T'}
+                        </div>
+                      )}
                       <div>
                         <h5 className="font-bold text-slate-900 text-sm">{t.name}</h5>
                         <p className="text-xs font-bold text-blue-600">{t.designation}</p>
@@ -2703,11 +2705,17 @@ export default function AdminDashboard() {
                 {alumniList.map((a: any) => (
                   <div key={a._id || a.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-start gap-4 justify-between">
                     <div className="flex items-start gap-3">
-                      <img
-                        src={a.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80'}
-                        alt={a.name}
-                        className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
-                      />
+                      {a.image ? (
+                        <img
+                          src={a.image}
+                          alt={a.name}
+                          className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-blue-600 text-white font-bold text-xl flex items-center justify-center shrink-0">
+                          {a.name?.charAt(0) || 'A'}
+                        </div>
+                      )}
                       <div>
                         <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold text-[10px]">{a.batch}</span>
                         <h5 className="font-bold text-slate-900 text-sm mt-1">{a.name}</h5>
@@ -2816,11 +2824,17 @@ export default function AdminDashboard() {
                 {newsList.map((item: any) => (
                   <div key={item._id || item.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-start gap-4 justify-between">
                     <div className="flex items-start gap-3">
-                      <img
-                        src={item.image || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&q=80'}
-                        alt={item.title}
-                        className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
-                      />
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 border border-blue-200">
+                          <Newspaper className="w-6 h-6" />
+                        </div>
+                      )}
                       <div>
                         <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold text-[10px]">{item.category}</span>
                         <h5 className="font-bold text-slate-900 text-sm mt-1">{item.title}</h5>

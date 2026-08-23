@@ -19,7 +19,7 @@ interface Club {
   desc: string;
   membersCount: string;
   iconName: string;
-  image: string;
+  image?: string;
 }
 
 interface ClubsSectionProps {
@@ -30,7 +30,7 @@ export default function ClubsSection({ clubs = [] }: ClubsSectionProps) {
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'Cpu': return <Cpu className="w-5 h-5 text-blue-600" />;
-      case 'Mic': return <Mic className="w-5 h-5 text-rose-600" />;
+      case 'Mic': return <Mic className="w-5 h-5 text-purple-600" />;
       case 'Trophy': return <Trophy className="w-5 h-5 text-amber-600" />;
       case 'Shield': return <Shield className="w-5 h-5 text-emerald-600" />;
       default: return <Compass className="w-5 h-5 text-blue-600" />;
@@ -38,14 +38,13 @@ export default function ClubsSection({ clubs = [] }: ClubsSectionProps) {
   };
 
   const defaultClubs: Club[] = [
-    { name: 'সায়েন্স ও রোবোটিক্স ক্লাব', category: 'বিজ্ঞান ও প্রযুক্তি', desc: 'আইওটি কিট, অর্ডুইনো প্রোগ্রামিং ও জাতীয় রোবোটিক্স প্রতিযোগিতার সেরা টিম।', membersCount: '১২০+ সদস্য', iconName: 'Cpu', image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&q=80' },
-    { name: 'বিতর্ক ও সাংস্কৃতিক পরিষদ', category: 'সহ-শিক্ষা', desc: 'যুক্তিনির্ভর চিন্তা ও বাচনভঙ্গি বিকাশে প্রতি সপ্তাহে অভ্যন্তরীণ বিতর্ক প্রতিযোগিতা।', membersCount: '১৫০+ সদস্য', iconName: 'Mic', image: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=600&q=80' },
-    { name: 'স্পোর্টস ও অ্যাথলেটিক্স ক্লাব', category: 'খেলাধুলা', desc: 'ফুটবল, ক্রিকেট, ব্যাডমিন্টন ও বার্ষিক আন্তঃস্কুল টুর্নামেন্ট চ্যাম্পিয়ন টিম।', membersCount: '২০০+ সদস্য', iconName: 'Trophy', image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&q=80' },
-    { name: 'বয় স্কাউটস ও রেড ক্রিসেন্ট', category: 'সমাজসেবা', desc: 'শৃঙ্খলা, নেতৃত্ব, দুর্যোগ ব্যবস্থাপনা ও সেবামূলক কর্মকাণ্ডে নিবেদিত স্কোয়াড।', membersCount: '৯০+ সদস্য', iconName: 'Shield', image: 'https://images.unsplash.com/photo-1526976668912-1a811878dd37?w=600&q=80' }
+    { name: 'সায়েন্স ও রোবোটিক্স ক্লাব', category: 'বিজ্ঞান ও প্রযুক্তি', desc: 'আইওটি কিট, অর্ডুইনো প্রোগ্রামিং ও জাতীয় রোবোটিক্স প্রতিযোগিতার সেরা টিম।', membersCount: '১২০+ সদস্য', iconName: 'Cpu' },
+    { name: 'বিতর্ক ও সাংস্কৃতিক পরিষদ', category: 'সহ-শিক্ষা', desc: 'যুক্তিনির্ভর চিন্তা ও বাচনভঙ্গি বিকাশে প্রতি সপ্তাহে অভ্যন্তরীণ বিতর্ক প্রতিযোগিতা।', membersCount: '১৫০+ সদস্য', iconName: 'Mic' },
+    { name: 'স্পোর্টস ও অ্যাথলেটিক্স ক্লাব', category: 'খেলাধুলা', desc: 'ফুটবল, ক্রিকেট, ব্যাডমিন্টন ও বার্ষিক আন্তঃস্কুল টুর্নামেন্ট চ্যাম্পিয়ন টিম।', membersCount: '২০০+ সদস্য', iconName: 'Trophy' },
+    { name: 'বয় স্কাউটস ও রেড ক্রিসেন্ট', category: 'সমাজসেবা', desc: 'শৃঙ্খলা, নেতৃত্ব, দুর্যোগ ব্যবস্থাপনা ও সেবামূলক কর্মকাণ্ডে নিবেদিত স্কোয়াড।', membersCount: '৯০+ সদস্য', iconName: 'Shield' }
   ];
 
-  const list = clubs;
-
+  const list = clubs.length > 0 ? clubs : defaultClubs;
 
   return (
     <section className="py-16 bg-slate-50 border-y border-slate-200/80">
@@ -70,7 +69,8 @@ export default function ClubsSection({ clubs = [] }: ClubsSectionProps) {
             href="/contact"
             className="shrink-0 px-5 py-2.5 bg-white text-slate-800 hover:text-blue-600 border border-slate-200 rounded-2xl font-bold text-xs shadow-xs hover:border-slate-300 transition flex items-center gap-1.5 self-start sm:self-auto"
           >
-            ক্লাবে যুক্ত হোন <ArrowRight className="w-3.5 h-3.5" />
+            <span>ক্লাবে যুক্ত হোন</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -81,13 +81,21 @@ export default function ClubsSection({ clubs = [] }: ClubsSectionProps) {
               key={idx}
               className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl transition duration-300 group flex flex-col justify-between"
             >
-              <div className="relative h-44 overflow-hidden">
-                <img 
-                  src={club.image} 
-                  alt={club.name} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+              <div className="relative h-44 overflow-hidden bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-900 flex items-center justify-center">
+                {club.image ? (
+                  <img 
+                    src={club.image} 
+                    alt={club.name} 
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg group-hover:scale-110 transition duration-300">
+                    {getIcon(club.iconName)}
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none"></div>
                 
                 <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] font-extrabold text-slate-800 shadow-xs border border-white">
                   {club.category}

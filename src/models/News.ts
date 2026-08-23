@@ -17,7 +17,7 @@ const NewsSchema: Schema = new Schema(
     category: { type: String, default: 'সংবাদ' },
     date: { type: String, required: true },
     author: { type: String, default: 'এডমিন' },
-    image: { type: String, default: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80' },
+    image: { type: String, default: '' },
     summary: { type: String, required: true },
     content: { type: String, required: true },
   },

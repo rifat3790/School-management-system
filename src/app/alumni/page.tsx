@@ -76,7 +76,7 @@ export default function AlumniPage() {
           profession: form.profession || 'প্রফেশনাল',
           organization: form.organization || 'প্রতিষ্ঠান',
           story: `${form.name} ডাঃ মুজিব-রুবি মডেল হাই স্কুলের প্রাক্তন শিক্ষার্থী হিসেবে সফলতার সাথে কাজ করে যাচ্ছেন।`,
-          image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+          image: '',
           isFeatured: false
         })
       });
@@ -173,13 +173,19 @@ export default function AlumniPage() {
                   className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all space-y-4"
                 >
                   <div className="flex items-center gap-4">
-                    <img
-                      src={story.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80'}
-                      alt={story.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-16 h-16 rounded-2xl object-cover border-2 border-blue-600 shadow-md"
-                    />
+                    {story.image ? (
+                      <img
+                        src={story.image}
+                        alt={story.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-16 h-16 rounded-2xl object-cover border-2 border-blue-600 shadow-md"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-black text-2xl flex items-center justify-center border-2 border-blue-600 shadow-md shrink-0">
+                        {story.name ? story.name.charAt(0) : 'A'}
+                      </div>
+                    )}
                     <div>
                       <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
                         {story.batch}

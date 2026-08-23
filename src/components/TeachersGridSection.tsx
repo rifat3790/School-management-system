@@ -36,14 +36,23 @@ export default function TeachersGridSection({ teachers = [] }: TeachersGridSecti
                 key={teacher._id || idx}
                 className="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs hover:shadow-md transition group text-center flex flex-col justify-between"
               >
-                <div className="h-44 overflow-hidden bg-slate-100">
-                  <img 
-                    src={teacher.image || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80'} 
-                    alt={teacher.name} 
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                  />
+                <div className="h-44 overflow-hidden bg-slate-100 flex items-center justify-center">
+                  {teacher.image ? (
+                    <img 
+                      src={teacher.image} 
+                      alt={teacher.name} 
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center text-blue-600">
+                      <div className="w-14 h-14 rounded-full bg-blue-600 text-white font-black text-xl flex items-center justify-center shadow-md">
+                        {teacher.name ? teacher.name.charAt(0) : 'T'}
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500 mt-2">শিক্ষক</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 space-y-1">

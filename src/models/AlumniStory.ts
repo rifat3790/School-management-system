@@ -18,7 +18,7 @@ const AlumniStorySchema: Schema = new Schema(
     batch: { type: String, required: true, trim: true },
     profession: { type: String, required: true, trim: true },
     organization: { type: String, required: true, trim: true },
-    image: { type: String, default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80' },
+    image: { type: String, default: '' },
     story: { type: String, required: true },
     isFeatured: { type: Boolean, default: true },
   },

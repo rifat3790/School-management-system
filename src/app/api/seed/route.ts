@@ -45,11 +45,11 @@ export async function GET(req: NextRequest) {
         principalName: 'প্রফেসর মোহাম্মদ আব্দুর রশীদ',
         principalTitle: 'প্রধান শিক্ষক',
         principalMessage: 'আমাদের ডাঃ মুজিব-রুবি মডেল হাই স্কুলের ওয়েবসাইটে স্বাগতম। আমাদের লক্ষ্য কেবল পাঠ্যপুস্তকভিত্তিক শিক্ষা প্রদান নয়, বরং নৈতিকতা, মানবিক মূল্যবোধ, প্রযুক্তির দক্ষতা এবং নেতৃত্বের গুণাবলী বিকাশের মাধ্যমে একজন আদর্শ নাগরিক গড়ে তোলা। আপনাদের আন্তরিক সহযোগিতা ও স্নেহ আমাদের এগিয়ে যাওয়ার অনুপ্রেরণা।',
-        principalImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80',
+        principalImage: '',
         chairmanName: 'ডাঃ মোজাম্মেল হক',
         chairmanTitle: 'প্রতিষ্ঠাতা ও সভাপতি',
         chairmanMessage: 'একটি আলোকিত সমাজ গঠনে সুশিক্ষার বিকল্প নেই। ডাঃ মুজিব-রুবি মডেল হাই স্কুল ১৯৯৮ সাল থেকে অত্যন্ত নিষ্ঠা ও সুনামের সাথে শিক্ষাঙ্গনে শীর্ষ স্থান ধরে রেখেছে।',
-        chairmanImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
+        chairmanImage: '',
         heroTagline: '২০২৬ শিক্ষাবর্ষে ভর্তি চলছে',
         heroTitleLine1: 'শিক্ষাই জাতির মেরুদণ্ড',
         heroTitleLine2: 'সুশিক্ষাই উজ্জ্বল ভবিষ্যতের ভিত্তি',
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
             desc: 'আধুনিক পদার্থ, রসায়ন ও জীব ল্যাবের সাহায্যে বাস্তবমুখী বিজ্ঞান শিক্ষা।',
             classRange: '৯ম - ১০ম শ্রেণী',
             iconName: 'Atom',
-            image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=80'
+            image: ''
           },
           {
             title: 'ব্যবসায় শিক্ষা বিভাগ',
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
             desc: 'আধুনিক ব্যবসা ও অর্থনৈতিক ব্যবস্থাপনা বিষয়ক উচ্চতর প্রস্তুতি।',
             classRange: '৯ম - ১০ম শ্রেণী',
             iconName: 'TrendingUp',
-            image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80'
+            image: ''
           },
           {
             title: 'মানবিক বিভাগ',
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
             desc: 'ভাষা, ইতিহাস, ভূগোল ও নৈতিক মূল্যবোধে সমৃদ্ধ মানবিক শিক্ষা।',
             classRange: '৯ম - ১০ম শ্রেণী',
             iconName: 'BookOpen',
-            image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=600&q=80'
+            image: ''
           }
         ]
       });
@@ -196,7 +196,7 @@ export async function GET(req: NextRequest) {
           batch: 'এসএসসি ব্যাচ ২০০৮',
           profession: 'সফটওয়্যার আর্কিটেক্ট',
           organization: 'গুগল (Google, USA)',
-          image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+          image: '',
           story: 'ডাঃ মুজিব-রুবি মডেল হাই স্কুলের কম্পিউটার ল্যাব এবং শিক্ষকদের বিজ্ঞানমুখী অনুপ্রেরণাই আমাকে আন্তর্জাতিক প্ল্যাটফর্মে নিয়ে এসেছে।',
           isFeatured: true
         },
@@ -205,7 +205,7 @@ export async function GET(req: NextRequest) {
           batch: 'এসএসসি ব্যাচ ২০১১',
           profession: 'সহকারী অধ্যাপক (সার্জারি)',
           organization: 'ঢাকা মেডিকেল কলেজ ও হাসপাতাল',
-          image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80',
+          image: '',
           story: 'বিদ্যালয়ের বিজ্ঞান অলিম্পিয়াড এবং শৃঙ্খলাবোধ আমার চিকিৎসক হওয়ার স্বপ্নকে দৃঢ় ভিত্তি দিয়েছিল।',
           isFeatured: true
         }
@@ -215,12 +215,7 @@ export async function GET(req: NextRequest) {
     // Check & Seed Gallery if missing
     const galleryCount = await Gallery.countDocuments();
     if (galleryCount === 0) {
-      await Gallery.insertMany([
-        { title: 'ক্যাম্পাস ভবন ও সবুজ প্রাঙ্গণ', category: 'ক্যাম্পাস', type: 'image', url: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=800&q=80' },
-        { title: 'আধুনিক স্মার্ট ক্লাসরুম', category: 'একাডেমিক', type: 'image', url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=80' },
-        { title: 'উচ্চতর বিজ্ঞান ও আইসিটি ল্যাব', category: 'বিজ্ঞান মেলা', type: 'image', url: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&q=80' },
-        { title: 'বার্ষিক ক্রীড়া ও চ্যাম্পিয়নশিপ', category: 'ক্রীড়া', type: 'image', url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80' }
-      ]);
+      await Gallery.insertMany([]);
     }
 
     return NextResponse.json({

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ArrowRight, User, Building2 } from 'lucide-react';
 
 interface PrincipalMessageProps {
   settings?: any;
@@ -12,8 +12,9 @@ export default function PrincipalMessage({ settings }: PrincipalMessageProps) {
   const principalName = settings?.principalName || 'প্রফেসর মোহাম্মদ আব্দুর রশীদ';
   const principalTitle = settings?.principalTitle || 'প্রধান শিক্ষক';
   const principalMessage = settings?.principalMessage || 'আমাদের ডাঃ মুজিব-রুবি মডেল হাই স্কুলের ওয়েবসাইটে স্বাগতম। আমাদের লক্ষ্য কেবল পাঠ্যপুস্তকভিত্তিক শিক্ষা প্রদান নয়, বরং নৈতিকতা, মানবিক মূল্যবোধ, প্রযুক্তির দক্ষতা এবং নেতৃত্বের গুণাবলী বিকাশের মাধ্যমে একজন আদর্শ নাগরিক গড়ে তোলা। আপনাদের আন্তরিক সহযোগিতা ও স্নেহ আমাদের এগিয়ে যাওয়ার অনুপ্রেরণা।';
-  const principalImage = settings?.principalImage || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80';
+  const principalImage = settings?.principalImage || '';
   const aboutHistory = settings?.aboutHistory || 'প্রতিষ্ঠালগ্ন থেকেই আমাদের বিদ্যালয় মানবতা শিক্ষা, সুস্থতা, নৈতিকতা এবং প্রযুক্তিনির্ভর শিক্ষার মাধ্যমে শিক্ষার্থীদের একটি সুন্দর ভবিষ্যৎ গড়ে তুলতে কাজ করে যাচ্ছে।';
+  const campusImage = settings?.heroImage?.split(/[\n,]+/)?.[0]?.trim() || '';
 
   return (
     <section className="py-14 bg-white border-b border-slate-200/80">
@@ -29,11 +30,18 @@ export default function PrincipalMessage({ settings }: PrincipalMessageProps) {
               </h2>
 
               <div className="flex flex-col sm:flex-row gap-5 items-start">
-                <img 
-                  src={principalImage} 
-                  alt={principalName}
-                  className="w-32 h-40 rounded-2xl object-cover border-2 border-white shadow-md shrink-0"
-                />
+                {principalImage ? (
+                  <img 
+                    src={principalImage} 
+                    alt={principalName}
+                    className="w-32 h-40 rounded-2xl object-cover border-2 border-white shadow-md shrink-0"
+                  />
+                ) : (
+                  <div className="w-32 h-40 rounded-2xl bg-blue-100 border-2 border-white shadow-md shrink-0 flex flex-col items-center justify-center text-blue-700 space-y-1">
+                    <User className="w-12 h-12" />
+                    <span className="text-[10px] font-bold text-blue-800">প্রধান শিক্ষক</span>
+                  </div>
+                )}
                 
                 <div className="space-y-3">
                   <h3 className="text-base font-bold text-slate-900">
@@ -92,15 +100,23 @@ export default function PrincipalMessage({ settings }: PrincipalMessageProps) {
               </div>
             </div>
 
-            {/* Campus Preview Photo */}
-            <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm h-36 bg-slate-100">
-              <img 
-                src={settings?.heroImage?.split(/[\n,]+/)?.[0]?.trim() || principalImage} 
-                alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুল ক্যাম্পাস"
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover hover:scale-105 transition duration-500"
-              />
+            {/* Campus Preview */}
+            <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm h-36 bg-slate-100 flex items-center justify-center">
+              {campusImage ? (
+                <img 
+                  src={campusImage} 
+                  alt="ডাঃ মুজিব-রুবি মডেল হাই স্কুল ক্যাম্পাস"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                />
+              ) : (
+                <div className="text-center p-4 text-slate-600 space-y-1">
+                  <Building2 className="w-8 h-8 text-blue-600 mx-auto" />
+                  <p className="text-xs font-bold text-slate-800">{settings?.schoolName || 'ডাঃ মুজিব-রুবি মডেল হাই স্কুল'}</p>
+                  <p className="text-[10px] text-slate-500">স্মার্ট শিক্ষা ও সুশৃঙ্খল পরিবেশ</p>
+                </div>
+              )}
             </div>
           </div>
 

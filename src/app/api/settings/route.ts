@@ -41,6 +41,13 @@ export async function GET() {
     if (!settings) {
       settings = await SiteSettings.create(DEFAULT_SETTINGS);
     }
+    if (settings) {
+      const obj = settings.toObject ? settings.toObject() : settings;
+      if (obj.heroImage && obj.heroImage.includes('unsplash.com')) obj.heroImage = '';
+      if (obj.principalImage && obj.principalImage.includes('unsplash.com')) obj.principalImage = '';
+      if (obj.chairmanImage && obj.chairmanImage.includes('unsplash.com')) obj.chairmanImage = '';
+      return NextResponse.json({ success: true, settings: obj });
+    }
     return NextResponse.json({ success: true, settings });
   } catch (error: any) {
     console.error('Settings fetch error:', error);

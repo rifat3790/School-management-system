@@ -3,6 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 
+import { Atom, TrendingUp, BookOpen, GraduationCap } from 'lucide-react';
+
 interface InfoHubSectionProps {
   notices?: any[];
   events?: any[];
@@ -16,17 +18,20 @@ export default function InfoHubSection({ notices = [], events = [], academicProg
         {
           title: 'বিজ্ঞান বিভাগ',
           subtitle: 'আধুনিক ল্যাব ও গবেষণামূলক শিক্ষা।',
-          image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80'
+          icon: Atom,
+          color: 'from-blue-600 to-indigo-600',
         },
         {
           title: 'ব্যবসায় শিক্ষা বিভাগ',
-          subtitle: 'বাস্তবমুখী ও ব্যবহারিক শিক্ষা।',
-          image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&q=80'
+          subtitle: 'বাস্তবমুখী ও ব্যবহারিক অর্থনৈতিক শিক্ষা।',
+          icon: TrendingUp,
+          color: 'from-emerald-600 to-teal-600',
         },
         {
           title: 'মানবিক বিভাগ',
-          subtitle: 'সৃজনশীলতা, সমাজবিজ্ঞান ও মানবিক মূল্যবোধের শিক্ষা।',
-          image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&q=80'
+          subtitle: 'সৃজনশীলতা, সমাজবিজ্ঞান ও মানবিক মূল্যবোধ।',
+          icon: BookOpen,
+          color: 'from-amber-600 to-orange-600',
         }
       ];
 
@@ -74,23 +79,32 @@ export default function InfoHubSection({ notices = [], events = [], academicProg
             </h2>
 
             <div className="space-y-4">
-              {departmentsToRender.map((dept, idx) => (
-                <div key={idx} className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md transition flex items-center gap-4 group">
-                  <img 
-                    src={dept.image || 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80'} 
-                    alt={dept.title} 
-                    className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200 group-hover:scale-105 transition"
-                  />
-                  <div>
-                    <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-blue-700 transition">
-                      {dept.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-medium line-clamp-2 mt-0.5">
-                      {dept.subtitle || dept.desc}
-                    </p>
+              {departmentsToRender.map((dept, idx) => {
+                const Icon = dept.icon || GraduationCap;
+                return (
+                  <div key={idx} className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md transition flex items-center gap-4 group">
+                    {dept.image ? (
+                      <img 
+                        src={dept.image} 
+                        alt={dept.title} 
+                        className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-200 group-hover:scale-105 transition"
+                      />
+                    ) : (
+                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${dept.color || 'from-blue-600 to-indigo-600'} text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition`}>
+                        <Icon className="w-7 h-7" />
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-blue-700 transition">
+                        {dept.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium line-clamp-2 mt-0.5">
+                        {dept.subtitle || dept.desc}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
