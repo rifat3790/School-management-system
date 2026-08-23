@@ -8,7 +8,10 @@ import {
   Calendar, 
   FileCheck, 
   Download, 
-  GraduationCap 
+  GraduationCap,
+  CreditCard,
+  Calculator,
+  ShieldCheck
 } from 'lucide-react';
 
 interface QuickLinksSectionProps {
@@ -18,50 +21,50 @@ interface QuickLinksSectionProps {
 export default function QuickLinksSection({ settings }: QuickLinksSectionProps) {
   const defaultLinks = [
     {
-      title: 'ভর্তি তথ্য',
-      actionText: 'বিস্তারিত দেখুন',
+      title: 'অনলাইন ভর্তি',
+      actionText: 'আবেদন করুন',
       href: '/admission',
       icon: UserPlus,
       bgIconColor: 'bg-blue-100 text-blue-600',
       borderColor: 'hover:border-blue-300'
     },
     {
-      title: 'সর্বশেষ নোটিশ',
-      actionText: 'নোটিশ দেখুন',
-      href: '/notices',
-      icon: Volume2,
-      bgIconColor: 'bg-rose-100 text-rose-600',
-      borderColor: 'hover:border-rose-300'
-    },
-    {
       title: 'একাডেমিক ক্যালেন্ডার',
-      actionText: 'ডাউনলোড করুন',
-      href: '/academic',
+      actionText: 'ছুটির তালিকা ২০২৬',
+      href: '/academic-calendar',
       icon: Calendar,
       bgIconColor: 'bg-emerald-100 text-emerald-600',
       borderColor: 'hover:border-emerald-300'
     },
     {
+      title: 'ডিজিটাল আইডি কার্ড',
+      actionText: 'কার্ড জেনারেট',
+      href: '/id-card',
+      icon: CreditCard,
+      bgIconColor: 'bg-indigo-100 text-indigo-600',
+      borderColor: 'hover:border-indigo-300'
+    },
+    {
       title: 'অনলাইন ফলাফল',
-      actionText: 'ফলাফল দেখুন',
+      actionText: 'মার্কশীট দেখুন',
       href: '/result',
       icon: FileCheck,
       bgIconColor: 'bg-purple-100 text-purple-600',
       borderColor: 'hover:border-purple-300'
     },
     {
-      title: 'প্রস্পেক্টাস ডাউনলোড',
-      actionText: 'ডাউনলোড করুন',
-      href: '/academic',
-      icon: Download,
+      title: 'ফি ক্যালকুলেটর',
+      actionText: 'খরচ হিসাব করুন',
+      href: '/fee-calculator',
+      icon: Calculator,
       bgIconColor: 'bg-cyan-100 text-cyan-600',
       borderColor: 'hover:border-cyan-300'
     },
     {
-      title: 'বৃত্তির তথ্য',
-      actionText: 'বিস্তারিত দেখুন',
-      href: '/academic',
-      icon: GraduationCap,
+      title: 'সনদপত্র যাচাই',
+      actionText: 'ভেরিফাই করুন',
+      href: '/verify-certificate',
+      icon: ShieldCheck,
       bgIconColor: 'bg-amber-100 text-amber-600',
       borderColor: 'hover:border-amber-300'
     }

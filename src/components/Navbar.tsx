@@ -139,14 +139,28 @@ export default function Navbar() {
 
           {/* Right Links */}
           <div className="flex items-center gap-4 text-xs font-semibold">
-            <div className="hidden sm:flex items-center gap-3 border-r border-slate-700/80 pr-4 text-slate-200">
+            <div className="hidden lg:flex items-center gap-2.5 border-r border-slate-700/80 pr-3 text-slate-200">
+              <Link href="/academic-calendar" className="hover:text-amber-300 transition">
+                📅 ক্যালেন্ডার ২০২৬
+              </Link>
+              <span className="text-slate-500">•</span>
+              <Link href="/id-card" className="hover:text-sky-300 transition">
+                🪪 আইডি কার্ড
+              </Link>
+              <span className="text-slate-500">•</span>
+              <Link href="/fee-calculator" className="hover:text-emerald-300 transition">
+                💰 ফি ক্যালকুলেটর
+              </Link>
+              <span className="text-slate-500">•</span>
+              <Link href="/verify-certificate" className="hover:text-blue-300 transition">
+                🎓 সনদ যাচাই
+              </Link>
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2.5 border-r border-slate-700/80 pr-3 text-slate-200">
               <Link href="/login" className="hover:text-blue-300 transition flex items-center gap-1">
                 <UserCheck className="w-3.5 h-3.5 text-blue-400" />
-                অভিভাবক পোর্টাল
-              </Link>
-              <span>|</span>
-              <Link href="/login" className="hover:text-blue-300 transition">
-                শিক্ষার্থী পোর্টাল
+                অভিভাবক ও শিক্ষার্থী পোর্টাল
               </Link>
             </div>
 

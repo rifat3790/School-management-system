@@ -138,6 +138,7 @@ const DEFAULT_CLASSES: { [key: string]: any } = {
 export default function AcademicPage() {
   const toast = useToast();
   const [activeClass, setActiveClass] = useState<string>('class-6');
+  const [academicView, setAcademicView] = useState<'routine' | 'exam' | 'subjects' | 'rules'>('routine');
   const [siteSettings, setSiteSettings] = useState<any>(null);
 
   useEffect(() => {
@@ -219,69 +220,196 @@ export default function AcademicPage() {
           </button>
         </div>
 
-        {/* Subjects Grid */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-blue-600" />
-            বিষয় তালিকা ও শিক্ষকবৃন্দ
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {classData.subjects?.map((sub: any, idx: number) => (
-              <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md">
-                    কোড: {sub.code}
-                  </span>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                    পূর্ণমান: {sub.marks}
-                  </span>
-                </div>
-                <h4 className="font-bold text-base text-slate-900">{sub.name}</h4>
-                <p className="text-xs text-slate-600">বিষয় শিক্ষক: <strong className="text-slate-800">{sub.teacher}</strong></p>
-              </div>
-            ))}
-          </div>
+        {/* Academic Feature Tabs */}
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto no-scrollbar">
+          {[
+            { id: 'routine', label: '📅 দৈনিক ক্লাস রুটিন', icon: Calendar },
+            { id: 'exam', label: '📝 পরীক্ষার সময়সূচি ও সিটপ্ল্যান', icon: Clock },
+            { id: 'subjects', label: '📚 বিষয় ও মানবন্টন', icon: BookOpen },
+            { id: 'rules', label: '⚖️ নিয়মাবলী ও ইউনিফর্ম কোড', icon: UserCheck },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const active = (academicView || 'routine') === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setAcademicView(tab.id as any)}
+                className={`px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-2 shrink-0 transition ${
+                  active
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Weekly Routine Schedule */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-amber-500" />
-            দৈনিক ক্লাস রুটিন
-          </h3>
+        {/* VIEW 1: CLASS ROUTINE */}
+        {(!academicView || academicView === 'routine') && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-amber-500" />
+                {classData.className} - সাপ্তাহিক ক্লাস রুটিন
+              </h3>
+              <button
+                onClick={() => toast.success(`${classData.className} রুটিন ডাউনলোড হচ্ছে...`)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs flex items-center gap-1.5 self-start sm:self-auto transition"
+              >
+                <Download className="w-3.5 h-3.5" /> রুটিন PDF
+              </button>
+            </div>
 
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                  <tr>
-                    <th className="p-4">দিন</th>
-                    <th className="p-4">১ম পিরিয়ড</th>
-                    <th className="p-4">২য় পিরিয়ড</th>
-                    <th className="p-4">৩য় পিরিয়ড</th>
-                    <th className="p-4">৪র্থ পিরিয়ড</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {classData.routine?.map((row: any, i: number) => (
-                    <tr key={i} className="hover:bg-slate-50">
-                      <td className="p-4 font-bold text-blue-600">{row.day}</td>
-                      {row.periods?.map((p: any, j: number) => (
-                        <td key={j} className="p-4 text-xs">
-                          <p className="font-bold text-slate-800">{p.subject}</p>
-                          <p className="text-slate-500 text-[11px] flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-slate-400" /> {p.time}
-                          </p>
-                        </td>
-                      ))}
+            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="p-4">দিন</th>
+                      <th className="p-4">১ম পিরিয়ড (০৮:০০ - ০৮:৪৫)</th>
+                      <th className="p-4">২য় পিরিয়ড (০৮:৪৫ - ০৯:৩০)</th>
+                      <th className="p-4">৩য় পিরিয়ড (০৯:৩০ - ১০:১৫)</th>
+                      <th className="p-4">৪র্থ পিরিয়ড (১০:৪৫ - ১১:৩০)</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {classData.routine?.map((row: any, i: number) => (
+                      <tr key={i} className="hover:bg-slate-50">
+                        <td className="p-4 font-bold text-blue-600">{row.day}</td>
+                        {row.periods?.map((p: any, j: number) => (
+                          <td key={j} className="p-4 text-xs">
+                            <p className="font-bold text-slate-800">{p.subject}</p>
+                            <p className="text-slate-500 text-[11px] flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3 text-slate-400" /> {p.time}
+                            </p>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* VIEW 2: EXAM SCHEDULE & SEAT PLAN */}
+        {academicView === 'exam' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-blue-600" />
+                  ১ম সাময়িক ও অর্ধবার্ষিকী পরীক্ষার সময়সূচি ২০২৬
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">পরীক্ষার সময়: সকাল ১০:০০ টা হতে দুপুর ০১:০০ টা পর্যন্ত</p>
+              </div>
+              <button
+                onClick={() => toast.success('পরীক্ষার পূর্ণাঙ্গ রুটিন ও সিটপ্ল্যান ডাউনলোড হচ্ছে...')}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 self-start sm:self-auto transition shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5" /> পরীক্ষার সিডিউল PDF
+              </button>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead className="bg-blue-50 text-blue-900 font-bold border-b border-blue-100">
+                    <tr>
+                      <th className="p-4">তারিখ ও বার</th>
+                      <th className="p-4">বিষয় ও পত্র</th>
+                      <th className="p-4">বিষয় কোড</th>
+                      <th className="p-4">সময় ও পূর্ণমান</th>
+                      <th className="p-4">পরীক্ষা কক্ষ নং</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {[
+                      { date: '২০ মে, ২০২৬ (বুধবার)', subject: 'বাংলা ১ম পত্র', code: '১০১', time: 'সকাল ১০:০০ - ১:০০ (১০০ মার্কস)', room: 'কক্ষ ১০১ - ১০৫' },
+                      { date: '২২ মে, ২০২৬ (শুক্রবার)', subject: 'বাংলা ২য় পত্র', code: '১০২', time: 'সকাল ১০:০০ - ১:০০ (১০০ মার্কস)', room: 'কক্ষ ১০১ - ১০৫' },
+                      { date: '২৫ মে, ২০২৬ (সোমবার)', subject: 'ইংরেজি ১ম পত্র', code: '১০৭', time: 'সকাল ১০:০০ - ১:০০ (১০০ মার্কস)', room: 'কক্ষ ১০১ - ১০৫' },
+                      { date: '২৭ মে, ২০২৬ (বুধবার)', subject: 'ইংরেজি ২য় পত্র', code: '১০৮', time: 'সকাল ১০:০০ - ১:০০ (১০০ মার্কস)', room: 'কক্ষ ১০১ - ১০৫' },
+                      { date: '৩১ মে, ২০২৬ (রবিবার)', subject: 'গণিত (বাধ্যতামূলক)', code: '১০৯', time: 'সকাল ১০:০০ - ১:০০ (১০০ মার্কস)', room: 'কক্ষ ১০১ - ১০৫' },
+                      { date: '০৩ জুন, ২০২৬ (বুধবার)', subject: 'বিজ্ঞান / পদার্থবিজ্ঞান', code: '১১০ / ১৩৬', time: 'সকাল ১০:০০ - ১:০০ (১০০ মার্কস)', room: 'কক্ষ ১০১ - ১০৫' },
+                      { date: '০৫ জুন, ২০২৬ (শুক্রবার)', subject: 'তথ্য ও যোগাযোগ প্রযুক্তি', code: '১৫৪', time: 'সকাল ১০:০০ - ১২:০০ (৫০ মার্কস)', room: 'কম্পিউটার ল্যাব' },
+                    ].map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="p-4 font-bold text-slate-900">{row.date}</td>
+                        <td className="p-4 font-bold text-blue-700">{row.subject}</td>
+                        <td className="p-4 font-mono text-slate-600">{row.code}</td>
+                        <td className="p-4 text-slate-700">{row.time}</td>
+                        <td className="p-4 font-bold text-emerald-700 bg-emerald-50/50">{row.room}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 3: SUBJECTS & MARKS */}
+        {academicView === 'subjects' && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+              {classData.className} - বিষয় তালিকা ও মানবন্টন
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {classData.subjects?.map((sub: any, idx: number) => (
+                <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md">
+                      কোড: {sub.code}
+                    </span>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      পূর্ণমান: {sub.marks}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-base text-slate-900">{sub.name}</h4>
+                  <p className="text-xs text-slate-600">বিষয় শিক্ষক: <strong className="text-slate-800">{sub.teacher}</strong></p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 4: RULES & UNIFORM CODE */}
+        {academicView === 'rules' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+              <h4 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-blue-600" />
+                শ্রেণীকক্ষের আচরণ ও উপস্থিতি নিয়মাবলী
+              </h4>
+              <ul className="space-y-2.5 text-xs text-slate-700 leading-relaxed list-disc list-inside">
+                <li>সকাল ০৭:৪৫ মিনিটের মধ্যে সকল শিক্ষার্থীকে বিদ্যালয় প্রাঙ্গণে উপস্থিত হতে হবে।</li>
+                <li>দৈনিক সমাবেশে (Assembly) অংশগ্রহণ বাধ্যতামূলক।</li>
+                <li>বার্ষিক পরীক্ষায় অংশগ্রহণের জন্য ন্যূনতম ৭৫% ক্লাসে উপস্থিতি আবশ্যক।</li>
+                <li>অনুমতি ছাড়া অনুপস্থিত থাকলে অভিভাবকের স্বাক্ষরযুক্ত আবেদনপত্র জমা দিতে হবে।</li>
+                <li>বিদ্যালয় ক্যাম্পাসে মোবাইল ফোন বা কোনো ধরনের ইলেকট্রনিক ডিভাইস আনা সম্পূর্ণ নিষিদ্ধ।</li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+              <h4 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-indigo-600" />
+                বিদ্যালয়ের নির্ধারিত ইউনিফর্ম কোড
+              </h4>
+              <ul className="space-y-2.5 text-xs text-slate-700 leading-relaxed list-disc list-inside">
+                <li><strong>ছাত্রদের ইউনিফর্ম:</strong> সাদা শার্ট, নেভি ব্লু প্যান্ট, কালো জুতো ও সাদা মোজা।</li>
+                <li><strong>ছাত্রীদের ইউনিফর্ম:</strong> নেভি ব্লু ফ্রক/কুর্তি, সাদা সালোয়ার, সাদা ওড়না ও কালো জুতো।</li>
+                <li>বুকের বামপাশে প্রাতিষ্ঠানিক লোগো সংবলিত ব্যাজ ও গলায় আইডি কার্ড পরিধান বাধ্যতামূলক।</li>
+                <li>শীতকালে নেভি ব্লু সোয়েটার অথবা ব্লেজার পরিধান করতে হবে।</li>
+              </ul>
+            </div>
+          </div>
+        )}
 
       </section>
     </div>

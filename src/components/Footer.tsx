@@ -122,18 +122,19 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: গুরুত্বপূর্ণ লিংক */}
+          {/* Column 3: গুরুত্বপূর্ণ সেবা ও পোর্টাল */}
           <div className="space-y-4">
             <h3 className="text-white font-black text-lg border-l-4 border-blue-500 pl-3">
-              গুরুত্বপূর্ণ লিংক
+              ডিজিটাল সেবা ও পোর্টাল
             </h3>
             <ul className="space-y-2 text-xs sm:text-sm font-medium text-slate-300">
-              <li><a href="http://www.moedu.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">শিক্ষা মন্ত্রণালয়</a></li>
-              <li><a href="http://www.dhakaeducationboard.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">শিক্ষা বোর্ড</a></li>
-              <li><Link href="/login" className="hover:text-blue-400 transition">অভিভাবক পোর্টাল</Link></li>
-              <li><a href="https://a2i.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">এক্সেস টু ইনফরমেশন (a2i)</a></li>
-              <li><a href="http://www.pmo.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">প্রধানমন্ত্রীর কার্যালয়</a></li>
-              <li><a href="http://www.bangladesh.gov.bd" target="_blank" rel="noreferrer" className="hover:text-blue-400 transition">জাতীয় তথ্য বাতায়ন</a></li>
+              <li><Link href="/academic-calendar" className="hover:text-blue-400 transition flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-blue-400" /> ক্যালেন্ডার ও ছুটির তালিকা ২০২৬</Link></li>
+              <li><Link href="/id-card" className="hover:text-blue-400 transition flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-blue-400" /> ডিজিটাল আইডি কার্ড পোর্টাল</Link></li>
+              <li><Link href="/fee-calculator" className="hover:text-blue-400 transition flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-blue-400" /> টিউশন ফি ও খরচ ক্যালকুলেটর</Link></li>
+              <li><Link href="/verify-certificate" className="hover:text-blue-400 transition flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-blue-400" /> সনদপত্র ও প্রশংসাপত্র যাচাই</Link></li>
+              <li><Link href="/admission" className="hover:text-blue-400 transition flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-blue-400" /> অনলাইন ভর্তি আবেদন</Link></li>
+              <li><Link href="/library" className="hover:text-blue-400 transition flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-blue-400" /> ডিজিটাল ই-লাইব্রেরী</Link></li>
+              <li><Link href="/alumni" className="hover:text-blue-400 transition flex items-center gap-1.5"><ArrowRight className="w-3 h-3 text-blue-400" /> প্রাক্তন শিক্ষার্থী পরিষদ (Alumni)</Link></li>
             </ul>
           </div>
 
