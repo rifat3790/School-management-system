@@ -2,9 +2,9 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IChatMessage extends Document {
   senderName: string;
-  senderEmail: string;
-  senderRole: 'student' | 'parent' | 'teacher' | 'admin' | 'superadmin' | 'guest';
-  recipientRole: string; // 'management'
+  senderEmail?: string;
+  senderRole: string; // 'student' | 'parent' | 'teacher' | 'admin' | 'superadmin' | 'guest' | 'system' | 'user'
+  recipientRole?: string;
   text: string;
   imageUrl?: string;
   createdAt: Date;
@@ -13,14 +13,13 @@ export interface IChatMessage extends Document {
 const ChatMessageSchema: Schema = new Schema(
   {
     senderName: { type: String, required: true, default: 'শিক্ষার্থী / অভিভাবক' },
-    senderEmail: { type: String, default: 'guest@school.edu.bd' },
+    senderEmail: { type: String, default: 'visitor@drmujibrubi.edu.bd' },
     senderRole: { 
       type: String, 
-      enum: ['student', 'parent', 'teacher', 'admin', 'superadmin', 'guest'], 
-      default: 'guest' 
+      default: 'user' 
     },
     recipientRole: { type: String, default: 'management' },
-    text: { type: String, required: true },
+    text: { type: String, default: '' },
     imageUrl: { type: String, default: '' },
   },
   { timestamps: true }

@@ -38,7 +38,8 @@ import {
   Loader2,
   Send,
   Menu,
-  ChevronRight
+  ChevronRight,
+  Paperclip
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import ImageUploadInput from '@/components/ImageUploadInput';
@@ -105,6 +106,8 @@ export default function AdminDashboard() {
   const [contactList, setContactList] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [adminReplyText, setAdminReplyText] = useState('');
+  const [adminReplyImage, setAdminReplyImage] = useState('');
+  const [uploadingAdminImage, setUploadingAdminImage] = useState(false);
   const [adminSending, setAdminSending] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -302,9 +305,47 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSendAdminReply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!adminReplyText.trim()) return;
+  const handleAdminFileUpload = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('শুধুমাত্র ছবি ফাইল আপলোড করা যাবে');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('ফাইলের সাইজ ১০MB এর নিচে হতে হবে');
+      return;
+    }
+
+    setUploadingAdminImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.url) {
+        setAdminReplyImage(data.url);
+        toast.success('ছবি সংযুক্ত হয়েছে');
+      } else {
+        toast.error(data.message || 'ছবি আপলোড ব্যর্থ হয়েছে');
+      }
+    } catch (err) {
+      toast.error('ছবি আপলোড ব্যর্থ হয়েছে');
+    } finally {
+      setUploadingAdminImage(false);
+    }
+  };
+
+  const handleSendAdminReply = async (e?: React.FormEvent, customText?: string) => {
+    if (e) e.preventDefault();
+    const text = (customText || adminReplyText).trim();
+    const image = adminReplyImage;
+
+    if (!text && !image) return;
 
     setAdminSending(true);
     try {
@@ -312,15 +353,17 @@ export default function AdminDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          senderName: 'স্কুল এডমিন',
+          senderName: 'সুপার এডমিন (ম্যানেজমেন্ট)',
           senderRole: 'admin',
-          text: adminReplyText.trim()
+          text: text,
+          imageUrl: image
         })
       });
       const data = await res.json();
       if (data.success) {
-        toast.success('উত্তর সফলভাবে প্রেরিত হয়েছে!');
+        toast.success('শিক্ষার্থী/অভিভাবকের নিকট উত্তর লাইভ পাঠানো হয়েছে!');
         setAdminReplyText('');
+        setAdminReplyImage('');
         fetchAllData();
       } else {
         toast.error('উত্তর পাঠাতে সমস্যা হয়েছে');
@@ -1344,59 +1387,205 @@ export default function AdminDashboard() {
         {/* TAB: LIVE MANAGEMENT CHAT INBOX */}
         {activeTab === 'chat' && (
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">💬 লাইভ ম্যানেজমেন্ট চ্যাট ইনবক্স (Live Support Chat)</h3>
-                <p className="text-xs text-slate-500">শিক্ষার্থী ও অভিভাবকদের লাইভ বার্তা দেখুন এবং ডাইরেক্ট উত্তর বা ছবি পাঠান</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-slate-900">💬 লাইভ ম্যানেজমেন্ট চ্যাট ইনবক্স (Live Support Chat)</h3>
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> লাইভ সক্রিয়
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">শিক্ষার্থী ও অভিভাবকদের লাইভ বার্তা দেখুন এবং সরাসরি রিয়েল-টাইমে উত্তর বা ছবি পাঠান</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={fetchAllData}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> রিফ্রেশ
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearChatHistory}
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> চ্যাট মুছুন
+                </button>
               </div>
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 max-h-96 overflow-y-auto space-y-3 text-xs">
-              {notices.length >= 0 && (
-                <div className="space-y-3">
-                  <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 text-sm">রাফসান আহমেদ (শিক্ষার্থী)</span>
-                        <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold text-[10px]">Student</span>
-                      </div>
-                      <p className="text-slate-700 mt-1">"আসসালামু আলাইকুম স্যার, অর্ধ-বার্ষিকী পরীক্ষার বিশেষ সিলেবাস কি নোটিশ বোর্ডে প্রকাশ হবে?"</p>
-                    </div>
-                  </div>
+            {/* Quick Canned Responses */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 block">কুইক রিপ্লাই টেমপ্লেট (এক ক্লিকে উত্তর পাঠান):</label>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                {[
+                  'আসসালামু আলাইকুম। আপনার বার্তাটি গ্রহণ করা হয়েছে।',
+                  'ওয়েবসাইটের নোটিশ বোর্ডে বিস্তারিত সিলেবাস ও রুটিন প্রকাশ করা হয়েছে।',
+                  'অফিস চলাকালীন (সকাল ৯টা - বিকাল ৪টা) প্রধান শিক্ষকের সাথে যোগাযোগ করুন।',
+                  'অনলাইন পেমেন্ট সংক্রান্ত বিস্তারিত তথ্য এসএমএস-এর মাধ্যমে পাঠানো হবে।'
+                ].map((canned, cIdx) => (
+                  <button
+                    key={cIdx}
+                    type="button"
+                    onClick={() => handleSendAdminReply(undefined, canned)}
+                    className="px-3 py-1.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[11px] font-medium rounded-xl border border-slate-200 shrink-0 transition"
+                  >
+                    + {canned}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-200 text-blue-900 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm">সুপার এডমিন টিম (উত্তর দেওয়া হয়েছে)</span>
-                      <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded font-bold text-[10px]">Super Admin</span>
-                    </div>
-                    <p className="text-xs text-slate-700">"ওয়া আলাইকুমুস সালাম। হ্যাঁ, আগামী সপ্তাহের শুরুতেই সিলেবাস ও ফি সিডিউল ওয়েবসাইটে আপলোড করা হবে।"</p>
-                  </div>
+            {/* Chat Messages Log */}
+            <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 max-h-[480px] overflow-y-auto space-y-3.5 text-xs">
+              {chatMessages.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 space-y-2">
+                  <MessageSquare className="w-8 h-8 mx-auto text-slate-300" />
+                  <p className="font-bold">বর্তমানে কোনো চ্যাট মেসেজ নেই</p>
+                  <p className="text-[11px]">শিক্ষার্থী বা অভিভাবক ওয়েবসাইট থেকে বার্তা পাঠালে এখানে লাইভ প্রদর্শিত হবে</p>
                 </div>
+              ) : (
+                chatMessages.map((msg: any, mIdx: number) => {
+                  const isUser = msg.senderRole === 'user' || msg.senderRole === 'student' || msg.senderRole === 'guest' || msg.senderRole === 'parent';
+                  const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
+                  const isTeacher = msg.senderRole === 'teacher';
+                  const isSystem = msg.senderRole === 'system';
+
+                  return (
+                    <div
+                      key={msg._id || mIdx}
+                      className={`p-4 rounded-2xl border transition-all ${
+                        isUser
+                          ? 'bg-white border-slate-200 shadow-xs'
+                          : isAdmin
+                          ? 'bg-blue-50/80 border-blue-200 text-blue-950'
+                          : isTeacher
+                          ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
+                          : 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900 text-xs sm:text-sm">
+                            {msg.senderName || (isUser ? 'শিক্ষার্থী / অভিভাবক' : 'স্কুল কর্তৃপক্ষ')}
+                          </span>
+                          
+                          {isUser && (
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full font-bold text-[10px] border border-slate-200">
+                              👤 ভিজিটর / শিক্ষার্থী
+                            </span>
+                          )}
+                          {isAdmin && (
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-bold text-[10px] border border-blue-200">
+                              👑 সুপার এডমিন
+                            </span>
+                          )}
+                          {isTeacher && (
+                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px] border border-emerald-200">
+                              👨‍🏫 শিক্ষক প্যানেল
+                            </span>
+                          )}
+                          {isSystem && (
+                            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-full font-bold text-[10px] border border-indigo-200">
+                              🏢 সাপোর্ট ডেস্ক
+                            </span>
+                          )}
+                        </div>
+
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {msg.createdAt ? new Date(msg.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : ''}
+                        </span>
+                      </div>
+
+                      {msg.text && (
+                        <p className="text-slate-800 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                          {msg.text}
+                        </p>
+                      )}
+
+                      {msg.imageUrl && (
+                        <div className="mt-2.5">
+                          <img
+                            src={msg.imageUrl}
+                            alt="Attachment"
+                            className="max-h-48 rounded-xl object-cover border border-slate-200 cursor-pointer hover:opacity-90 transition"
+                            onClick={() => window.open(msg.imageUrl, '_blank')}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
 
-            {/* Admin Reply Box */}
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              toast.success('শিক্ষার্থীর নিকট এডমিন উত্তর লাইভ পাঠানো হয়েছে!');
-            }} className="space-y-3 pt-2">
-              <h4 className="font-bold text-sm text-slate-900">ইনস্ট্যান্ট এডমিন রিপ্লাই বা ছবি পাঠান</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder="আপনার উত্তর লিখুন..."
-                  required
-                  className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-                />
-                <input
-                  type="text"
-                  placeholder="ছবি URL (ঐচ্ছিক)"
-                  className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-                />
+            {/* Attached Image Preview */}
+            {adminReplyImage && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  <img src={adminReplyImage} alt="Attachment Preview" className="w-10 h-10 rounded-lg object-cover border border-blue-300" />
+                  <div>
+                    <p className="text-xs font-bold text-blue-900">ছবি সংযুক্ত হয়েছে</p>
+                    <p className="text-[10px] text-blue-600 truncate font-mono">{adminReplyImage}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAdminReplyImage('')}
+                  className="p-1.5 bg-white hover:bg-rose-50 text-rose-600 rounded-lg border border-slate-200"
+                  title="ছবি মুছুন"
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
               </div>
-              <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md flex items-center gap-1.5">
-                <MessageSquare className="w-4 h-4" /> মেসেজ উত্তর পাঠান
-              </button>
+            )}
+
+            {/* Admin Live Reply Form */}
+            <form onSubmit={(e) => handleSendAdminReply(e)} className="space-y-3 pt-2">
+              <label className="block text-xs font-bold text-slate-900">ইনস্ট্যান্ট এডমিন লাইভ রিপ্লাই লিখুন</label>
+              
+              <div className="flex items-center gap-2">
+                <label className="p-3 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-2xl border border-slate-200 cursor-pointer transition shrink-0" title="ছবি ফাইল আপলোড করুন">
+                  {uploadingAdminImage ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                  ) : (
+                    <Paperclip className="w-5 h-5" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleAdminFileUpload(e.target.files[0]);
+                      }
+                    }}
+                  />
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="আপনার উত্তর লিখুন... (শিক্ষার্থী/অভিভাবক রিয়েল-টাইমে দেখতে পাবেন)"
+                  value={adminReplyText}
+                  onChange={(e) => setAdminReplyText(e.target.value)}
+                  className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition"
+                />
+
+                <button
+                  type="submit"
+                  disabled={(!adminReplyText.trim() && !adminReplyImage) || adminSending}
+                  className="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 text-white disabled:text-slate-400 font-bold rounded-2xl text-xs sm:text-sm shadow-md flex items-center gap-2 transition shrink-0"
+                >
+                  {adminSending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  <span>মেসেজ পাঠান</span>
+                </button>
+              </div>
             </form>
           </div>
         )}

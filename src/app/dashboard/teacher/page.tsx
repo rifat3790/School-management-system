@@ -15,7 +15,12 @@ import {
   BookOpen,
   Calendar as CalendarIcon,
   RefreshCw,
-  User
+  User,
+  MessageSquare,
+  Paperclip,
+  Loader2,
+  Trash2,
+  XCircle
 } from 'lucide-react';
 
 import { useToast } from '@/components/Toast';
@@ -32,7 +37,7 @@ interface StudentRecord {
 
 export default function TeacherDashboard() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'attendance' | 'homework' | 'marks' | 'admissions' | 'donations' | 'inquiries'>('attendance');
+  const [activeTab, setActiveTab] = useState<'attendance' | 'homework' | 'marks' | 'chat' | 'admissions' | 'donations' | 'inquiries'>('attendance');
   
   // Date State - Auto defaults to Today (YYYY-MM-DD)
   const getTodayStr = () => new Date().toISOString().split('T')[0];
@@ -44,6 +49,11 @@ export default function TeacherDashboard() {
   const [admissionsList, setAdmissionsList] = useState<any[]>([]);
   const [donationsList, setDonationsList] = useState<any[]>([]);
   const [contactList, setContactList] = useState<any[]>([]);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [teacherReplyText, setTeacherReplyText] = useState('');
+  const [teacherReplyImage, setTeacherReplyImage] = useState('');
+  const [uploadingTeacherImage, setUploadingTeacherImage] = useState(false);
+  const [teacherSending, setTeacherSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [savingAttendance, setSavingAttendance] = useState(false);
 
@@ -93,20 +103,92 @@ export default function TeacherDashboard() {
         setStudents(formattedStudents);
         fetchAttendanceForDate(selectedDate, tUser, formattedStudents);
 
-        // Fetch Admissions, Donations, Contact Messages
-        const [rA, rD, rC] = await Promise.all([
+        // Fetch Admissions, Donations, Contact Messages, Chat Messages
+        const [rA, rD, rC, rChat] = await Promise.all([
           fetch('/api/admissions').then(r => r.json()),
           fetch('/api/donations').then(r => r.json()),
           fetch('/api/contact').then(r => r.json()),
+          fetch('/api/chat').then(r => r.json()).catch(() => ({ success: false })),
         ]);
         if (rA.success) setAdmissionsList(rA.admissions);
         if (rD.success) setDonationsList(rD.donations);
         if (rC.success) setContactList(rC.messages);
+        if (rChat?.success && Array.isArray(rChat.messages)) setChatMessages(rChat.messages);
       }
     } catch (err) {
       console.error('Error loading teacher data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTeacherFileUpload = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('শুধুমাত্র ছবি ফাইল আপলোড করা যাবে');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('ফাইলের সাইজ ১০MB এর নিচে হতে হবে');
+      return;
+    }
+
+    setUploadingTeacherImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.url) {
+        setTeacherReplyImage(data.url);
+        toast.success('ছবি সংযুক্ত হয়েছে');
+      } else {
+        toast.error(data.message || 'ছবি আপলোড ব্যর্থ হয়েছে');
+      }
+    } catch (err) {
+      toast.error('ছবি আপলোড ব্যর্থ হয়েছে');
+    } finally {
+      setUploadingTeacherImage(false);
+    }
+  };
+
+  const handleSendTeacherReply = async (e?: React.FormEvent, customText?: string) => {
+    if (e) e.preventDefault();
+    const text = (customText || teacherReplyText).trim();
+    const image = teacherReplyImage;
+
+    if (!text && !image) return;
+
+    setTeacherSending(true);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderName: `${teacherUser?.name || 'শিক্ষক'} (${teacherUser?.details?.subject || 'শিক্ষক প্যানেল'})`,
+          senderRole: 'teacher',
+          text: text,
+          imageUrl: image
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('শিক্ষার্থীর কাছে শিক্ষকের উত্তর লাইভ পাঠানো হয়েছে!');
+        setTeacherReplyText('');
+        setTeacherReplyImage('');
+        fetchTeacherAndStudents();
+      } else {
+        toast.error('উত্তর পাঠাতে সমস্যা হয়েছে');
+      }
+    } catch (err) {
+      toast.error('নেটওয়ার্ক সমস্যা হয়েছে');
+    } finally {
+      setTeacherSending(false);
     }
   };
 
@@ -285,6 +367,7 @@ export default function TeacherDashboard() {
             { id: 'attendance', label: `📅 ক্যালেন্ডার হাজিরা (${presentCount}/${students.length} উপস্থিত)`, icon: UserCheck },
             { id: 'homework', label: `📝 হোমওয়ার্ক প্রকাশ (${publishedHw.length})`, icon: FileEdit },
             { id: 'marks', label: '🏆 মার্কস এন্ট্রি সিস্টেম', icon: Award },
+            { id: 'chat', label: `💬 লাইভ হেল্পডেস্ক চ্যাট (${chatMessages.length})`, icon: MessageSquare },
             { id: 'admissions', label: `📝 ভর্তি আবেদন (${admissionsList.length})`, icon: BookOpen },
             { id: 'donations', label: `❤️ অনুদান এপ্রুভাল (${donationsList.length})`, icon: Sparkles },
             { id: 'inquiries', label: `📬 কন্টাক্ট ইনকোয়ারি (${contactList.length})`, icon: Send },
@@ -562,6 +645,196 @@ export default function TeacherDashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* TAB: LIVE TEACHER CHAT */}
+        {activeTab === 'chat' && (
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-slate-900">💬 লাইভ শিক্ষার্থী ও অভিভাবক সাপোর্ট চ্যাট</h3>
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> শিক্ষক প্যানেল সক্রিয়
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">শিক্ষার্থী ও অভিভাবকদের লাইভ প্রশ্ন ও অনুসন্ধানের সরাসরি উত্তর দিন</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={fetchTeacherAndStudents}
+                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition self-start sm:self-auto"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> চ্যাট রিফ্রেশ
+              </button>
+            </div>
+
+            {/* Quick Canned Responses */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 block">শিক্ষকের দ্রুত উত্তর টেমপ্লেট:</label>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                {[
+                  'আসসালামু আলাইকুম। আগামী ক্লাসে এই বিষয়ে বিস্তারিত আলোচনা করা হবে।',
+                  'হোমওয়ার্ক সম্পন্ন করে কালকের ক্লাসে নিয়ে আসবে।',
+                  'পরীক্ষার সিলেবাস ও মানবন্টন হোমওয়ার্ক ট্যাবে আপডেট করা হয়েছে।',
+                  'ক্লাস টাইমে শিক্ষক কক্ষে এসে দেখা করতে পারো।'
+                ].map((canned, cIdx) => (
+                  <button
+                    key={cIdx}
+                    type="button"
+                    onClick={() => handleSendTeacherReply(undefined, canned)}
+                    className="px-3 py-1.5 bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[11px] font-medium rounded-xl border border-slate-200 shrink-0 transition"
+                  >
+                    + {canned}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Chat Messages Log */}
+            <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 max-h-[460px] overflow-y-auto space-y-3.5 text-xs">
+              {chatMessages.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 space-y-2">
+                  <MessageSquare className="w-8 h-8 mx-auto text-slate-300" />
+                  <p className="font-bold">বর্তমানে কোনো চ্যাট মেসেজ নেই</p>
+                </div>
+              ) : (
+                chatMessages.map((msg: any, mIdx: number) => {
+                  const isUser = msg.senderRole === 'user' || msg.senderRole === 'student' || msg.senderRole === 'guest' || msg.senderRole === 'parent';
+                  const isAdmin = msg.senderRole === 'admin' || msg.senderRole === 'superadmin';
+                  const isTeacher = msg.senderRole === 'teacher';
+
+                  return (
+                    <div
+                      key={msg._id || mIdx}
+                      className={`p-4 rounded-2xl border transition-all ${
+                        isUser
+                          ? 'bg-white border-slate-200 shadow-xs'
+                          : isTeacher
+                          ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
+                          : isAdmin
+                          ? 'bg-blue-50/80 border-blue-200 text-blue-950'
+                          : 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900 text-xs sm:text-sm">
+                            {msg.senderName || (isUser ? 'শিক্ষার্থী / অভিভাবক' : 'শিক্ষক')}
+                          </span>
+                          
+                          {isUser && (
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full font-bold text-[10px] border border-slate-200">
+                              👤 শিক্ষার্থী / অভিভাবক
+                            </span>
+                          )}
+                          {isTeacher && (
+                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px] border border-emerald-200">
+                              👨‍🏫 শিক্ষক
+                            </span>
+                          )}
+                          {isAdmin && (
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-bold text-[10px] border border-blue-200">
+                              👑 প্রশাসন
+                            </span>
+                          )}
+                        </div>
+
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {msg.createdAt ? new Date(msg.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : ''}
+                        </span>
+                      </div>
+
+                      {msg.text && (
+                        <p className="text-slate-800 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                          {msg.text}
+                        </p>
+                      )}
+
+                      {msg.imageUrl && (
+                        <div className="mt-2.5">
+                          <img
+                            src={msg.imageUrl}
+                            alt="Attachment"
+                            className="max-h-48 rounded-xl object-cover border border-slate-200 cursor-pointer hover:opacity-90 transition"
+                            onClick={() => window.open(msg.imageUrl, '_blank')}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Attached Image Preview */}
+            {teacherReplyImage && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  <img src={teacherReplyImage} alt="Attachment Preview" className="w-10 h-10 rounded-lg object-cover border border-emerald-300" />
+                  <div>
+                    <p className="text-xs font-bold text-emerald-900">ছবি সংযুক্ত হয়েছে</p>
+                    <p className="text-[10px] text-emerald-600 truncate font-mono">{teacherReplyImage}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTeacherReplyImage('')}
+                  className="p-1.5 bg-white hover:bg-rose-50 text-rose-600 rounded-lg border border-slate-200"
+                  title="ছবি মুছুন"
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Teacher Live Reply Form */}
+            <form onSubmit={(e) => handleSendTeacherReply(e)} className="space-y-3 pt-2">
+              <label className="block text-xs font-bold text-slate-900">শিক্ষক হিসেবে লাইভ উত্তর পাঠান</label>
+              
+              <div className="flex items-center gap-2">
+                <label className="p-3 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 rounded-2xl border border-slate-200 cursor-pointer transition shrink-0" title="ছবি ফাইল আপলোড করুন">
+                  {uploadingTeacherImage ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+                  ) : (
+                    <Paperclip className="w-5 h-5" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleTeacherFileUpload(e.target.files[0]);
+                      }
+                    }}
+                  />
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="শিক্ষার্থীর প্রশ্নের উত্তর লিখুন..."
+                  value={teacherReplyText}
+                  onChange={(e) => setTeacherReplyText(e.target.value)}
+                  className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm focus:outline-none focus:border-emerald-600 focus:bg-white transition"
+                />
+
+                <button
+                  type="submit"
+                  disabled={(!teacherReplyText.trim() && !teacherReplyImage) || teacherSending}
+                  className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 text-white disabled:text-slate-400 font-bold rounded-2xl text-xs sm:text-sm shadow-md flex items-center gap-2 transition shrink-0"
+                >
+                  {teacherSending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  <span>উত্তর পাঠান</span>
+                </button>
+              </div>
+            </form>
           </div>
         )}
 
